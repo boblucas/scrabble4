@@ -165,3 +165,18 @@ def sufficient_tiles(text, allowed_blanks, counts):
 
 def valid_subwords(w, words):
 	return [(i, w[i:j]) for i in range(len(w)) for j in range(i+1, len(w)+1) if w[i:j] in words]
+
+def get_word_score(rules, w, x, y, h, placed):
+	'''
+	Gives the score of placing a given word including multipliers applied for logging and verification
+	'''
+	score = 0
+	wm = 1
+	for i in range(len(w)):
+		_x,_y = x+i*h, y+i*(1-h)
+		s = rules.scores[w[i]]
+		if placed[i]:
+			s *= rules.letter_multiplier[_y,_x]
+			wm *= rules.word_multiplier[_y,_x]
+		score += s
+	return score*wm + (sum(placed) == rules.hand_size) * rules.emptyhand_bonus, wm
