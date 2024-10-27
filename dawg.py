@@ -1,9 +1,10 @@
 # DAWG was copied from LEXPY (https://github.com/aosingh/lexpy/tree/main) with minor
 # changes to support ordered collections of arbitrary comparable objects 
 # instead of just strings. Most features except building the automaton were removed
-from collections import defaultdict
+from collections import defaultdict, deque
 from itertools import product
 import numpy as np
+from typing import Set, Tuple, Dict, List
 
 T_ANY = -1
 T_NONE = -2
@@ -36,7 +37,7 @@ def automaton_words_from_dict(fixed_words:dict[int, list[int]], row:list[set[int
                 w = tuple(max(0, x) for x in w)
                 aligned_words.append([0]*_i + list(w) + [0]*(max_depth-_i-len(w)))
     
-    return np.array(aligned_words, dtype=np.int8)
+    return np.array(aligned_words, dtype=np.int8) if aligned_words else np.zeros((0,len(row)), dtype=np.int8)
 
 def automaton_words_from_list(words:list[tuple[int]], n:int, row:list[set[int]] = None):
     '''
@@ -51,6 +52,7 @@ def automaton_words_from_list(words:list[tuple[int]], n:int, row:list[set[int]] 
 
     return automaton_words_from_dict(fixed_words, row)
 
+__AUTOMATON_CACHE = {}
 def create_scrabble_automaton(words:np.ndarray):
     '''
     Creates an constant depth automaton that describes a valid row or column in a
@@ -61,6 +63,9 @@ def create_scrabble_automaton(words:np.ndarray):
     words is a 2D numpy matrix of shape (n, word length), -1 is used for padding.
     don't forgot the empty string.
     '''
+
+    key = hash(words.data.tobytes())
+    if key in __AUTOMATON_CACHE: return __AUTOMATON_CACHE[key]
 
     # positional encoding required for SAT translation
     # each character becomes (character, rank position, is start of word)
@@ -113,8 +118,53 @@ def create_scrabble_automaton(words:np.ndarray):
         for a,b in product(empties[depth].values(), starts[depth+1].values()):
             edges.add((get_node(a), b.val[0], get_node(b)))
     
-
+    __AUTOMATON_CACHE[key] = (0, terminal, edges)
     return (0, terminal, edges) #, {v:k.val for (k,_),v in names.items()}
+
+
+def compress_automaton(automaton):
+    from pythomata import SimpleDFA
+    transition_function = defaultdict(dict)
+    for x,c,y in automaton[2]:
+        transition_function[x][c] = y
+    dfa = SimpleDFA({x for x,c,y in automaton[2]}|{y for x,c,y in automaton[2]}, sorted({c for x,c,y in automaton[2]}), 0, set(automaton[1]), dict(transition_function)).minimize()
+    return (dfa.initial_state, dfa.accepting_states, dfa.get_transitions())
+
+def create_scrabble_automaton_ngrams(words: np.ndarray, n: int = 4):
+    words = np.array(words)
+    words[words == -1] = 0
+    edges = []
+    def get_next_chars(i, s):
+        ''' given a string preceding location i, what characters can follow? '''
+        if i == words.shape[-1]:
+            return set()
+        if i == 0:
+            return set(words[:,i])
+
+        return set(words[(words[:,i-len(s):i] == s).all(-1), i])
+    
+    def children(depth, s):
+        for c in get_next_chars(depth, s):
+            s2 = (*s, c)[-(n-1):]
+            if c == 0:
+                s2 = (0,)
+            edges.append(((depth, s), c, (depth+1, s2)))
+            yield edges[-1][2]
+    
+    opened = {(0, ())}
+    while opened := {y for x in opened for y in children(*x)}: pass
+    
+    nodes = defaultdict(lambda: len(nodes))
+    edges = [(nodes[a], v, nodes[b]) for a,v,b in sorted(set(edges))]
+    terminal = [i for node,i in nodes.items() if node[0] == words.shape[-1]]
+    print(f'n-gram model for {words.shape[0]} words has {len(nodes)} nodes and {len(edges)} edges')
+    automaton = (0, terminal, edges)
+    #automaton = compress_automaton(automaton)
+    print(f'\t{len(automaton[2])} edges left after minimization')
+    return automaton
+
+
+
 
 class FSANode:
     __slots__ = 'id', 'val', 'children', 'count'
@@ -238,7 +288,174 @@ def automaton_to_dot(automaton, names):
         print(f'{f} -> {t} [label="{chr(ord("a")+v-1)}"]')
 
 
+from random import choice, random
+
+def is_valid_string(automaton: Tuple[int, Set[int], Set[Tuple[int, int, int]]], 
+                   string: List[int]) -> bool:
+    """
+    Check if a string is accepted by the automaton.
+    
+    Args:
+        automaton: (start_state, terminal_states, edges)
+        string: List of integers representing the string to check
+    """
+    start_state, terminal_states, edges = automaton
+    current_state = start_state
+    
+    # Convert edges to adjacency list for faster lookup
+    transitions = defaultdict(dict)
+    for from_state, char, to_state in edges:
+        transitions[from_state][char] = to_state
+    
+    # Follow transitions for each character
+    for char in string:
+        if char not in transitions[current_state]:
+            return False
+        current_state = transitions[current_state][char]
+    
+    return current_state in terminal_states
+
+def validate_automaton(automaton: Tuple[int, Set[int], Set[Tuple[int, int, int]]], 
+                      aligned_words: np.ndarray,
+                      n_random_tests: int = 100) -> Tuple[bool, List[str]]:
+    """
+    Validate the automaton by:
+    1. Checking all input words are accepted
+    2. Testing random invalid strings are rejected
+    3. Testing edge cases
+    
+    Returns:
+        (is_valid, error_messages)
+    """
+    errors = []
+    max_depth = aligned_words.shape[1]
+    
+    # Test 1: All input words should be valid
+    for word in aligned_words:
+        if not is_valid_string(automaton, list(word)):
+            errors.append(f"Input word {word} was rejected by automaton")
+    
+    # Test 2: Generate and test random invalid strings
+    valid_chars = set(aligned_words.flatten())
+    valid_chars.add(-1)  # Add space character
+    char_list = list(valid_chars)
+    
+    def generate_random_string() -> List[int]:
+        """Generate a random string of the correct length"""
+        return [choice(char_list) for _ in range(max_depth)]
+    
+    # Test random strings
+    for _ in range(n_random_tests):
+        random_string = generate_random_string()
+        # Randomly corrupt some valid words to create invalid ones
+        if random() < 0.5 and len(aligned_words) > 0:
+            base_word = list(choice(aligned_words))
+            # Corrupt a random position
+            pos = choice(range(len(base_word)))
+            original = base_word[pos]
+            while base_word[pos] == original:
+                base_word[pos] = choice(char_list)
+            random_string = base_word
+            
+        # If string is not in aligned_words, it should be rejected
+        # (unless by chance we generated a valid string)
+        if not any(np.array_equal(random_string, word) for word in aligned_words):
+            if is_valid_string(automaton, random_string):
+                # Double check this isn't actually a valid n-gram sequence
+                if not is_actually_valid_ngram_sequence(random_string, aligned_words):
+                    errors.append(f"Invalid string {random_string} was accepted by automaton")
+
+    # Test 3: Edge cases
+    edge_cases = [
+        [0] * max_depth,  # All zeros
+        [-1] * max_depth, # All spaces
+        [-2] * max_depth  # All padding
+    ]
+    
+    for case in edge_cases:
+        should_accept = any(np.array_equal(case, word) for word in aligned_words)
+        does_accept = is_valid_string(automaton, case)
+        if should_accept != does_accept:
+            errors.append(f"Edge case {case} acceptance mismatch: "
+                        f"should_accept={should_accept}, does_accept={does_accept}")
+    
+    return len(errors) == 0, errors
+
+def is_actually_valid_ngram_sequence(string: List[int], aligned_words: np.ndarray, n: int = 3) -> bool:
+    """
+    Check if a string consists of valid n-grams from the aligned words.
+    This is used to verify if a randomly generated string that the automaton 
+    accepts is actually valid according to the original n-gram rules.
+    """
+    max_depth = len(string)
+    
+    # Extract all valid n-grams from aligned words
+    valid_ngrams = set()
+    for word in aligned_words:
+        for i in range(max_depth - n + 1):
+            ngram = tuple(word[i:i+n])
+            valid_ngrams.add(ngram)
+    
+    # Check if all n-grams in the string are valid
+    for i in range(max_depth - n + 1):
+        ngram = tuple(string[i:i+n])
+        if ngram not in valid_ngrams:
+            return False
+            
+    return True
+
+def print_automaton_stats(automaton: Tuple[int, Set[int], Set[Tuple[int, int, int]]]):
+    """Print statistics about the automaton structure"""
+    start_state, terminal_states, edges = automaton
+    terminal_states = set(terminal_states)
+    edges = set(edges)
+    
+    # Get number of unique states
+    states = {start_state} | terminal_states | \
+             {s for s, _, _ in edges} | {s for _, _, s in edges}
+    
+    print(f"Automaton statistics:")
+    print(f"Number of states: {len(states)}")
+    print(f"Number of terminal states: {len(terminal_states)}")
+    print(f"Number of edges: {len(edges)}")
+    print(f"Average edges per state: {len(edges) / len(states):.2f}")
+    
+    # Analyze transitions
+    char_transitions = defaultdict(int)
+    for _, char, _ in edges:
+        char_transitions[char] += 1
+    
+    print("\nTransition distribution:")
+    for char, count in sorted(char_transitions.items()):
+        print(f"Character {char}: {count} transitions ({count/len(edges)*100:.1f}%)")
+
+# Example usage:
+def test_automaton(aligned_words, n: int = 3):
+    # Create automaton
+    automaton = create_scrabble_automaton_ngrams(aligned_words, n)
+    
+    # Print automaton statistics
+    print_automaton_stats(automaton)
+    
+    # Validate automaton
+    is_valid, errors = validate_automaton(automaton, aligned_words)
+    
+    print("\nValidation results:")
+    if is_valid:
+        print("✓ Automaton passed all tests")
+    else:
+        print("✗ Automaton failed validation:")
+        for error in errors:
+            print(f"  - {error}")
+
+
 if __name__ == '__main__':
+    from scrabble import *
+    rules = construct_rules('dutch', '5')
+    words = automaton_words_from_list(rules.words, 7)
+    test_automaton(words, n=3)
+
+    exit()
     n = 3
     words = open('data/words/english').read().split('\n') + list('abcdefghijklmnopqrstuvwxyz') + ['']
     _words = [tuple([ord(c)-ord('a')+1 for c in w]) for w in words if len(w) <= n]

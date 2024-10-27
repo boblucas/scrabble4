@@ -1,6 +1,7 @@
 from collections import *
 from itertools import *
 from math import prod
+import time
 
 from ortools.sat.python import cp_model
 
@@ -9,7 +10,7 @@ from dawg import *
 
 Cell = namedtuple('Cell', ['active', 'letter', 'x', 'y', 'blank'])
 
-def create_board(model, rows_words:list[np.ndarray], columns_words:list[np.ndarray], offset = (0,0), alphabet_size = 26):
+def create_board(model, rows_words:list[np.ndarray], columns_words:list[np.ndarray], offset = (0,0), alphabet_size = 26, n_gram_rows:bool = False):
 	'''
 	Creates a grid of |columns_words.shape[1]| x |rows_words.shape[1]| that 
 	are constrained such that each row and column contains only valid words as 
@@ -25,10 +26,19 @@ def create_board(model, rows_words:list[np.ndarray], columns_words:list[np.ndarr
 	for h in [1,0]:
 		for d in range([W,H][h]):
 			words = [columns_words, rows_words][h][d]
-			automaton = create_scrabble_automaton(words)
-			# words[:,i].max() ?
-			lines.append([model.new_int_var(0, 27, f'{model.prefix}_{d}_{h}_letter_{i}') for i in range([H,W][h])])
+			#t = time.time()
+			print(f'Creating automaton for {d}-{"hor" if h else 'ver'}...', end='', flush=True)
+			if h == 1 and n_gram_rows:
+				automaton = create_scrabble_automaton_ngrams(words, 4)
+			else:
+				automaton = create_scrabble_automaton(words)
+			#print(f'took {int(time.time()-t)}s')
+
+			lines.append([model.new_int_var(0, alphabet_size+1, f'{model.prefix}_{d}_{h}_letter_{i}') for i in range([H,W][h])])
+			#t = time.time()
+			#print(f'Adding automaton for {d}-{"hor" if h else 'ver'}...', end='', flush=True)
 			model.add_automaton(lines[-1], *automaton[:3])
+			#print(f'took {int(time.time()-t)}s')
 
 	rows, columns = lines[:H], lines[H:]
 
