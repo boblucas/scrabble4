@@ -164,8 +164,6 @@ def create_scrabble_automaton_ngrams(words: np.ndarray, n: int = 4):
     return automaton
 
 
-
-
 class FSANode:
     __slots__ = 'id', 'val', 'children', 'count'
     def __init__(self, _id, val):

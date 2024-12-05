@@ -12,10 +12,12 @@ parser.add_argument('--racksize', dest='racksize', type=int, default=7, help='ma
 parser.add_argument('--bingo', dest='bingo', type=int, default=50, help='amount of points for a bingo (a bingo is using `racksize` amount of tiles in a turn)')
 parser.add_argument('--log', dest='log', action='store_true', default=False, help='enable logging of the SAT solver for feedback on progress on stdin')
 parser.add_argument('--wordlist', dest='wordlist', default=None, help='will load data/words/<language> by default, but this override that behaviour')
-parser.add_argument('--cores', dest='cores', type=int, default=4, help='cores used in solving procedure, beyond 8 is not useful, even 4 works fine really')
-parser.add_argument('--output', dest='output', default='max_turn_score_9.log', help='where to dump results')
+parser.add_argument('--cores', dest='cores', type=int, default=16, help='cores used in solving procedure, 16 is recommended to get lb_tree_search')
+parser.add_argument('--output', dest='output', default='', help='where to dump results')
 
 args = parser.parse_args()
+if args.output == '':
+	args.output = f'max_turn_score_{args.board}_{args.language}.log'
 
 rules = construct_rules(args.language, args.board, args.wordlist, args.racksize, args.bingo)
 
@@ -66,7 +68,8 @@ def create_horizontal_word_solver():
 			model.add(a.letter[c] == cells2[p].letter[c]).only_enforce_if(a.active)
 
 	# maximize score of turn
-	score,_ = estimate_score(model, cells2, rules.word_multiplier, rules.letter_multiplier, multiplier_active, rules.scores, {(0,0,1)}, bingo=False)
+	slots = create_word_mapping(model, cells2, None, alphabet_size=len(rules.abc))
+	score = estimate_score(model, slots, rules.word_multiplier, rules.letter_multiplier, multiplier_active, rules.scores, {(0,0,1)}, bingo=False)
 
 	# you get bingo when you place 'rack' additional tiles
 	is_bingo = model.new_bool_var('is_bingo')
@@ -79,9 +82,13 @@ def create_horizontal_word_solver():
 	return model, cells, cells2
 
 def make_vertical_word_solver(main_word, scoring_positions):
-	# encode the state of the board including the vertical words
-	# ----- 
-	# we can place vertical (prefixable) words for extra points at all newly placed tiles their positions
+	'''
+	encode the state of the board including the vertical words
+	we can place vertical (prefixable) words for extra points at all newly placed tiles their positions
+
+	this problem can only be solved to optimality by lb_tree_search, if lb_tree_search is not active
+	most of the solving will be done by core, which will run out of memory before finishing
+	'''
 	model = cp_model.CpModel()
 	model.prefix = 'ver'
 	prefixable = {w for w in rules.words if w[1:] in rules.words or len(w) <= 1}|{tuple()}
@@ -113,7 +120,8 @@ def make_vertical_word_solver(main_word, scoring_positions):
 	_wm[0,:] = rules.word_multiplier[0,:]
 	_lm[0,:] = rules.letter_multiplier[0,:]
 
-	score_verticals,_ = estimate_score(model, cells3, _wm, _lm, {}, rules.scores, {(i,0,0) for i in range(rules.W)}, bingo=False)
+	slots = create_word_mapping(model, cells3, None, alphabet_size=len(rules.abc))
+	score_verticals = estimate_score(model, slots, _wm, _lm, {}, rules.scores, {(i,0,0) for i in range(rules.W)}, bingo=False)
 	model.maximize(score_verticals)
 	return model, cells3
 
@@ -159,27 +167,17 @@ for solver in do_solve(model, log=args.log, cores = args.cores):
 			print(f"│{' '.join([x if x else ' ' for x in row])}│", file=print_file, flush=True)
 		print(f"└{'─'*(rules.W*2-1)}┘", file=print_file, flush=True)
 
-		# now we create a new model that just checks whether you can create a connected whole
-		board = [[-1]*rules.W for i in range(rules.H)]
-		for (x,y), cell in board_cells.items():
-			active_letter = [c for c,v in cell.letter.items() if (b if isinstance(v, bool) else vert_solver.Value(v))]
-			if (x,0) in scoring_positions:
-				board[y][x] = (active_letter[0] if active_letter else -1,)
-		
-		# put -2 (must be empty) at all the top row post-first move cells
-		for (x,y) in pre_turn_cells:
-			board[y][x] = (-2 if setup[x] == ' ' else rules.alphabet.to_tup(setup)[x],)
+		# copy all letters that contribute to points for the connectivity solver
+		board = [[T_NONE if turn_str[x].isupper() else rules.alphabet.cba[board_str[0][x]] for x in range(rules.W)]] + [[T_ANY]*rules.W for i in range(rules.H-1)]
+		for y,row in list(enumerate(board_str))[1:]:
+			for x,c in enumerate(row):
+				spaces = list(zip(*board_str))[x][:y+1].count(0)
+				board[y][x] = rules.alphabet.cba[c] if turn_str[x].isupper() and spaces == 0 else (T_NONE if (board_str[y][x] == 0 and spaces == 1) else T_ANY)
 
-		# put -2 (must be empty) below all the prefixable words
-		for (x,y) in board_cells:
-			if y > 1 and board[0][x] == -2 and board[y-1][x] >= 0 and board[y][x] == -1:
-				board[y][x] = -2
-				for y2 in range(y+1, rules.H):
-					board[y][x] = -1
 
-		#print(np.array(board), file=print_file, flush=True)
-
-		connect_model, connect_cells = make_connectivity_solver(rules, board)			
+		print(np.array(board), file=print_file, flush=True)
+		board = [[[c] for c in row] for row in board]
+		connect_model, connect_cells = make_connectivity_solver(rules, board)
 		found_solution = False
 		print('Solving connectivity...')
 		if connect_model:

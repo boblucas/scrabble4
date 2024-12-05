@@ -8,37 +8,30 @@ from ortools.sat.python import cp_model
 from scrabble import *
 from dawg import *
 
-Cell = namedtuple('Cell', ['active', 'letter', 'x', 'y', 'blank'])
+Cell = namedtuple('Cell', ['active', 'letter', 'x', 'y', 'blank', 'letter_int'])
+Slot = namedtuple('Slot', ['active', 'x', 'y', 'h', 'n', 'cells', 'word'])
 
 def create_board(model, rows_words:list[np.ndarray], columns_words:list[np.ndarray], offset = (0,0), alphabet_size = 26, n_gram_rows:bool = False):
 	'''
 	Creates a grid of |columns_words.shape[1]| x |rows_words.shape[1]| that 
 	are constrained such that each row and column contains only valid words as 
-	per rows_words and columns_words. 
+	per rows_words and columns_words and that the rows and columns intersect correctly
+	you can contrain on the letters both in a boolean array, and as an integer.
 
 	rows_words is a list with an item for each row, word_count x columns_words.shape[-1]
 	columns_words is simply the same idea but transposed.
+	items within are allowed to be None, which will result in no word constraints being applied
 	'''
 
 	W,H = len(columns_words), len(rows_words)
-
 	lines = []
 	for h in [1,0]:
 		for d in range([W,H][h]):
 			words = [columns_words, rows_words][h][d]
-			#t = time.time()
-			print(f'Creating automaton for {d}-{"hor" if h else 'ver'}...', end='', flush=True)
-			if h == 1 and n_gram_rows:
-				automaton = create_scrabble_automaton_ngrams(words, 4)
-			else:
-				automaton = create_scrabble_automaton(words)
-			#print(f'took {int(time.time()-t)}s')
-
 			lines.append([model.new_int_var(0, alphabet_size+1, f'{model.prefix}_{d}_{h}_letter_{i}') for i in range([H,W][h])])
-			#t = time.time()
-			#print(f'Adding automaton for {d}-{"hor" if h else 'ver'}...', end='', flush=True)
-			model.add_automaton(lines[-1], *automaton[:3])
-			#print(f'took {int(time.time()-t)}s')
+			if words is not None:
+				automaton = create_scrabble_automaton(words)
+				model.add_automaton(lines[-1], *automaton[:3])
 
 	rows, columns = lines[:H], lines[H:]
 
@@ -61,9 +54,62 @@ def create_board(model, rows_words:list[np.ndarray], columns_words:list[np.ndarr
 			for c,letter_active in letter.items():
 				model.add(v == c).only_enforce_if(letter_active)
 
-			cells[(j+offset[0],i+offset[1])] = Cell(active, letter, j+offset[0], i+offset[1], model.new_bool_var(f'{model.prefix}_{i+offset[0]}_{j+offset[1]}_blank'))
+			cells[(j+offset[0],i+offset[1])] = Cell(active, letter, j+offset[0], i+offset[1], model.new_bool_var(f'{model.prefix}_{i+offset[0]}_{j+offset[1]}_blank'), v)
 
 	return cells
+
+def create_word_mapping(model, cells:dict[tuple[int,int], Cell], words:dict[tuple[int,int,bool,int], np.ndarray], alphabet_size:int) -> dict[tuple[int,int,bool,int], Slot]:
+	'''
+	indexes all possible word locations (x,y,h,n) to a variable that is true
+	when a word is at that location
+
+	specific coordinates can be limited to a specific set of words note that if the <none> word (all -1) 
+	is provided then extra variables must be created.
+
+	if a full dictionary is provided for a row or column than the constraints can be ommitted from the board construction
+	'''
+	W,H = max(x for x,y in cells.keys())+1, max(y for x,y in cells.keys())+1
+	N = max(W,H)
+
+	print('Creating word bindings')
+	# there are "only" 2730 word positions on a 15² board
+	# any can be active, or not. Easy to test by looking at cell activity
+	pos = [(x,y,h,n) for x,y,h,n in product(range(W), range(H), [0,1], range(2,N+1)) if x*h + y*(n-h) + n <= W*h+H*(1-h) and (x,y) in cells]
+	pos_active = {p: model.new_bool_var(f'{model.prefix}_{p}_active') for p in pos}
+	
+	slots = {}
+	for j,((x,y,h,n),v) in enumerate(pos_active.items()):
+		if j%50 == 0:
+			print(f'{j}/{len(pos_active)}')
+		w_cells = [cells[(x+i*h, y+i*(1-h))] for i in range(0, n)]
+		lb = (~cells[(x-1,y)].active if x > 0 and h else h)
+		rb = (~cells[(x+n,y)].active if x+n < W and h else h)
+		tb = (~cells[(x,y-1)].active if y > 0 and not h else 1-h)
+		bb = (~cells[(x,y+n)].active if y+n < H and not h else 1-h)
+		model.add(sum(c.active for c in w_cells) + lb + rb + tb + bb == n+2).only_enforce_if(v)
+		model.add(sum(c.active for c in w_cells) + lb + rb + tb + bb  < n+2).only_enforce_if(~v)
+
+		word = [cell.letter_int for cell in w_cells]
+		if words is not None and (x,y,h,n) in words:
+			# if a word must be placed we can operate directly on the board state
+			# otherwise we need an internal representation of the word that is conditionally channeled to the board state
+			_words = words[(x,y,h,n)]
+			if any((_words==[-1]*n).all(1)):
+				word = [model.new_int_var(0, alphabet_size+1, f'{model.prefix}_slot_{x}_{y}_{h}_{n}_letter_{i}') for i in range(n)]
+				for cell, c in zip(w_cells, word):
+					model.add(cell.letter_int == c).only_enforce_if(v)
+			else:
+				model.add(v == 1)
+
+			_words = _words[_words.min(-1)>=0,:]
+			if _words.shape[0] <= 1200:
+				model.add_allowed_assignments(word, _words)
+			else:
+				model.add_automaton(word, *create_scrabble_automaton(_words)[:3])
+
+		slots[(x,y,h,n)] = Slot(v, x,y,h,n, w_cells, word)
+
+	return slots
 
 def single_component(model, cells:dict[tuple[int,int], Cell], start:tuple[int, int]):
 	'''
@@ -110,7 +156,7 @@ def limit_letter_count(model, cells:dict[tuple[int,int], Cell], letter_count:dic
 			lettercount += v
 		model.add(lettercount <= limit)
 
-def estimate_score(model, cells:dict[tuple[int,int], Cell], word_multiplier, letter_multiplier, multiplier_active, scores, scoring_positions:set[tuple[int,int,bool,int]]=[], bingo=False):
+def estimate_score(model, slots:dict[tuple[int, int, bool, int], Slot], word_multiplier, letter_multiplier, multiplier_active, scores, scoring_positions:set[tuple[int,int,bool,int]]=[], bingo=False):
 	'''
 	Will do total score estimation of a board with many options
 	for single turns this scoring is (when well configured) perfectly calculated
@@ -120,25 +166,8 @@ def estimate_score(model, cells:dict[tuple[int,int], Cell], word_multiplier, let
 	word_multiplier and letter_multiplier contain tuples (multiplier, active)
 	active is allowed to be a constant
 	'''
-	W,H = max(x for x,y in cells.keys())+1, max(y for x,y in cells.keys())+1
-	N = max(W,H)
+	W,H = max(x+(n-1)*h for x,y,h,n in slots.keys())+1, max(y+(n-1)*(1-h) for x,y,h,n in slots.keys())+1
 	score = 0
-	print('Creating word bindings')
-	# there are "only" 2730 word positions on a N^2 board
-	# any can be active, or not. Easy to test by looking at cell activity
-	pos = [(x,y,h,n) for x,y,h,n in product(range(W), range(H), [0,1], range(2,N+1)) if x*h + y*(1-h) + n <= W*h+H*(1-h) and (x,y) in cells]
-	pos_active = {p: model.new_bool_var(f'{model.prefix}_{p}_active') for p in pos}
-	
-	for j,((x,y,h,n),v) in enumerate(pos_active.items()):
-		if j%50 == 0:
-			print(f'{j}/{len(pos_active)}')
-		w_cells = [cells[(x+i*h, y+i*(1-h))] for i in range(0, n)]
-		lb = (~cells[(x-1,y)].active if x > 0 and h else h)
-		rb = (~cells[(x+n,y)].active if x+n < W and h else h)
-		tb = (~cells[(x,y-1)].active if y > 0 and not h else 1-h)
-		bb = (~cells[(x,y+n)].active if y+n < H and not h else 1-h)
-		model.add(sum(c.active for c in w_cells) + lb + rb + tb + bb == n+2).only_enforce_if(v)
-		model.add(sum(c.active for c in w_cells) + lb + rb + tb + bb  < n+2).only_enforce_if(~v)
 
 	# to find out the word-multiplication factor of each word position
 	# we need to assign the multipliers. We start by assigning each multiplier
@@ -147,12 +176,13 @@ def estimate_score(model, cells:dict[tuple[int,int], Cell], word_multiplier, let
 
 	print('Binding words to score')
 	# and we can sum score as a sum over those active word locations
-	for j, ((x,y,h,n),v) in enumerate(pos_active.items()):
+	for j, ((x,y,h,n),slot) in enumerate(slots.items()):
+		v = slot.active
 		if scoring_positions and (x,y,h) not in scoring_positions:
 			continue
 
 		if j%50 == 0:
-			print(f'{j}/{len(pos_active)}')
+			print(f'{j}/{len(slots)}')
 
 		if n >= 8 and bingo:
 			score += v*50
@@ -185,7 +215,7 @@ def estimate_score(model, cells:dict[tuple[int,int], Cell], word_multiplier, let
 
 		# and we can filter subsets
 		for m, multi_active in multi_vars.items():
-			for cell in [cells[p] for p in positions]:
+			for cell in slot.cells:
 				binding = {c:model.new_bool_var(f'{model.prefix}_p{x}_{y}_{h}_{n}_l{c}_m{m}') for c in range(1,27)}
 				for c,letter_active in binding.items():
 					assert c > 0, "<zero> is reversed for <empty>"
@@ -210,7 +240,7 @@ def estimate_score(model, cells:dict[tuple[int,int], Cell], word_multiplier, let
 						else:
 							score += letter_active * (letter_multiplier[cell.y][cell.x]-1)*base_score
 
-	return score, pos_active
+	return score
 
 def read_board_state(solver, cells, alphabet):
 	W, H = max([x for x,y in cells])+1, max([y for x,y in cells])+1
