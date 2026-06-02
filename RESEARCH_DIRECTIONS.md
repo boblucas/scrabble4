@@ -117,7 +117,13 @@ to propose strong plays as warm-start lower bounds. High-risk, potentially high-
 
 ## Recommended portfolio (what to actually try, ordered)
 1. **POSINDEP construction** — adopt now; cheap, unblocks "can't build at width 15", zero model risk. *(verified)*
-2. **Revuz minimal row DFA** — the verified 6–8× model shrink, linear-time (<1s for full English). Implement in `dawg.py`. *(verified win, verified cheap)*
+2. **Revuz minimal row DFA** — the verified 6–8× model shrink, linear-time (<1s for full English).
+   **DONE**: `dawg.position_independent_row_automaton`, wired into `solve.create_board` +
+   `max_turn_score.py` stage 2. At the real call site: 20–66× faster build, ~4× smaller per-line
+   model, builds at board 15 where the old path never finishes (exp 06 regression PASS, exp 07
+   benchmark). Next: also route the stage-2 column automatons and the connectivity-solver rows
+   (currently position-specific via the old path) — impose fixed letters as cell constraints so
+   they too can use the minimal full-dict DFA.
 3. **Slot-and-word + column-generation UPPER BOUND** — directly serves goal B and yields bounds; sidesteps the per-line wall.
 4. **Connectivity bake-off** — MiniZinc `connected`/`tree` global OR Gurobi lazy cuts vs the CP-SAT depth encoding (Axis B/D).
 5. **Domain-specific B&B for the single move** (Axis E) — likely the fastest path to the bigger-dictionary single move.
