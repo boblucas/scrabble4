@@ -30,7 +30,10 @@ def create_board(model, rows_words:list[np.ndarray], columns_words:list[np.ndarr
 			words = [columns_words, rows_words][h][d]
 			lines.append([model.new_int_var(0, alphabet_size+1, f'{model.prefix}_{d}_{h}_letter_{i}') for i in range([H,W][h])])
 			if words is not None:
-				automaton = create_scrabble_automaton(words)
+				# `words` may already be a built automaton (start, finals, edges) -- e.g. the
+				# linear-time minimal row DFA from position_independent_row_automaton -- in which
+				# case use it directly; otherwise it is a 2D word matrix to compile.
+				automaton = words if isinstance(words, tuple) else create_scrabble_automaton(words)
 				model.add_automaton(lines[-1], *automaton[:3])
 
 	rows, columns = lines[:H], lines[H:]

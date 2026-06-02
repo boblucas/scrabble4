@@ -21,6 +21,8 @@ remembered as "not working." OR-Tools version: **9.12.4544**. Run with `./.venv/
 | `03_dawg_based_minimal.py` | Can we get the minimal model CHEAPLY from `dawg.py`'s DAWG? | build from DAWG, measure size + CP-SAT model; toy exact + all-strings product equiv |
 | `04_minimization_is_correct.py` | Is the 6–8× reduction REAL or a lossy-minimization artifact? | exact deterministic-DFA equivalence (product+BFS) base vs minimized, at scale |
 | `05_linear_time_minimal.py` | Can we get the reduction CHEAPLY (no GPU/24h)? | Revuz linear-time minimal DAFSA → row DFA; size, build time, equivalence, CP-SAT model |
+| `06_regression_dawg_integration.py` | Does the INTEGRATED `dawg.position_independent_row_automaton` match the old production path? | exact OLD-vs-NEW enumeration (toy) + all-strings equivalence (english≤4/5/7). Exit 0 = PASS. |
+| `07_benchmark_callsite.py` | Win at the real stage-2 call site on bigger dictionaries? | OLD vs NEW build time + CP-SAT model size; run per-config under `timeout` |
 
 Results artifact: `experiments/results/02_model_expansion.txt`.
 
@@ -65,6 +67,20 @@ Results artifact: `experiments/results/02_model_expansion.txt`.
    15k-word dict. A full 15×15 board has 30 such lines (+ intersections + scoring + connectivity),
    and per-line expansion grows with dictionary size. The monolithic CP-SAT model is therefore
    fundamentally large for big dictionaries regardless of automaton cleverness.
+
+## Integration result (implemented)
+`dawg.position_independent_row_automaton(words)` now builds the minimal row DFA via Revuz;
+`solve.create_board` accepts a pre-built `(start, finals, edges)` tuple; `max_turn_score.py`'s
+stage-2 `general_row_automaton` uses it. Regression (exp 06) passes (exact toy + all-strings
+english≤7). Benchmark at the real call site (exp 07, `results/07_benchmark.txt`):
+
+| dict / board | OLD build / model | NEW build / model | gain |
+|---|---|---|---|
+| english, board 9 (120k words)  | 36.5s / 478,577 bools | **0.55s / 124,446 bools** | 66× build, 3.8× model |
+| english, board 15 (196k words) | **DNF (>150s)**       | **1.47s / 402,776 bools** | builds vs never |
+| dutch, board 9 (258k words)    | 41.2s / 843,767 bools | **1.98s / 205,926 bools** | 21× build, 4.1× model |
+
+(Model size = `automaton_expansion` bools for ONE row/column line; a board has ~2·W such lines.)
 
 ## Implication
 - **Adopt the Revuz minimal row DFA** (exp 05): linear-time, <1s for full English, verified

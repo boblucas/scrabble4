@@ -122,6 +122,117 @@ def create_scrabble_automaton(words:np.ndarray):
     return (0, terminal, edges) #, {v:k.val for (k,_),v in names.items()}
 
 
+# -----------------------------------------------------------------------------
+# Position-INDEPENDENT minimal row automaton (linear-time, via Revuz)
+#
+# The automaton built by create_scrabble_automaton positionally-encodes every
+# letter, so the same word at column i vs j shares no states. CP-SAT then unrolls
+# that (already-large) automaton across the row, giving a model that is identical
+# in size whether or not the input is minimized -- CP-SAT re-canonicalizes it.
+#
+# A *minimal* DFA for the row language however expands to a ~6-8x smaller CP-SAT
+# model (verified in experiments/, language-equivalence proven). The minimal row
+# DFA is essentially a minimal DAFSA of the dictionary plus a "gap" state, and it
+# is built in LINEAR time with Revuz's algorithm (bucket trie nodes by height,
+# merge equal signatures bottom-up). Full 196k-word English -> 0.86s in pure
+# Python. Use this for the full-dictionary, all-positions case (a uniform T_ANY
+# row); keep create_scrabble_automaton for position-specific / filtered word sets.
+# -----------------------------------------------------------------------------
+
+def _build_trie(words):
+    ''' index-based trie of the word tuples. node 0 is the root. '''
+    children = [dict()]
+    terminal = [False]
+    for w in words:
+        n = 0
+        for c in w:
+            nxt = children[n].get(c)
+            if nxt is None:
+                nxt = len(children)
+                children.append(dict()); terminal.append(False)
+                children[n][c] = nxt
+            n = nxt
+        if w:
+            terminal[n] = True
+    return children, terminal
+
+def _revuz_minimal(children, terminal):
+    ''' Revuz linear-time minimisation of the acyclic trie. Returns rep[node] =
+    canonical node id (suffix-equivalent nodes map to one representative). '''
+    nn = len(children)
+    height = [0]*nn
+    visited = bytearray(nn)
+    stack = [(0, False)]
+    while stack:
+        node, processed = stack.pop()
+        if processed:
+            h = 0
+            for ch in children[node].values():
+                if 1 + height[ch] > h: h = 1 + height[ch]
+            height[node] = h
+            continue
+        if visited[node]: continue
+        visited[node] = 1
+        stack.append((node, True))
+        for ch in children[node].values():
+            if not visited[ch]:
+                stack.append((ch, False))
+    rep = list(range(nn))
+    by_height = defaultdict(list)
+    for node in range(nn):
+        by_height[height[node]].append(node)
+    register = {}
+    for h in sorted(by_height):
+        for node in by_height[h]:
+            sig = (terminal[node], tuple(sorted((c, rep[ch]) for c, ch in children[node].items())))
+            seen = register.get(sig)
+            if seen is None:
+                register[sig] = node
+            else:
+                rep[node] = seen
+    return rep
+
+__ROW_AUTOMATON_CACHE = {}
+def position_independent_row_automaton(words):
+    '''
+    Minimal DFA (start, finals, edges) for a valid scrabble row/column over the
+    given dictionary: any sequence of dictionary words separated by >=1 blank (0),
+    leading/trailing blanks allowed, empty row allowed. Position-independent and
+    cyclic; CP-SAT unrolls it across the line's cells. Equivalent (over a row of a
+    given width) to create_scrabble_automaton(automaton_words_from_list(words, n))
+    with a uniform T_ANY row, but ~6-8x smaller after CP-SAT expansion.
+
+    Cached on the identity of `words` (typically the long-lived rules.words list).
+    '''
+    key = (id(words), len(words))
+    if key in __ROW_AUTOMATON_CACHE:
+        return __ROW_AUTOMATON_CACHE[key]
+
+    children, terminal = _build_trie(w for w in words if w)
+    rep = _revuz_minimal(children, terminal)
+
+    # state ids: GAP = 0 (dedicated), each canonical node -> 1.. (no collision with GAP)
+    GAP = 0
+    canon = sorted({rep[n] for n in range(len(children))})
+    sid = {n: i for i, n in enumerate(canon, start=1)}
+    edges = {(GAP, 0, GAP)}            # blank self-loop in the gap
+    finals = {GAP}                     # empty / all-blank row is valid
+    # leaving the gap into the first letter of a word (root's children)
+    for c, ch in children[0].items():
+        edges.add((GAP, int(c), sid[rep[ch]]))
+    # within / between words
+    for n in canon:
+        s = sid[n]
+        for c, ch in children[n].items():
+            edges.add((s, int(c), sid[rep[ch]]))
+        if terminal[n]:
+            finals.add(s)
+            edges.add((s, 0, GAP))     # word finished -> back to gap
+    automaton = (0, finals, edges)
+    __ROW_AUTOMATON_CACHE[key] = automaton
+    return automaton
+
+
 def compress_automaton(automaton):
     from pythomata import SimpleDFA
     transition_function = defaultdict(dict)

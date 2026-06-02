@@ -1,0 +1,28 @@
+=== new (english 9) ===
+NEW  | english board 9 | 120085 words | W=9 K=26
+     build=   0.55s  states=    31907  edges=    96836
+     CP-SAT model: presolved_bools=115635 constraints=312088 (automaton_expansion_bools=124446, presolve=28.82s)
+
+=== old (english 9) ===
+OLD  | english board 9 | 120085 words | W=9 K=26
+     build=  36.48s  states=   585049  edges=   784454
+     CP-SAT model: presolved_bools=478754 constraints=523753 (automaton_expansion_bools=478577, presolve=31.45s)
+
+=== new (english 15) ===
+NEW  | english board 15 | 196627 words | W=15 K=26
+     build=   1.47s  states=    59711  edges=   149065
+     CP-SAT model: presolved_bools=403196 constraints=2122846 (automaton_expansion_bools=402776, presolve=122.6s)
+
+=== old (english 15) ===
+   [exit 124 — timed out / OOM / error]
+
+=== new (dutch 9) ===
+NEW  | dutch board 9 | 257893 words | W=9 K=26
+     build=   1.98s  states=    58476  edges=   190674
+     CP-SAT model: presolved_bools=206178 constraints=892659 (automaton_expansion_bools=205926, presolve=43.89s)
+
+=== old (dutch 9) ===
+OLD  | dutch board 9 | 257893 words | W=9 K=26
+     build=  41.15s  states=  1049966  edges=  1351104
+     CP-SAT model: presolved_bools=843991 constraints=569927 (automaton_expansion_bools=843767, presolve=32.9s)
+
