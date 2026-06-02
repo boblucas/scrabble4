@@ -118,8 +118,58 @@ def create_scrabble_automaton(words:np.ndarray):
         for a,b in product(empties[depth].values(), starts[depth+1].values()):
             edges.add((get_node(a), b.val[0], get_node(b)))
     
-    __AUTOMATON_CACHE[key] = (0, terminal, edges)
-    return (0, terminal, edges) #, {v:k.val for (k,_),v in names.items()}
+    automaton = (0, terminal, edges)
+    # The stitched automaton is acyclic but NOT minimal, and CP-SAT does not fully
+    # minimise it during presolve (see experiments/). Minimising here is semantics-
+    # preserving (same language -> all heuristics intact) and shrinks the CP-SAT model
+    # ~6x for the position-specific column / connectivity automata. Linear-time (Revuz).
+    try:
+        automaton = minimize_acyclic_automaton(automaton)
+    except ValueError:
+        pass  # not acyclic -> keep the unminimised automaton (correctness over size)
+    __AUTOMATON_CACHE[key] = automaton
+    return automaton
+
+
+def minimize_acyclic_automaton(automaton):
+    '''
+    Revuz linear-time minimisation of an acyclic deterministic automaton given as
+    (start, finals, edges). Merges states with identical (is_final, outgoing) signatures
+    bottom-up by height. Raises ValueError if the automaton contains a cycle.
+    '''
+    start, finals, edges = automaton
+    start = int(start)
+    finals = set(int(f) for f in finals)
+    children = defaultdict(dict)
+    states = {start}
+    for a, c, b in edges:
+        a, c, b = int(a), int(c), int(b)
+        children[a][c] = b; states.add(a); states.add(b)
+    height = {}
+    onstack = set()
+    def _h(s):
+        if s in height: return height[s]
+        if s in onstack: raise ValueError("automaton is not acyclic")
+        onstack.add(s)
+        hh = 0
+        for ch in children[s].values():
+            d = 1 + _h(ch)
+            if d > hh: hh = d
+        onstack.discard(s)
+        height[s] = hh
+        return hh
+    for s in states: _h(s)
+    rep = {}; register = {}
+    for node in sorted(states, key=lambda s: height[s]):
+        sig = (node in finals, tuple(sorted((c, rep[children[node][c]]) for c in children[node])))
+        r = register.get(sig)
+        if r is None:
+            register[sig] = node; rep[node] = node
+        else:
+            rep[node] = r
+    new_edges = {(rep[int(a)], int(c), rep[int(b)]) for a, c, b in edges}
+    new_finals = {rep[f] for f in finals}
+    return (rep[start], new_finals, new_edges)
 
 
 # -----------------------------------------------------------------------------
