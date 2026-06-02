@@ -1,0 +1,15 @@
+Experiment 02: CP-SAT model size after add_automaton unrolling (OR-Tools 9.12)
+
+========== dict=english<=5 (14941 words) ==========
+--- width N=7 ---
+  CURRENT  : build=   4.9s states=   69237 edges=  105960  =>  presolved_bools=71217 constraints=39190 terms=497591 (automaton_expansion_bools=71131, presolve=9.58s)
+  POSINDEP : build=   0.0s states=   20349 edges=   35290  =>  presolved_bools=71154 constraints=39132 terms=497000 (automaton_expansion_bools=71131, presolve=9.49s)
+  MINIMIZED: build=  51.5s states=    2653 edges=   12525  =>  presolved_bools=10984 constraints=41606 terms=179731 (automaton_expansion_bools=16975, presolve=3.45s)
+--- width N=11 ---
+  CURRENT  : build=  11.7s states=  150633 edges=  247120  =>  presolved_bools=154578 constraints=86378 terms=1134896 (automaton_expansion_bools=154379, presolve=10.25s)
+  POSINDEP : build=   0.0s states=   20349 edges=   35290  =>  presolved_bools=154585 constraints=158557 terms=1206920 (automaton_expansion_bools=154379, presolve=10.05s)
+  MINIMIZED: build=  39.2s states=    2653 edges=   12525  =>  presolved_bools=24745 constraints=95938 terms=416268 (automaton_expansion_bools=27491, presolve=4.73s)
+--- width N=15 ---
+  CURRENT  : build=  25.5s states=  232029 edges=  388280  =>  presolved_bools=237935 constraints=133568 terms=1772159 (automaton_expansion_bools=237627, presolve=10.23s)
+  POSINDEP : build=   0.0s states=   20349 edges=   35290  =>  presolved_bools=237909 constraints=133516 terms=1771755 (automaton_expansion_bools=237627, presolve=10.3s)
+  MINIMIZED: build=  37.1s states=    2653 edges=   12525  =>  presolved_bools=36367 constraints=148407 terms=638472 (automaton_expansion_bools=38007, presolve=6.09s)
