@@ -20,6 +20,7 @@ remembered as "not working." OR-Tools version: **9.12.4544**. Run with `./.venv/
 | `02_model_expansion.py` | How big is the CP-SAT model AFTER `add_automaton` unrolls it? | parse presolve log (`stop_after_presolve`), report `automaton_expansion` bools |
 | `03_dawg_based_minimal.py` | Can we get the minimal model CHEAPLY from `dawg.py`'s DAWG? | build from DAWG, measure size + CP-SAT model; toy exact + all-strings product equiv |
 | `04_minimization_is_correct.py` | Is the 6–8× reduction REAL or a lossy-minimization artifact? | exact deterministic-DFA equivalence (product+BFS) base vs minimized, at scale |
+| `05_linear_time_minimal.py` | Can we get the reduction CHEAPLY (no GPU/24h)? | Revuz linear-time minimal DAFSA → row DFA; size, build time, equivalence, CP-SAT model |
 
 Results artifact: `experiments/results/02_model_expansion.txt`.
 
@@ -45,12 +46,20 @@ Results artifact: `experiments/results/02_model_expansion.txt`.
    product+BFS (`EQUIVALENT` for toy, english≤4, english≤5). CP-SAT's presolve does NOT
    reach this itself — pre-minimization is genuinely additive.
 
-5. **The catch = the real reason minimized DAWGs "didn't work": minimization SPEED.**
-   Naive Moore minimization is ~O(n²): 3.7s for english≤4 (6.7k states), **40s** for english≤5
-   (20k states). It would never scale to 197k / 1.1M-word dictionaries. Building the row DFA
-   from `dawg.py`'s `DAWG` does NOT help (exp 03: same 20,349 states, same 237k model) because
-   that DAWG isn't truly minimal — its `FSANode.__eq__` keys children by `id`, not by minimized
-   representative, so suffix-merging mostly fails.
+5. **The "minimization is too slow" problem was a NAIVE-ALGORITHM artifact — it's actually
+   linear-time (exp 05).** Naive Moore is ~O(n²): 3.7s for english≤4, **40s** for english≤5.
+   But the minimal row DFA is essentially a minimal **DAFSA**, which has a classic linear-time
+   construction (**Revuz**: bucket trie nodes by height, merge equal signatures bottom-up).
+   Measured, pure Python:
+   - english≤5: **0.04s** → 2,654 states, EQUIVALENT to baseline, **same 38,007 CP-SAT bools**
+     as the 40s Moore run (~1000× faster, identical result).
+   - english≤7 (57k words): **0.17s** → 13,221 states, EQUIVALENT.
+   - **FULL English (196,627 words): 0.86s** → 59,711 states.
+
+   So the 6–8× model reduction is real, correct, AND cheap. No GPU / fast-language rewrite / 24h
+   needed. (Building the row DFA from `dawg.py`'s `DAWG` does NOT work — exp 03: same 20,349
+   states, same 237k model — because that DAWG isn't truly minimal: its `FSANode.__eq__` keys
+   children by raw `id`, not by minimized representative, so suffix-merging mostly fails.)
 
 6. **The deeper wall:** even the best case is ~38k booleans for ONE width-15 line over a small
    15k-word dict. A full 15×15 board has 30 such lines (+ intersections + scoring + connectivity),
@@ -58,9 +67,10 @@ Results artifact: `experiments/results/02_model_expansion.txt`.
    fundamentally large for big dictionaries regardless of automaton cleverness.
 
 ## Implication
-- POSINDEP construction → adopt (cheap, unblocks build, zero risk).
-- Fast minimal-DFA (proper **Hopcroft O(n log n)** or **Brzozowski**, not naive Moore) → chase
-  the verified 6–8× model reduction; the only open question is whether minimization can be made
-  cheap enough on real dictionaries (one-time, cacheable).
-- For big dictionaries / full boards, the per-line wall motivates changing the *primitive*,
-  *formulation*, or *solver* — see `../RESEARCH_DIRECTIONS.md`.
+- **Adopt the Revuz minimal row DFA** (exp 05): linear-time, <1s for full English, verified
+  correct, gives the 6–8× model reduction. This is the high-value, low-cost win. Replace the
+  positional-encoding builder in `dawg.py:create_scrabble_automaton`; keep the `(start, finals,
+  edges)` return so callers are unchanged. Cache per dictionary.
+- For big dictionaries / full boards, the per-line wall still motivates changing the *primitive*,
+  *formulation*, or *solver* — minimization is necessary, not sufficient — see
+  `../RESEARCH_DIRECTIONS.md`.

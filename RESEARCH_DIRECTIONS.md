@@ -21,12 +21,14 @@ current design. The honest answer to "can we extend CP-SAT with a subsolver/prim
 ---
 
 ## Axis A — Keep CP-SAT, attack the dictionary primitive
-**A1. Fast minimal-DFA (highest-value verified lever).** The 6–8× model shrink is real and
-correct; the blocker is minimization speed. Implement **Hopcroft O(n log n)** or **Brzozowski**
-(reverse·determinize·reverse·determinize) instead of naive Moore, and/or fix `dawg.py`'s `DAWG`
-to be truly minimal (its `FSANode.__eq__` keys children by `id`, defeating suffix-merging). Cost
-is one-time + cacheable. *Open question: does it stay cheap at 197k/1.1M words?* — the next thing
-to measure.
+**A1. Minimal-DFA via linear-time Revuz (highest-value, VERIFIED cheap).** The 6–8× model shrink
+is real, correct, AND cheap: exp 05 builds the minimal row DFA for the **full 196k-word English
+dictionary in 0.86s** in pure Python (Revuz: bucket trie nodes by height, merge equal signatures
+bottom-up) — ~1000× faster than naive Moore for the identical result. No GPU / fast-language
+rewrite / 24h needed. Action: replace `dawg.py:create_scrabble_automaton`'s positional-encoding
+builder with the Revuz construction (keep the `(start, finals, edges)` return), cache per
+dictionary. `dawg.py`'s existing `DAWG` is NOT minimal (its `FSANode.__eq__` keys children by raw
+`id`) — either fix it or drop it for the Revuz path.
 
 **A2. MDD-based dictionary constraint.** The modern primitive for "this sequence ∈ a huge set"
 is a **Multi-valued Decision Diagram** with MDD propagation (Hadžić/Hoda/van Hoeve). It's the
@@ -115,7 +117,7 @@ to propose strong plays as warm-start lower bounds. High-risk, potentially high-
 
 ## Recommended portfolio (what to actually try, ordered)
 1. **POSINDEP construction** — adopt now; cheap, unblocks "can't build at width 15", zero model risk. *(verified)*
-2. **Fast minimal-DFA (Hopcroft/Brzozowski)** — chase the verified 6–8× model shrink; first measure cost on real dicts. *(verified win; cost TBD)*
+2. **Revuz minimal row DFA** — the verified 6–8× model shrink, linear-time (<1s for full English). Implement in `dawg.py`. *(verified win, verified cheap)*
 3. **Slot-and-word + column-generation UPPER BOUND** — directly serves goal B and yields bounds; sidesteps the per-line wall.
 4. **Connectivity bake-off** — MiniZinc `connected`/`tree` global OR Gurobi lazy cuts vs the CP-SAT depth encoding (Axis B/D).
 5. **Domain-specific B&B for the single move** (Axis E) — likely the fastest path to the bigger-dictionary single move.
