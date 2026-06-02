@@ -1,0 +1,6 @@
+dutch words<= 11:   546724 words  ->  row-DFA build=    3.75s  states=119646  edges=348431
+dutch words<= 12:   705258 words  ->  row-DFA build=    5.03s  states=150133  edges=419188
+dutch words<= 13:   856144 words  ->  row-DFA build=    6.62s  states=178210  edges=480431
+dutch words<= 14:   991456 words  ->  row-DFA build=    8.40s  states=202605  edges=531393
+dutch words<= 15:  1108439 words  ->  row-DFA build=    9.72s  states=223091  edges=573022
+DONE

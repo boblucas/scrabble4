@@ -1,0 +1,10 @@
+read data/words/dutch -> 1108439 words in 0.08s
+words<= 11:   546724 words  ->  row-DFA build=   0.481s  states=119646  edges=348431  finals=22367
+words<= 12:   705258 words  ->  row-DFA build=   0.620s  states=150133  edges=419188  finals=26142
+words<= 13:   856144 words  ->  row-DFA build=   0.773s  states=178210  edges=480431  finals=29387
+words<= 14:   991456 words  ->  row-DFA build=   0.920s  states=202605  edges=531393  finals=31975
+words<= 15:  1108439 words  ->  row-DFA build=   1.034s  states=223091  edges=573022  finals=34092
+read data/words/english -> 196627 words in 0.02s
+words<=  5:    14941 words  ->  row-DFA build=   0.004s  states=2654  edges=12551  finals=1139
+words<=  7:    57120 words  ->  row-DFA build=   0.026s  states=13221  edges=47607  finals=4091
+words<= 15:   196627 words  ->  row-DFA build=   0.162s  states=59711  edges=149065  finals=10486
