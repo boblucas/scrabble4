@@ -271,7 +271,10 @@ def make_connectivity_solver(rules, partial, omit_bottom_rows = 3, max_vertical_
 
 print("Creating horizontal solver")
 model, pre_turn_cells, horizontal_word_cells = create_horizontal_word_solver(args.main)
-for solver in do_solve(model, log=args.log, cores = args.cores, extra_probing = args.extra_probing):
+# stage 1 (main word) is small and reaches OPTIMAL fast; its bound is closed by
+# pseudo_costs/reduced_costs, not probing_max_lp -- so no extra probing here (it would only
+# crowd out the useful workers). --extra-probing targets stage 2 (the hard vertical optimise).
+for solver in do_solve(model, log=args.log, cores = args.cores):
 	print('-'*120)
 	print(time.time())
 	model.add_bool_or([~[v for v in list(cell.letter.values()) + [~cell.active] 						if solver.Value(v)][0] for (x,y), cell in horizontal_word_cells.items()] \
