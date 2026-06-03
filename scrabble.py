@@ -56,6 +56,7 @@ class Rules:
 
 	words_str:set
 	words:list
+	words_lookup:set
 
 def construct_rules(language, board, word_file=None, hand_size=7, emptyhand_bonus=50):
 	''' Will create a rules object given a simple language and board name. '''
@@ -97,7 +98,8 @@ def construct_rules(language, board, word_file=None, hand_size=7, emptyhand_bonu
 		word_multiplier = np.array([[int(c) if c.isnumeric() else 1 for c in row] for row in b]),
 		letter_multiplier = np.array([[' _bcdef'.index(c) if c in 'bcdef' else 1 for c in row] for row in b]),
 		words_str = words,
-		words = [alphabet.to_tup(w) for w in words]
+		words = [alphabet.to_tup(w) for w in words],
+		words_lookup = set([alphabet.to_tup(w) for w in words])
 	)
 
 
@@ -141,6 +143,10 @@ def valid_positions(board, W, H):
 		(not h and y > 0 and not board[(y-1)*W+x] in ' -') or 
 		(not h and y+n < H and not board[(y+n)*W+x] in ' -') or
 		('-' in [board[(y+i*(1-h))*W+(x+i*h)] for i in range(n)] ))]
+
+def tuple_to_npcount(w, abc):
+	''' given a word return a |abc| sized array with letter counts '''
+	return np.array([w.count(i) for i in range(len(rules.abc))], dtype=np.int8)
 
 def word_to_npcount(w, abc):
 	''' given a word return a |abc| sized array with letter counts '''
