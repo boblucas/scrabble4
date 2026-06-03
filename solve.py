@@ -255,10 +255,16 @@ def read_board_state(solver, cells, alphabet):
 
 	return lines
 
-def do_solve(model, cores = 8, log = True, time_limit = 0):
+def do_solve(model, cores = 8, log = True, time_limit = 0, extra_probing = 0, linearization_level = -1):
 	'''
 	Applies solver to model and returns solved state of vars
 	you can modify the solver and iterate for more solutions
+
+	extra_probing: add N extra diversified copies of the probing_max_lp subsolver (the
+		portfolio's dedicated objective lower-bound prover). extra_subsolvers are pushed to
+		the front of the portfolio and each gets a distinct seed, so they close the bound
+		from different angles in parallel. Helps when the bottleneck is *proving* optimality.
+	linearization_level: if >=0, override the global LP strength (2 = max LP).
 	'''
 	solver = cp_model.CpSolver()
 	solver.parameters.log_search_progress = log
@@ -267,6 +273,10 @@ def do_solve(model, cores = 8, log = True, time_limit = 0):
 	solver.parameters.optimize_with_core = False
 	# more iters takes long and has no benefit in my tests
 	solver.parameters.max_presolve_iterations = 1
+	if extra_probing:
+		solver.parameters.extra_subsolvers.extend(["probing_max_lp"] * extra_probing)
+	if linearization_level >= 0:
+		solver.parameters.linearization_level = linearization_level
 	if time_limit:
 		solver.parameters.max_time_in_seconds = time_limit
 

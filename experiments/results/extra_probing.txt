@@ -1,0 +1,17 @@
+building board-9 rugbyclub merged model...
+Creating word bindings
+0/203
+50/203
+100/203
+150/203
+200/203
+Binding words to score
+0/203
+solving with cores=24, time_limit=70s each:
+
+  extra_probing=0: status=FEASIBLE wall=72.7s obj=211.0 bound=1019 probing_max_lp_in_list~=7
+      full subsolver list: [?]
+  extra_probing=4: status=FEASIBLE wall=70.7s obj=211.0 bound=519 probing_max_lp_in_list~=28
+      full subsolver list: [?]
+  extra_probing=8: status=FEASIBLE wall=72.9s obj=211.0 bound=532 probing_max_lp_in_list~=56
+      full subsolver list: [?]

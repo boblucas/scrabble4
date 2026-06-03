@@ -18,6 +18,7 @@ parser.add_argument('--cores', dest='cores', type=int, default=16, help='cores u
 parser.add_argument('--output', dest='output', default='', help='where to dump results')
 parser.add_argument('--main', dest='main', default=None, help='solve for a specific main word')
 parser.add_argument('--no-main-blanks', dest='no_main_blanks', action='store_true', default=False, help='forbid blank tiles anywhere in the main word (dedups blank-variants of the same word)')
+parser.add_argument('--extra-probing', dest='extra_probing', type=int, default=0, help='add N diversified probing_max_lp subsolvers (the objective lower-bound prover) to the portfolio')
 
 args = parser.parse_args()
 #args.output = f'max_turn_score_{args.board}_{args.language}.log'
@@ -270,7 +271,7 @@ def make_connectivity_solver(rules, partial, omit_bottom_rows = 3, max_vertical_
 
 print("Creating horizontal solver")
 model, pre_turn_cells, horizontal_word_cells = create_horizontal_word_solver(args.main)
-for solver in do_solve(model, log=args.log, cores = args.cores):
+for solver in do_solve(model, log=args.log, cores = args.cores, extra_probing = args.extra_probing):
 	print('-'*120)
 	print(time.time())
 	model.add_bool_or([~[v for v in list(cell.letter.values()) + [~cell.active] 						if solver.Value(v)][0] for (x,y), cell in horizontal_word_cells.items()] \
@@ -283,7 +284,7 @@ for solver in do_solve(model, log=args.log, cores = args.cores):
 
 	scoring_positions = [(x,y) for (x,y) in pre_turn_cells if setup[x] == ' ']
 	vertical_model, board_cells = make_vertical_word_solver(main_word, scoring_positions)
-	for vert_solver in do_solve(vertical_model, log=args.log, cores = args.cores):
+	for vert_solver in do_solve(vertical_model, log=args.log, cores = args.cores, extra_probing = args.extra_probing):
 		print(time.time())
 		board_str = read_board_state(vert_solver, board_cells, rules.alphabet)
 		print(f'Highest scoring verticals given {turn_str} give {int(vert_solver.objective_value)} points:', file=print_file, flush=True)
