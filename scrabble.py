@@ -172,15 +172,17 @@ def sufficient_tiles(text, allowed_blanks, counts):
 def valid_subwords(w, words):
 	return [(i, w[i:j]) for i in range(len(w)) for j in range(i+1, len(w)+1) if w[i:j] in words]
 
-def get_word_score(rules, w, x, y, h, placed):
+def get_word_score(rules, w, x, y, h, placed, blanks=None):
 	'''
-	Gives the score of placing a given word including multipliers applied for logging and verification
+	Gives the score of placing a given word including multipliers applied for logging and verification.
+	blanks: optional per-tile mask; a blank tile scores 0 letter points (but still triggers the
+	word multiplier when placed), matching estimate_score. Without it, blanks are over-counted.
 	'''
 	score = 0
 	wm = 1
 	for i in range(len(w)):
 		_x,_y = x+i*h, y+i*(1-h)
-		s = rules.scores[w[i]]
+		s = 0 if (blanks is not None and blanks[i]) else rules.scores[w[i]]
 		if placed[i]:
 			s *= rules.letter_multiplier[_y,_x]
 			wm *= rules.word_multiplier[_y,_x]

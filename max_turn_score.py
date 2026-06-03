@@ -331,7 +331,7 @@ for solver in do_solve(model, log=args.log, cores = args.cores, extra_probing = 
 				print(f'Expected point according to solver is {int(solver.objective_value+vert_solver.objective_value)} = {int(solver.objective_value)} for the main word + {int(vert_solver.objective_value)} for the vertical words', file=print_file, flush=True)
 				print('Recalculating usign a different method:', file=print_file, flush=True)
 				
-				expected_main_word_score, wm = get_word_score(rules, rules.alphabet.to_tup(main_word), 0, 0, 1, [setup[i] == ' ' for i in range(len(main_word))])
+				expected_main_word_score, wm = get_word_score(rules, rules.alphabet.to_tup(main_word), 0, 0, 1, [setup[i] == ' ' for i in range(len(main_word))], [bool(vert_solver.Value(board_cells[(i,0)].blank)) for i in range(len(main_word))])
 				print(f'{turn_str} {expected_main_word_score} = {expected_main_word_score//wm} x {wm}', file=print_file, flush=True)
 				total = expected_main_word_score
 				for (x,y) in scoring_positions:
@@ -343,7 +343,7 @@ for solver in do_solve(model, log=args.log, cores = args.cores, extra_probing = 
 					
 					if len(w) > 1:
 						w = ''.join(w)
-						w_score, wm = get_word_score(rules, rules.alphabet.to_tup(w), x, y, 0, [i==0 for i in range(len(w))])
+						w_score, wm = get_word_score(rules, rules.alphabet.to_tup(w), x, y, 0, [i==0 for i in range(len(w))], [bool(vert_solver.Value(board_cells[(x, y+i)].blank)) for i in range(len(w))])
 						print(f'{w.capitalize()} {w_score} = {w_score//wm} = {w_score} x {wm}', file=print_file, flush=True)
 						total += w_score
 
