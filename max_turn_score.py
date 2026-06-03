@@ -173,14 +173,20 @@ def make_vertical_word_solver(main_word, scoring_positions, solve_rows = 2):
 		column_automatons.append(automaton_words_from_dict(general, [{T_ANY}]*rules.H))
 
 
-	# Merge connectivity into stage 2: constrain EVERY row to a valid word sequence (using the
-	# fast minimal DFA) so the whole board is valid, and demand a single connected component
-	# touching the centre (below). The optimal solution is then the optimal *connectable* turn
-	# in ONE solve -- no more enumerate-and-test against a separate connectivity stage (which had
-	# a ~0.2% hit-rate and re-solved this model ~13s per candidate).
+	# Merge connectivity into stage 2 ONLY for small boards: constraining EVERY row with the
+	# full-dict DFA + single_component (below) gives the optimal *connectable* turn in one solve,
+	# but the model grows ~H*dict and OOMs on big boards (board-13 dutch = ~2.7M vars / 7.3M
+	# constraints, killed at 24 workers + extra-probing). For W >= 13, fall back to the original
+	# sparse stage 2 (a couple of constrained rows) and let the separate (bottom-row-fixed)
+	# connectivity stage handle connectivity -- a much smaller model that fits in memory.
+	merge_connectivity = rules.W <= 11
+	if merge_connectivity:
+		rows = [general_row_automaton]*rules.H
+	else:
+		rows = [None] + [general_row_automaton]*solve_rows + [None]*(rules.H-1-solve_rows)
 	cells3 = create_board(
 		model,
-		[general_row_automaton]*rules.H,
+		rows,
 		column_automatons,
 		alphabet_size=len(rules.abc),
 		n_gram_rows=True)
@@ -203,8 +209,10 @@ def make_vertical_word_solver(main_word, scoring_positions, solve_rows = 2):
 		if args.no_main_blanks:
 			model.add(cells3[(x, y)].blank == 0)
 
-	# connectivity, merged into stage 2 (single connected component touching the centre)
-	single_component(model, cells3, (rules.W//2, rules.H//2))
+	# connectivity is merged into stage 2 only for small boards (see merge_connectivity above);
+	# for large boards the separate connectivity stage handles it (keeps this model small).
+	if merge_connectivity:
+		single_component(model, cells3, (rules.W//2, rules.H//2))
 
 	# only the non-active columns of the pre-turn can be used for scoring
 	#for x in range(len(main_word)):
