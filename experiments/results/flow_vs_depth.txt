@@ -1,0 +1,144 @@
+
+########## BOARD 9 (W=9) — 150s/solve ##########
+
+--- main 'rugbyclub' ---
+Creating word bindings
+0/203
+50/203
+100/203
+150/203
+200/203
+Binding words to score
+0/203
+  depth      : build= 43.6s presolve=12.5s wall= 152.4s status=FEASIBLE  obj=210.0 bound=457.0
+Creating word bindings
+0/203
+50/203
+100/203
+150/203
+200/203
+Binding words to score
+0/203
+  flow_full  : build=  4.6s presolve=12.4s wall= 150.5s status=FEASIBLE  obj=205.0 bound=495.0
+Creating word bindings
+0/203
+50/203
+100/203
+150/203
+200/203
+Binding words to score
+0/203
+  flow_prior : build=  4.7s presolve=12.5s wall= 150.4s status=FEASIBLE  obj=209.0 bound=456.0
+
+--- main 'hypoxisch' ---
+Creating word bindings
+0/203
+50/203
+100/203
+150/203
+200/203
+Binding words to score
+0/203
+  depth      : build= 38.4s presolve=   ?s wall=   0.7s status=INFEASIBLE obj=None bound=None
+Creating word bindings
+0/203
+50/203
+100/203
+150/203
+200/203
+Binding words to score
+0/203
+  flow_full  : build=  4.6s presolve=   ?s wall=   0.7s status=INFEASIBLE obj=None bound=None
+Creating word bindings
+0/203
+50/203
+100/203
+150/203
+200/203
+Binding words to score
+0/203
+  flow_prior : build=  4.6s presolve=   ?s wall=   0.7s status=INFEASIBLE obj=None bound=None
+
+########## BOARD 11 (W=11) — 150s/solve ##########
+
+--- main 'glyoxylzuur' ---
+Creating word bindings
+0/325
+50/325
+100/325
+150/325
+200/325
+250/325
+300/325
+Binding words to score
+0/325
+50/325
+250/325
+  depth      : build= 86.3s presolve=   ?s wall=   1.9s status=INFEASIBLE obj=None bound=None
+Creating word bindings
+0/325
+50/325
+100/325
+150/325
+200/325
+250/325
+300/325
+Binding words to score
+0/325
+50/325
+250/325
+  flow_full  : build=  8.8s presolve=   ?s wall=   1.9s status=INFEASIBLE obj=None bound=None
+Creating word bindings
+0/325
+50/325
+100/325
+150/325
+200/325
+250/325
+300/325
+Binding words to score
+0/325
+50/325
+250/325
+  flow_prior : build=  8.8s presolve=   ?s wall=   1.9s status=INFEASIBLE obj=None bound=None
+
+--- main 'cowboystyle' ---
+Creating word bindings
+0/325
+50/325
+100/325
+150/325
+200/325
+250/325
+300/325
+Binding words to score
+0/325
+50/325
+250/325
+  depth      : build= 66.2s presolve=85.4s wall= 151.8s status=FEASIBLE  obj=229.0 bound=8460.0
+Creating word bindings
+0/325
+50/325
+100/325
+150/325
+200/325
+250/325
+300/325
+Binding words to score
+0/325
+50/325
+250/325
+  flow_full  : build=  9.3s presolve=85.5s wall= 151.8s status=FEASIBLE  obj=214.0 bound=6824.0
+Creating word bindings
+0/325
+50/325
+100/325
+150/325
+200/325
+250/325
+300/325
+Binding words to score
+0/325
+50/325
+250/325
+  flow_prior : build=  9.3s presolve=85.1s wall= 152.1s status=FEASIBLE  obj=242.0 bound=7522.0
