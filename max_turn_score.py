@@ -244,7 +244,13 @@ def make_connectivity_solver(rules, partial, omit_bottom_rows = 3, max_vertical_
 	model.prefix = "connect"
 	print('creating automaton for connectivity solver')
 	
-	rows = [automaton_words_from_list(rules.words + [tuple()], rules.W, partial[y]) for y in range(rules.H-omit_bottom_rows)] + [None for _ in range(rules.H-omit_bottom_rows, rules.H)]
+	# Bottom rows must still be valid word-sequences. Using None (the old "omit expensive
+	# automata" optimisation) left them unconstrained, so connectivity could fill them with
+	# non-words like "ezzzo" -> illegal board / false-positive connection. The minimal full-dict
+	# DFA is cheap now (built once), so constrain those rows too. Fixed letters from `partial`
+	# are still imposed as cell constraints below; this automaton only enforces word validity.
+	full_row = position_independent_row_automaton(rules.words)
+	rows = [automaton_words_from_list(rules.words + [tuple()], rules.W, partial[y]) for y in range(rules.H-omit_bottom_rows)] + [full_row for _ in range(rules.H-omit_bottom_rows, rules.H)]
 	#columns = [automaton_words_from_list(rules.words + [tuple()], rules.H, list(zip(*partial))[x]) for x in range(rules.W)]
 	columns = []
 	for x in range(rules.W):
