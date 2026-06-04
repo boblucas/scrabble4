@@ -257,9 +257,13 @@ def make_connectivity_solver(rules, partial, omit_bottom_rows = 3, max_vertical_
 	# single letter -> trivially valid, no bridge, no "ezzzo" risk). So only the >=2-vertical rows
 	# need the dictionary automaton; every other row is forced to exactly its verticals (below).
 	# This keeps the model small on big boards while staying legal (no unconstrained-row garbage).
-	full_row = position_independent_row_automaton(rules.words)
+	# A >=2-vertical row gets the dictionary automaton FILTERED by the letters its verticals already
+	# pin (automaton_words_from_list with the partial[y] mask). Those fixed letters collapse it to a
+	# tiny DFA (~54 states) vs the 178k-state position-independent monster -- a ~4.5x smaller model.
+	# <2-vertical rows need no bridge and are forced to exactly their verticals below, so there is no
+	# unfiltered word automaton anywhere (this is what was OOMing board 13 at 547k vars / 3.7h presolve).
 	active_per_row = [[x for x in range(rules.W) if partial[y][x][0] >= 0] for y in range(rules.H)]
-	rows = [full_row if len(active_per_row[y]) >= 2 else None for y in range(rules.H)]
+	rows = [automaton_words_from_list(rules.words + [tuple()], rules.W, partial[y]) if len(active_per_row[y]) >= 2 else None for y in range(rules.H)]
 	#columns = [automaton_words_from_list(rules.words + [tuple()], rules.H, list(zip(*partial))[x]) for x in range(rules.W)]
 	columns = []
 	for x in range(rules.W):
