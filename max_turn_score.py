@@ -252,13 +252,14 @@ def make_connectivity_solver(rules, partial, omit_bottom_rows = 3, max_vertical_
 	model.prefix = "connect"
 	print('creating automaton for connectivity solver')
 	
-	# Bottom rows must still be valid word-sequences. Using None (the old "omit expensive
-	# automata" optimisation) left them unconstrained, so connectivity could fill them with
-	# non-words like "ezzzo" -> illegal board / false-positive connection. The minimal full-dict
-	# DFA is cheap now (built once), so constrain those rows too. Fixed letters from `partial`
-	# are still imposed as cell constraints below; this automaton only enforces word validity.
+	# Connectivity bridging only happens in a row where >=2 verticals pass through (a horizontal
+	# word joining two columns). A row with <=1 active cell is just a vertical passing through (a
+	# single letter -> trivially valid, no bridge, no "ezzzo" risk). So only the >=2-vertical rows
+	# need the dictionary automaton; every other row is forced to exactly its verticals (below).
+	# This keeps the model small on big boards while staying legal (no unconstrained-row garbage).
 	full_row = position_independent_row_automaton(rules.words)
-	rows = [automaton_words_from_list(rules.words + [tuple()], rules.W, partial[y]) for y in range(rules.H-omit_bottom_rows)] + [full_row for _ in range(rules.H-omit_bottom_rows, rules.H)]
+	active_per_row = [[x for x in range(rules.W) if partial[y][x][0] >= 0] for y in range(rules.H)]
+	rows = [full_row if len(active_per_row[y]) >= 2 else None for y in range(rules.H)]
 	#columns = [automaton_words_from_list(rules.words + [tuple()], rules.H, list(zip(*partial))[x]) for x in range(rules.W)]
 	columns = []
 	for x in range(rules.W):
@@ -273,10 +274,12 @@ def make_connectivity_solver(rules, partial, omit_bottom_rows = 3, max_vertical_
 
 	print('creating board')
 	cells = create_board(model, rows, columns, alphabet_size=len(rules.abc))
-	for x in range(rules.W):
-		for y in range(rules.H):
+	for y in range(rules.H):
+		for x in range(rules.W):
 			if partial[y][x][0] >= 0:
 				model.add(cells[(x, y)].letter[partial[y][x][0]] == 1)
+			elif len(active_per_row[y]) < 2:
+				model.add(cells[(x, y)].active == 0)   # <2-vertical row: forbid extra tiles (no garbage, no spurious bridge)
 
 	limit_letter_count(model, cells, rules.counts)
 	model.add(sum(c.blank for c in cells.values()) <= rules.blank_count)
