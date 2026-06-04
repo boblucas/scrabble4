@@ -19,6 +19,8 @@ parser.add_argument('--output', dest='output', default='', help='where to dump r
 parser.add_argument('--main', dest='main', default=None, help='solve for a specific main word')
 parser.add_argument('--no-main-blanks', dest='no_main_blanks', action='store_true', default=False, help='forbid blank tiles anywhere in the main word (dedups blank-variants of the same word)')
 parser.add_argument('--extra-probing', dest='extra_probing', type=int, default=0, help='add N diversified probing_max_lp subsolvers (the objective lower-bound prover) to the portfolio')
+parser.add_argument('--vertical-time-limit', dest='vertical_time_limit', type=float, default=0, help='per-solve time budget (s) for stage 2 (the vertical optimise). 0 = no limit (prove optimal). On big boards stage 2 cannot close the bound in reasonable time, so a limit makes it yield its best feasible verticals and let the pipeline reach a connected board (best-found, not proven-optimal).')
+parser.add_argument('--bool-core', dest='bool_core', action='store_true', default=False, help='enable CP-SAT core-based objective search (optimize_with_core) on the objective solves (stages 1 and 2). Off by default; turn on to trade memory for a different bound-closing strategy.')
 
 args = parser.parse_args()
 #args.output = f'max_turn_score_{args.board}_{args.language}.log'
@@ -307,7 +309,7 @@ model, pre_turn_cells, horizontal_word_cells = create_horizontal_word_solver(arg
 # stage 1 (main word) is small and reaches OPTIMAL fast; its bound is closed by
 # pseudo_costs/reduced_costs, not probing_max_lp -- so no extra probing here (it would only
 # crowd out the useful workers). --extra-probing targets stage 2 (the hard vertical optimise).
-for solver in do_solve(model, log=args.log, cores = args.cores):
+for solver in do_solve(model, log=args.log, cores = args.cores, optimize_with_core = args.bool_core):
 	print('-'*120)
 	print(time.time())
 	model.add_bool_or([~[v for v in list(cell.letter.values()) + [~cell.active] 						if solver.Value(v)][0] for (x,y), cell in horizontal_word_cells.items()] \
@@ -320,7 +322,7 @@ for solver in do_solve(model, log=args.log, cores = args.cores):
 
 	scoring_positions = [(x,y) for (x,y) in pre_turn_cells if setup[x] == ' ']
 	vertical_model, board_cells = make_vertical_word_solver(main_word, scoring_positions)
-	for vert_solver in do_solve(vertical_model, log=args.log, cores = args.cores, extra_probing = args.extra_probing):
+	for vert_solver in do_solve(vertical_model, log=args.log, cores = args.cores, extra_probing = args.extra_probing, time_limit = args.vertical_time_limit, optimize_with_core = args.bool_core):
 		print(time.time())
 		board_str = read_board_state(vert_solver, board_cells, rules.alphabet)
 		print(f'Highest scoring verticals given {turn_str} give {int(vert_solver.objective_value)} points:', file=print_file, flush=True)

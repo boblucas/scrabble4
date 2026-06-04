@@ -255,7 +255,7 @@ def read_board_state(solver, cells, alphabet):
 
 	return lines
 
-def do_solve(model, cores = 8, log = True, time_limit = 0, extra_probing = 0, linearization_level = -1):
+def do_solve(model, cores = 8, log = True, time_limit = 0, extra_probing = 0, linearization_level = -1, optimize_with_core = False):
 	'''
 	Applies solver to model and returns solved state of vars
 	you can modify the solver and iterate for more solutions
@@ -265,12 +265,14 @@ def do_solve(model, cores = 8, log = True, time_limit = 0, extra_probing = 0, li
 		the front of the portfolio and each gets a distinct seed, so they close the bound
 		from different angles in parallel. Helps when the bottleneck is *proving* optimality.
 	linearization_level: if >=0, override the global LP strength (2 = max LP).
+	optimize_with_core: enable core-based (implicit-hitting-set / max-HS) objective search.
+		Historically left off here ("takes a lot of memory and barely helps"); exposed as a
+		parameter so we can measure its help-vs-memory tradeoff (experiment 23).
 	'''
 	solver = cp_model.CpSolver()
 	solver.parameters.log_search_progress = log
 	solver.parameters.num_search_workers = cores
-	# takes up a lot of memory and barely helps
-	solver.parameters.optimize_with_core = False
+	solver.parameters.optimize_with_core = optimize_with_core
 	# more iters takes long and has no benefit in my tests
 	solver.parameters.max_presolve_iterations = 1
 	if extra_probing:
