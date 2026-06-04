@@ -13,7 +13,9 @@ set -u
 cd /home/bob/programming/scrabble4
 OUT=experiments/results/turns
 CAP=${CAP:-1500}          # per-run wall cap (s)
-COMMON="--language dutch --board 11 --cores 24 --no-main-blanks --extra-probing 0 --log"
+PROBING=${PROBING:-4}     # extra probing_max_lp workers; 0 isolates bool_core, 4 is the proving config
+COMMON="--language dutch --board 11 --cores 24 --no-main-blanks --extra-probing $PROBING --log"
+LBL="p${PROBING}"         # label prefix so different probing levels don't clobber each other
 
 run () {
   local label="$1"; shift
@@ -35,6 +37,6 @@ run () {
   echo "=== $label END $(date '+%F %T') ==="
 }
 
-run coreoff
-run coreon --bool-core
+run "${LBL}_coreoff"
+run "${LBL}_coreon" --bool-core
 echo "ALL DONE $(date '+%F %T')"
