@@ -161,15 +161,25 @@ def make_vertical_word_solver(main_word, scoring_positions, solve_rows = 2):
 	general_row_automaton = position_independent_row_automaton(rules.words)
 	column_automatons = []
 
+	# `general[2]` = a SECOND word allowed to start below the scoring vertical (after a gap). On a
+	# big board (no merge -> no single_component here) those lower tiles never score and only consume
+	# the tile budget, so the optimiser never places them -- but allowing any <=7 word there blows the
+	# column automaton up to ~67k transitions (11.4M total expansion; THE stage-2 floor that OOM'd
+	# board 13 over 3.7h). Cap them hard for big boards: <=7 -> 11.4M, <=4 -> 1.0M (11x), no change to
+	# the optimum. Small boards keep <=7 because there single_component CAN legitimately use a lower
+	# word as a connecting component.
+	merge_connectivity = rules.W <= 11
+	below2 = 7 if merge_connectivity else 4
+
 	for x in range(len(main_word)):
 		general = {
-			0: {w for w in rules.words if w[0] == main_tup[x]}, 
-			1: {}, 
-			2: [w for w in rules.words if len(w) <= 7] + [tuple()]}
-		
+			0: {w for w in rules.words if w[0] == main_tup[x]},
+			1: {},
+			2: [w for w in rules.words if len(w) <= below2] + [tuple()]}
+
 		if (x,y) in scoring_positions:
 			general[0] = {w for w in general[0] if w[1:] in rules.words_lookup}
-		
+
 		column_automatons.append(automaton_words_from_dict(general, [{T_ANY}]*rules.H))
 
 
@@ -177,13 +187,15 @@ def make_vertical_word_solver(main_word, scoring_positions, solve_rows = 2):
 	# full-dict DFA + single_component (below) gives the optimal *connectable* turn in one solve,
 	# but the model grows ~H*dict and OOMs on big boards (board-13 dutch = ~2.7M vars / 7.3M
 	# constraints, killed at 24 workers + extra-probing). For W >= 13, fall back to the original
-	# sparse stage 2 (a couple of constrained rows) and let the separate (bottom-row-fixed)
-	# connectivity stage handle connectivity -- a much smaller model that fits in memory.
-	merge_connectivity = rules.W <= 11
+	# sparse stage 2 and let the separate (filtered) connectivity stage handle connectivity.
+	# big-board rows: only ONE monster row (row 1, "the most critical" per above). general_row_automaton
+	# is the 178k-state full-dict DFA (480k transitions); 2 of them = 12.5M expansion, 1 = 6.25M. Using 1
+	# is a safe relaxation (fewer constraints never excludes the optimum) and halves the row cost.
+	big_solve_rows = min(solve_rows, 1)
 	if merge_connectivity:
 		rows = [general_row_automaton]*rules.H
 	else:
-		rows = [None] + [general_row_automaton]*solve_rows + [None]*(rules.H-1-solve_rows)
+		rows = [None] + [general_row_automaton]*big_solve_rows + [None]*(rules.H-1-big_solve_rows)
 	cells3 = create_board(
 		model,
 		rows,
