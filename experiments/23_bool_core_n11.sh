@@ -18,14 +18,18 @@ COMMON="--language dutch --board 11 --cores 24 --no-main-blanks --extra-probing 
 run () {
   local label="$1"; shift
   echo "=== $label START $(date '+%F %T') (epoch $(date +%s)) ==="
-  timeout "$CAP" ./.venv/bin/python -u max_turn_score.py $COMMON "$@" \
+  # launch python DIRECTLY (no timeout wrapper) so PID is the solver itself and VmRSS is its real
+  # memory; enforce the wall cap in the sampler loop.
+  ./.venv/bin/python -u max_turn_score.py $COMMON "$@" \
       --output "$OUT/n11_${label}.out" > "$OUT/n11_${label}.fulllog" 2>&1 &
   local PID=$!
   local t0; t0=$(date +%s)
   : > "$OUT/n11_${label}.mem"
   while kill -0 "$PID" 2>/dev/null; do
+    local el=$(( $(date +%s) - t0 ))
+    if [ "$el" -ge "$CAP" ]; then echo "  (cap ${CAP}s hit, stopping $label)"; kill "$PID" 2>/dev/null; sleep 2; kill -9 "$PID" 2>/dev/null; break; fi
     local rss; rss=$(awk '/^VmRSS/{print $2}' "/proc/$PID/status" 2>/dev/null)
-    echo "$(( $(date +%s) - t0 )) ${rss:-NA}" >> "$OUT/n11_${label}.mem"
+    echo "$el ${rss:-NA}" >> "$OUT/n11_${label}.mem"
     sleep 5
   done
   echo "=== $label END $(date '+%F %T') ==="
