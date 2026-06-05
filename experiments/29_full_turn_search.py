@@ -127,21 +127,55 @@ def build_holistic(main_word, turn_str, hmax=HMAX):
     m.maximize(sum(xv[(c, i)] * sc for c in scoring for i, (w, sc, rq) in enumerate(cands[c])) - penalty)
     return m, xv, cands, nc_ub, scoring
 
-# ---- global vertical upper bound (safe + tighter): best vertical achievable per COLUMN (its real
-# multipliers), summed over the hand_size best columns. A turn places <= hand_size scoring verticals,
-# each <= the best vertical its column can host -> this is a valid upper bound on any main word's verticals.
+# ---- global vertical upper bound (stop the main-word enumeration): tile-blind per-column sum.
+# Loose, but the per-main-word bare-pack pre-check (below) does the real pruning of expensive solves.
 def global_vertical_ub():
     base_top = []
     for w in rules.words:
         if not w or (len(w) > 1 and w[1:] not in rules.words_lookup):
             continue
-        base = sum(rules.scores[ch] for ch in w)
-        base_top.append((base, rules.scores[w[0]]))   # (sum of letter values, top-tile value)
-    best_col = []
-    for x in range(W):
-        lm = int(rules.letter_multiplier[0][x]); wm = int(rules.word_multiplier[0][x])
-        best_col.append(max((base + tv * (lm - 1)) * wm for base, tv in base_top))  # vertical score at col x
+        base_top.append((sum(rules.scores[ch] for ch in w), rules.scores[w[0]]))
+    best_col = [max((base + tv * (int(rules.letter_multiplier[0][x]) - 1)) * int(rules.word_multiplier[0][x])
+                    for base, tv in base_top) for x in range(W)]
     return sum(sorted(best_col, reverse=True)[:rules.hand_size])
+
+# ---- per-main-word BARE-PACK upper bound: optimal verticals with the tile budget + blanks but NO
+# connectivity and NO cross-word legality. Those only LOWER the verticals, so this is a valid (tight)
+# upper bound on the holistic vertical score, and it solves in seconds -> prune expensive holistics.
+def barepack_ub(main_word, turn_str):
+    main_tup = rules.alphabet.to_tup(main_word)
+    scoring = [x for x in range(W) if turn_str[x].isupper()]
+    cands = {}
+    for c in scoring:
+        L = main_tup[c]; out = []
+        for w in rules.words:
+            if not w or w[0] != L or len(w) > H: continue
+            if len(w) > 1 and w[1:] not in rules.words_lookup: continue
+            sc, _ = get_word_score(rules, w, c, 0, 0, [i == 0 for i in range(len(w))])
+            out.append((w, sc, Counter(w[1:])))
+        cands[c] = out
+    m = cp_model.CpModel()
+    xv = {}
+    for c in scoring:
+        vs = []
+        for i, (w, sc, rq) in enumerate(cands[c]):
+            v = m.new_bool_var(f'b_{c}_{i}'); xv[(c, i)] = v; vs.append(v)
+        m.add(sum(vs) == 1)
+    over = {code: m.new_int_var(0, rules.blank_count, f'bo_{code}') for code in rules.counts} if rules.blank_count else {}
+    if over:
+        m.add(sum(over.values()) <= rules.blank_count)
+    pen = 0
+    for code in rules.counts:
+        cap = rules.counts[code] - main_tup.count(code)
+        usage = [xv[(c, i)] * rq[code] for c in scoring for i, (w, sc, rq) in enumerate(cands[c]) if rq[code]]
+        if usage:
+            m.add(sum(usage) - over.get(code, 0) <= cap)
+        if code in over:
+            pen = pen + over[code] * rules.scores[code]
+    m.maximize(sum(xv[(c, i)] * sc for c in scoring for i, (w, sc, rq) in enumerate(cands[c])) - pen)
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = 8; s.parameters.max_time_in_seconds = 120
+    s.Solve(m)
+    return int(s.objective_value)
 GVUB = global_vertical_ub()
 print(f"global vertical UB (stop bound) = {GVUB}; hmax={HMAX}, vcap={VCAP}s")
 
@@ -161,6 +195,10 @@ for msolver in do_solve(mw_model, log=False, cores=CORES):
     if main_score + GVUB <= best_total:
         print(f"STOP: main #{nmain} score {main_score} + GVUB {GVUB} <= best {best_total}")
         break
+    bp = barepack_ub(mword.lower(), turn_str)   # cheap, tight upper bound on this main word's verticals
+    if main_score + bp <= best_total:
+        print(f"main #{nmain}: {turn_str}  main={main_score} + barepack_ub {bp} = {main_score + bp} <= best {best_total}  -> PRUNED", flush=True)
+        continue
     t = time.time()
     hm, xv, cands, nc_ub, scoring = build_holistic(mword.lower(), turn_str)
     vbest = None
