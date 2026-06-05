@@ -122,21 +122,26 @@ def build_holistic(main_word, turn_str, hmax=HMAX):
         usage = [xv[(c, i)] * rq[code] for c in scoring for i, (w, sc, rq) in enumerate(cands[c]) if rq[code]]
         if usage:
             m.add(sum(usage) - over[code] <= cap)
-    single_component(m, cells, (pre[0], 0))
+    if pre:   # root connectivity at a pre-placed tile; a full-bingo main word (no pre-placed) needs no setup
+        single_component(m, cells, (pre[0], 0))
     m.maximize(sum(xv[(c, i)] * sc for c in scoring for i, (w, sc, rq) in enumerate(cands[c])) - penalty)
     return m, xv, cands, nc_ub, scoring
 
-# ---- global vertical upper bound (safe: best possible vertical per column, top-W summed) ----
+# ---- global vertical upper bound (safe + tighter): best vertical achievable per COLUMN (its real
+# multipliers), summed over the hand_size best columns. A turn places <= hand_size scoring verticals,
+# each <= the best vertical its column can host -> this is a valid upper bound on any main word's verticals.
 def global_vertical_ub():
-    best_per_letter = {}
+    base_top = []
     for w in rules.words:
-        if not w: continue
-        L = w[0]
-        if len(w) > 1 and w[1:] not in rules.words_lookup: continue
-        sc, _ = get_word_score(rules, w, 0, 0, 0, [i == 0 for i in range(len(w))])  # col 0 multipliers (TWS line)
-        if sc > best_per_letter.get(L, 0): best_per_letter[L] = sc
-    top = sorted(best_per_letter.values(), reverse=True)[:rules.hand_size]
-    return sum(top)
+        if not w or (len(w) > 1 and w[1:] not in rules.words_lookup):
+            continue
+        base = sum(rules.scores[ch] for ch in w)
+        base_top.append((base, rules.scores[w[0]]))   # (sum of letter values, top-tile value)
+    best_col = []
+    for x in range(W):
+        lm = int(rules.letter_multiplier[0][x]); wm = int(rules.word_multiplier[0][x])
+        best_col.append(max((base + tv * (lm - 1)) * wm for base, tv in base_top))  # vertical score at col x
+    return sum(sorted(best_col, reverse=True)[:rules.hand_size])
 GVUB = global_vertical_ub()
 print(f"global vertical UB (stop bound) = {GVUB}; hmax={HMAX}, vcap={VCAP}s")
 
@@ -163,7 +168,10 @@ for msolver in do_solve(mw_model, log=False, cores=CORES):
         vbest = int(vsolver.objective_value)
         break
     dt = time.time() - t
-    total = main_score + (vbest if vbest is not None else 0)
+    if vbest is None:   # holistic infeasible/unsolved (e.g. cannot connect within the bag) -> skip this main word
+        print(f"main #{nmain}: {turn_str}  main={main_score}  vert=INFEASIBLE/none ({dt:.0f}s) -> skip", flush=True)
+        continue
+    total = main_score + vbest
     tag = ''
     if total > best_total:
         best_total = total; best = (mword, turn_str, main_score, vbest); tag = '  <-- NEW BEST'
