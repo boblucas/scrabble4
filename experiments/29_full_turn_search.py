@@ -127,17 +127,40 @@ def build_holistic(main_word, turn_str, hmax=HMAX):
     m.maximize(sum(xv[(c, i)] * sc for c in scoring for i, (w, sc, rq) in enumerate(cands[c])) - penalty)
     return m, xv, cands, nc_ub, scoring
 
-# ---- global vertical upper bound (stop the main-word enumeration): tile-blind per-column sum.
-# Loose, but the per-main-word bare-pack pre-check (below) does the real pruning of expensive solves.
-def global_vertical_ub():
-    base_top = []
+# ---- global vertical upper bound (stops the main-word enumeration). TILE-AWARE with DISTINCT columns:
+# the <=hand_size verticals sit on distinct columns and share the bag, so they can't all max out. Solve an
+# assignment-knapsack over per-column candidates (any start letter): <=1 vertical/column, <=hand_size total,
+# tile budget (full bag = valid over-estimate; blank relaxation), maximize score. Valid UB on any main
+# word's verticals (real verticals are more constrained: fixed letters, connectivity); ~280 vs the tile-
+# blind ~415, so the enumeration stops far sooner. (Validated: comes out >= the per-main-word bare-pack ceiling.)
+def global_vertical_ub(top_k=200):
+    words = []
     for w in rules.words:
         if not w or (len(w) > 1 and w[1:] not in rules.words_lookup):
             continue
-        base_top.append((sum(rules.scores[ch] for ch in w), rules.scores[w[0]]))
-    best_col = [max((base + tv * (int(rules.letter_multiplier[0][x]) - 1)) * int(rules.word_multiplier[0][x])
-                    for base, tv in base_top) for x in range(W)]
-    return sum(sorted(best_col, reverse=True)[:rules.hand_size])
+        words.append((sum(rules.scores[c] for c in w), rules.scores[w[0]], Counter(w[1:])))
+    cols = {}
+    for x in range(W):
+        lm = int(rules.letter_multiplier[0][x]); wm = int(rules.word_multiplier[0][x])
+        cols[x] = sorted(((base + tv * (lm - 1)) * wm, req) for base, tv, req in words)[-top_k:]
+    m = cp_model.CpModel(); yv = {}
+    for x in range(W):
+        vs = [m.new_bool_var(f'y{x}_{i}') for i in range(len(cols[x]))]
+        for i, v in enumerate(vs):
+            yv[(x, i)] = v
+        m.add(sum(vs) <= 1)
+    m.add(sum(yv.values()) <= rules.hand_size)
+    over = {c: m.new_int_var(0, rules.blank_count, f'go{c}') for c in rules.counts} if rules.blank_count else {}
+    if over:
+        m.add(sum(over.values()) <= rules.blank_count)
+    for code in rules.counts:
+        u = [yv[(x, i)] * cols[x][i][1][code] for x in range(W) for i in range(len(cols[x])) if cols[x][i][1][code]]
+        if u:
+            m.add(sum(u) - over.get(code, 0) <= rules.counts[code])
+    m.maximize(sum(yv[(x, i)] * cols[x][i][0] for x in range(W) for i in range(len(cols[x]))))
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = 8; s.parameters.max_time_in_seconds = 150
+    s.Solve(m)
+    return int(s.objective_value)
 
 # ---- per-main-word BARE-PACK upper bound: optimal verticals with the tile budget + blanks but NO
 # connectivity and NO cross-word legality. Those only LOWER the verticals, so this is a valid (tight)
