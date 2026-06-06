@@ -140,8 +140,34 @@ def single_component(model, cells:dict[tuple[int,int], Cell], start:tuple[int, i
 	if start:
 		model.add(cells[start].active == 1)
 		model.add(depth[start] == 0)
-	
+
 	return depth
+
+def single_component_flow(model, cells:dict[tuple[int,int], Cell], start:tuple[int, int]):
+	'''Connectivity via single-commodity flow -- a TIGHT LP relaxation (unlike the depth encoding,
+	whose loose LP makes proving (in)feasibility slow). Every active cell ships 1 unit toward `start`
+	along edges between active cells; the root absorbs. A cell active but disconnected from the root
+	cannot ship its unit -> infeasible, so this forces a single connected component. Min-cut gives
+	fast infeasibility certificates.'''
+	N = len(cells)
+	model.add(cells[start].active == 1)
+	def nbrs(p):
+		x, y = p
+		return [q for q in [(x-1,y),(x+1,y),(x,y-1),(x,y+1)] if q in cells]
+	edge = {}
+	for p in cells:
+		for q in nbrs(p):
+			edge[(p, q)] = model.new_int_var(0, N, f'{model.prefix}_flow_{p[0]}_{p[1]}_{q[0]}_{q[1]}')
+	for (u, v), f in edge.items():
+		model.add(f <= N * cells[u].active)        # flow only along edges between active cells
+		model.add(f <= N * cells[v].active)
+	for p, cell in cells.items():
+		if p == start:
+			continue
+		out_f = sum(edge[(p, q)] for q in nbrs(p))
+		in_f  = sum(edge[(q, p)] for q in nbrs(p))
+		model.add(out_f - in_f == cell.active)     # active => net out 1 unit (its own), routed to root
+	return edge
 
 def limit_letter_count(model, cells:dict[tuple[int,int], Cell], letter_count:dict[int,int]):
 	'''
