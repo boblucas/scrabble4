@@ -86,8 +86,11 @@ def build_holistic(main_word, turn_str, hmax=HMAX):
     m = cp_model.CpModel(); m.prefix = 'h'
     hw = [w for w in rules.words if len(w) <= hmax]
     row_aut = position_independent_row_automaton(hw)
-    rows = [None] + [row_aut] * (H - 1)
-    cells = create_board(m, rows, [None] * W, alphabet_size=ABC)
+    rows = [row_aut] * H                                       # every row incl. row 0 (pre-placed runs)
+    # vertical words in non-scoring columns must be valid too (the sn/fg/ua bug); scoring columns
+    # carry a chosen long word via word-choice and so get no <=hmax column automaton.
+    cols = [row_aut if x not in scoring else None for x in range(W)]
+    cells = create_board(m, rows, cols, alphabet_size=ABC)
     for x in pre:
         m.add(cells[(x, 0)].letter[main_tup[x]] == 1)
     for x in scoring:

@@ -68,19 +68,24 @@ def reaching(y):
     return sum(1 for c in scoring_cols if any(len(w) > y for w, _, _ in cands[c]))
 dense_rows = {y for y in range(1, H) if reaching(y) >= 3}
 if HMAX is None:
-    rows = [None] * H; hrows = set()
+    rows = [None] * H; hrows = set(); cols = [None] * W
 else:
     hw = [w for w in rules.words if len(w) <= HMAX]
     row_aut = position_independent_row_automaton(hw)
     if TOPROWS is not None:
-        hrows = set(range(1, TOPROWS + 1))        # cross-words only in the top rows ("none in final rows")
+        hrows = set(range(0, TOPROWS + 1))        # cross-words only in the top rows ("none in final rows")
     elif LITE:
-        hrows = dense_rows                        # >=3-vertical rows only
+        hrows = {0} | dense_rows                  # >=3-vertical rows only (+ row 0 setup)
     else:
-        hrows = set(range(1, H))                  # every row 1+
+        hrows = set(range(0, H))                  # EVERY row incl. row 0 (pre-placed runs must be valid words)
     rows = [row_aut if y in hrows else None for y in range(H)]
-    print(f"cross-word automaton (<= {HMAX}) on rows {sorted(hrows)}; rows 1+ outside that forbid horizontal words")
-cells = create_board(m, rows, [None] * W, alphabet_size=len(rules.abc))
+    # vertical words in NON-scoring columns must ALSO be valid (the sn/fg/ua bug: a bridge under a
+    # pre-placed tile silently formed junk). Scoring columns carry a chosen (possibly long) word via
+    # word-choice, so they get no <=8 column automaton; every other column does.
+    cols = [row_aut if x not in scoring_cols else None for x in range(W)]
+    print(f"cross-word automaton (<= {HMAX}) on rows {sorted(hrows)} and non-scoring cols "
+          f"{[x for x in range(W) if x not in scoring_cols]}")
+cells = create_board(m, rows, cols, alphabet_size=len(rules.abc))
 # rows 1+ WITHOUT the automaton: assume NO connective word there -> forbid adjacent active cells
 if HMAX is not None:
     for y in range(1, H):
