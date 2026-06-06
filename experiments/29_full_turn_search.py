@@ -225,7 +225,7 @@ for msolver in do_solve(mw_model, log=False, cores=CORES):
     t = time.time()
     hm, xv, cands, nc_ub, scoring = build_holistic(mword.lower(), turn_str)
     vbest = None
-    for vsolver in do_solve(hm, log=True, cores=CORES, time_limit=VCAP):   # log the holistic so we can watch the proof
+    for vsolver in do_solve(hm, log=True, cores=CORES, time_limit=VCAP, extra_probing=6):   # probing to push the UB down (connectivity LP is loose)
         vbest = int(vsolver.objective_value)
         break
     dt = time.time() - t
