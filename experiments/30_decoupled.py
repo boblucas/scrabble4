@@ -32,6 +32,8 @@ from ortools.sat.python import cp_model
 from scrabble import construct_rules, get_word_score
 from dawg import position_independent_row_automaton
 from solve import create_board, single_component, limit_letter_count
+sys.path.insert(0, '/home/bob/programming/scrabble4/experiments')
+from connectivity import setup_fixed_cells, RustOracle
 
 board = sys.argv[1] if len(sys.argv) > 1 else '11'
 HMAX = int(sys.argv[sys.argv.index('--hmax') + 1]) if '--hmax' in sys.argv else 8
@@ -73,6 +75,35 @@ hw = [w for w in rules.words if len(w) <= HMAX]
 ROW_AUT = position_independent_row_automaton(hw)
 newly = Counter(main_tup[c] for c in scoring_cols)        # newly-placed main tiles: not on setup board
 avail_setup = Counter({code: rules.counts[code] - newly[code] for code in rules.counts})
+TOTAL_PHYSICAL = sum(rules.counts.values()) + rules.blank_count   # all tiles incl. blanks
+ORACLE = RustOracle(W, H)                                          # fast connectivity oracle (Rust)
+from connectivity import components as _components
+# Each pre-placed component touches only empty scoring-row-0 cells horizontally, so it can only
+# connect DOWNWARD via a bridge in its own column(s) -> >=1 dedicated bridge tile each, for ANY
+# length config. A sound global lower bound on bridges, used to reserve tiles in Stage A.
+MINB_GLOBAL = len(_components({(x, 0) for x in preplaced}, W, H))
+print(f"total tiles(incl blanks)={TOTAL_PHYSICAL}, pre-placed components={MINB_GLOBAL} (>= that many bridges)")
+
+def bridge_budget(chosen):
+    # tiles left for bridges after the main word + the chosen vertical stubs (sound upper bound;
+    # blanks are physical tiles too). chosen: {col: (w, sc, rq)}.
+    stub = sum(len(w) - 1 for c, (w, sc, rq) in chosen.items())
+    return TOTAL_PHYSICAL - len(main_tup) - stub
+
+def geom_infeasible(chosen):
+    # FAST sound prune (Rust, ~1ms): can the fixed pieces even be connected with the leftover tiles
+    # (ignoring word validity)? If not, the legal problem is infeasible too.
+    fx = setup_fixed_cells(W, H, turn_str, main_tup, {c: chosen[c][0] for c in chosen})
+    return not ORACLE.can_connect(fx, bridge_budget(chosen))
+
+# NOTE: we do NOT minimise the conflict by freeing columns. Removing a column's stub also removes
+# cells that could be connectivity stepping-stones, so a subset being unconnectable does NOT imply
+# the superset is (other columns' tiles might bridge the gap). The only SOUND generalisation is over
+# LETTERS: the geometry (occupied cells) depends solely on the FULL length-vector, so we forbid all
+# scoring columns at exactly their chosen lengths -- killing every same-length word-combo at once.
+def length_clause(chosen):
+    # compact: forbid the exact length at each column via the per-column length-indicator bools
+    return [lenA[(c, len(chosen[c][0]))].Not() for c in scoring_cols]
 
 
 # ============================ STAGE A : score knapsack (proven) ================================
@@ -95,8 +126,19 @@ def build_stage_a():
             m.add(sum(usage) - over.get(code, 0) <= cap)
         if code in over:
             pen = pen + over[code] * rules.scores[code]
+    # (reserve constraint removed: it made proving the Stage A knapsack optimum slow, net-negative)
+    # per-column length-indicator bools -> compact (7-literal) length-vector cuts
+    lenbools = {}
+    for c in scoring_cols:
+        bylen = {}
+        for i, (w, sc, rq) in enumerate(cands[c]):
+            bylen.setdefault(len(w), []).append(xv[(c, i)])
+        for l, xs in bylen.items():
+            b = m.new_bool_var(f'len_{c}_{l}')
+            m.add(b == sum(xs))                 # exactly one word/col => sum is 0/1
+            lenbools[(c, l)] = b
     m.maximize(sum(xv[(c, i)] * sc for c in scoring_cols for i, (w, sc, rq) in enumerate(cands[c])) - pen)
-    return m, xv
+    return m, xv, lenbools
 
 
 # ============================ STAGE B : legality + connectivity ================================
@@ -190,7 +232,7 @@ def find_conflict(chosen, cap=30.0):
 
 # ============================ search loop (CEGAR) ==============================================
 from solve import do_solve
-maA, xvA = build_stage_a()
+maA, xvA, lenA = build_stage_a()
 best_legal, best = -1, None
 it, nfeas, nconf, nunknown, max_unknown_S = 0, 0, 0, 0, -1
 t0 = time.time()
@@ -204,6 +246,18 @@ for asolver in do_solve(maA, log=False, cores=24):
     if S <= best_legal:
         print(f"STOP: candidate #{it} upper bound {S} <= best legal {best_legal}  ({time.time()-t0:.0f}s)")
         break
+    # FAST geometric prune (Rust, ~1ms): tile-starved sets can't connect even with free bridges.
+    # SOUND because word-constrained bridges are a subset of free bridges.
+    if geom_infeasible(chosen):
+        clause = length_clause(chosen)        # forbid this exact full length-vector (sound over letters)
+        maA.add_bool_or(clause if clause else [~xvA[(c, idx[c])] for c in scoring_cols])
+        nconf += 1
+        if it <= 20 or it % 500 == 0:
+            lv = {c: len(chosen[c][0]) for c in scoring_cols}
+            print(f"#{it} S={S} GEOM-infeasible -> cut length-vector {lv} [{time.time()-t0:.0f}s]", flush=True)
+        if it >= MAXIT or time.time() - t0 > MAXSEC:
+            print(f"(stop: it={it} elapsed={time.time()-t0:.0f}s)"); break
+        continue
     name, legal, grossV, s, cells = stage_b(chosen, cap=90.0)
     if name == 'FEASIBLE':
         nfeas += 1
