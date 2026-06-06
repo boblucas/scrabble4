@@ -13,9 +13,11 @@ solve with a shared blank pool; flagged for high-confidence v2.)
 
 Run: python experiments/29_full_turn_search.py [board] [vcap] [--scale-tiles] [--hmax N]
 """
-import sys, time
+import os, sys, time
 from collections import Counter
 sys.path.insert(0, '/home/bob/programming/scrabble4')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # so `turn_render` (same dir) imports
+from turn_render import chosen_from_solver, render, save, SaveBoardCallback
 from ortools.sat.python import cp_model
 from scrabble import construct_rules, get_word_score
 from dawg import position_independent_row_automaton, automaton_words_from_list
@@ -125,7 +127,7 @@ def build_holistic(main_word, turn_str, hmax=HMAX):
     if pre:   # root connectivity at a pre-placed tile; a full-bingo main word (no pre-placed) needs no setup
         single_component(m, cells, (pre[0], 0))
     m.maximize(sum(xv[(c, i)] * sc for c in scoring for i, (w, sc, rq) in enumerate(cands[c])) - penalty)
-    return m, xv, cands, nc_ub, scoring
+    return m, xv, cands, nc_ub, scoring, cells
 
 # ---- global vertical upper bound (stops the main-word enumeration). TILE-AWARE with DISTINCT columns:
 # the <=hand_size verticals sit on distinct columns and share the bag, so they can't all max out. Solve an
@@ -223,10 +225,14 @@ for msolver in do_solve(mw_model, log=False, cores=CORES):
         print(f"main #{nmain}: {turn_str}  main={main_score} + barepack_ub {bp} = {main_score + bp} <= best {best_total}  -> PRUNED", flush=True)
         continue
     t = time.time()
-    hm, xv, cands, nc_ub, scoring = build_holistic(mword.lower(), turn_str)
-    vbest = None
-    for vsolver in do_solve(hm, log=True, cores=CORES, time_limit=VCAP, extra_probing=6):   # probing to push the UB down (connectivity LP is loose)
-        vbest = int(vsolver.objective_value)
+    hm, xv, cands, nc_ub, scoring, cells = build_holistic(mword.lower(), turn_str)
+    # checkpoint the incumbent board every improvement -> a days-long single solve stays viewable / crash-safe
+    cb = SaveBoardCallback(cells, xv, cands, scoring, turn_str, rules,
+                           f'experiments/results/turns/N{W}_INCUMBENT.txt',
+                           main_score=main_score, header=f"main #{nmain} {mword.lower()}", verbose=False)
+    vbest, vsol = None, None
+    for vsolver in do_solve(hm, log=True, cores=CORES, time_limit=VCAP, extra_probing=6, callback=cb):   # probing to push the UB down (connectivity LP is loose)
+        vbest = int(vsolver.objective_value); vsol = vsolver
         break
     dt = time.time() - t
     if vbest is None:   # holistic infeasible/unsolved (e.g. cannot connect within the bag) -> skip this main word
@@ -236,6 +242,12 @@ for msolver in do_solve(mw_model, log=False, cores=CORES):
     tag = ''
     if total > best_total:
         best_total = total; best = (mword, turn_str, main_score, vbest); tag = '  <-- NEW BEST'
+        # persist the winning placement so a month-long run is viewable without re-solving
+        chosen = chosen_from_solver(vsol, xv, cands, scoring)
+        text = render(vsol, cells, chosen, turn_str, rules, main_score=main_score, vert_score=vbest)
+        save(f'experiments/results/turns/N{W}_BEST.txt', text,
+             header=f"board {W}x{H}  best after main #{nmain}  main_word={mword.lower()}")
+        print("\n" + text + "\n", flush=True)
     print(f"main #{nmain}: {turn_str}  main={main_score} + vert={vbest} = {total}  (nc_ub {nc_ub}, {dt:.0f}s){tag}", flush=True)
 
 print(f"\n==== OPTIMAL TURN (over {nmain} main words): {best[2]+ (best[3] or 0)} ====")

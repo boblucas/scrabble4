@@ -255,7 +255,7 @@ def read_board_state(solver, cells, alphabet):
 
 	return lines
 
-def do_solve(model, cores = 8, log = True, time_limit = 0, extra_probing = 0, linearization_level = -1, optimize_with_core = False):
+def do_solve(model, cores = 8, log = True, time_limit = 0, extra_probing = 0, linearization_level = -1, optimize_with_core = False, callback = None):
 	'''
 	Applies solver to model and returns solved state of vars
 	you can modify the solver and iterate for more solutions
@@ -283,7 +283,7 @@ def do_solve(model, cores = 8, log = True, time_limit = 0, extra_probing = 0, li
 		solver.parameters.max_time_in_seconds = time_limit
 
 	while True:
-		if solver.Solve(model) in [cp_model.FEASIBLE, cp_model.OPTIMAL]:
+		if solver.Solve(model, callback) in [cp_model.FEASIBLE, cp_model.OPTIMAL]:
 			yield solver
 		else:
 			break

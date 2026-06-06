@@ -150,7 +150,11 @@ s.parameters.num_search_workers = 24
 s.parameters.max_time_in_seconds = CAP
 s.parameters.max_presolve_iterations = 1
 s.parameters.log_search_progress = True
-t = time.time(); r = s.Solve(m); st = time.time() - t
+from turn_render import SaveBoardCallback
+cb = SaveBoardCallback(cells, xv, cands, scoring_cols, turn_str, rules,
+                       f'experiments/results/turns/N{W}_{main_word}.txt',
+                       header=f"board {W}x{H} main={main_word}")
+t = time.time(); r = s.Solve(m, cb); st = time.time() - t
 name = {cp_model.OPTIMAL: 'OPTIMAL', cp_model.FEASIBLE: 'FEASIBLE', cp_model.INFEASIBLE: 'INFEASIBLE'}.get(r, str(r))
 obj = int(s.objective_value) if r in (cp_model.OPTIMAL, cp_model.FEASIBLE) else None
 bnd = s.best_objective_bound if r in (cp_model.OPTIMAL, cp_model.FEASIBLE) else None
@@ -158,28 +162,10 @@ print(f"\nRESULT  solve={st:.1f}s {name}  obj={obj}  bound={bnd}  [no-contention
       f"exp27 no-real-connect gave 292]")
 
 if r in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-    chosen = {}
-    print("\n--- chosen scoring verticals (full word; top letter = main-word tile placed this turn) ---")
-    for c in scoring_cols:
-        for i, (w, sc, rq) in enumerate(cands[c]):
-            if s.value(xv[(c, i)]):
-                chosen[c] = w
-                print(f"  col {c:2d}: {rules.alphabet.to_str(w):18} len={len(w):2d}  score={sc}")
-                break
-    print(f"  vertical lengths = {sorted((len(w) for w in chosen.values()), reverse=True)}")
-    # reconstruct the full post-turn board: row 0 = main word, verticals hang down, bridges = other active cells
-    grid = [['.'] * W for _ in range(H)]
-    for x in range(W):
-        grid[0][x] = turn_str[x]
-    for c, w in chosen.items():
-        for ri in range(1, len(w)):
-            grid[ri][c] = rules.alphabet.to_str([w[ri]])
-    for (x, y), cell in cells.items():
-        if grid[y][x] == '.' and s.value(cell.active):
-            for code, bv in cell.letter.items():
-                if s.value(bv):
-                    grid[y][x] = rules.alphabet.to_str([code]) + '*'   # * marks a connectivity bridge tile
-                    break
-    print("\n--- board (row 0 = main word incl. UPPERCASE newly-placed tiles; verticals hang down; X* = bridge) ---")
-    for row in grid:
-        print('  ' + ' '.join(f'{c:2}' for c in row))
+    from turn_render import chosen_from_solver, render, save
+    chosen = chosen_from_solver(s, xv, cands, scoring_cols)
+    text = render(s, cells, chosen, turn_str, rules, main_score=None, vert_score=obj)
+    print("\n" + text)
+    out_path = f'experiments/results/turns/N{W}_{main_word}.txt'
+    save(out_path, text, header=f"board {W}x{H}  main={main_word}  status={name}  obj={obj} bound={bnd}")
+    print(f"\nsaved viewable result -> {out_path}")
