@@ -137,7 +137,23 @@ struct Solver<'a> {
     dict: &'a Dict,
     grid: Vec<i16>,
     mandatory: Vec<usize>,      // cells that are always active (preplaced + scoring-stub positions)
+    used: Vec<i64>,             // tiles used per code (incremental)
+    overflow: i64,              // sum of per-code (used-counts) over codes where used>counts == blanks needed
     nodes: u64,
+}
+
+impl<'a> Solver<'a> {
+    #[inline]
+    fn add_letter(&mut self, l: usize) -> bool {
+        self.used[l] += 1;
+        if self.used[l] > self.inst.counts[l] { self.overflow += 1; }
+        self.overflow <= self.inst.blanks
+    }
+    #[inline]
+    fn rm_letter(&mut self, l: usize) {
+        if self.used[l] > self.inst.counts[l] { self.overflow -= 1; }
+        self.used[l] -= 1;
+    }
 }
 
 impl<'a> Solver<'a> {
@@ -165,6 +181,7 @@ impl<'a> Solver<'a> {
 
     fn dfs(&mut self, pos: usize) -> bool {
         self.nodes += 1;
+        if self.nodes % 5_000_000 == 0 { eprintln!("  nodes={}M", self.nodes / 1_000_000); }
         let w = self.inst.w; let h = self.inst.h; let n = w * h;
         // find next unassigned cell in row-major from `pos`
         let mut id = pos;
@@ -193,9 +210,11 @@ impl<'a> Solver<'a> {
             }
             for l in letters {
                 if !self.place_ok(x, y, l) { continue; }
+                if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
                 self.grid[id] = l as i16;
                 if self.dfs(id + 1) { return true; }
                 self.grid[id] = -1;
+                self.rm_letter(l as usize);
             }
             false
         } else {
@@ -206,9 +225,11 @@ impl<'a> Solver<'a> {
             self.grid[id] = -1;
             for l in 1..=self.inst.alpha as i16 {
                 if !self.place_ok(x, y, l as u8) { continue; }
+                if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
                 self.grid[id] = l;
                 if self.dfs(id + 1) { return true; }
                 self.grid[id] = -1;
+                self.rm_letter(l as usize);
             }
             false
         }
@@ -345,12 +366,19 @@ fn main() {
             _ => {}
         }
     }
+    let td = std::time::Instant::now();
     let dict = load_dict(&dict_path, hmax);
+    eprintln!("dict loaded: {} words, {} prefixes, {:.2}s", dict.words.len(), dict.prefixes.len(), td.elapsed().as_secs_f64());
     let grid = inst.grid0.clone();
     // mandatory cells: preplaced (grid0>0) + scoring-stub positions (kind==1)
     let mandatory: Vec<usize> = (0..inst.w * inst.h)
         .filter(|&id| inst.grid0[id] > 0 || inst.kind[id] == 1).collect();
-    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, nodes: 0 };
+    // initial tile usage from pre-placed tiles
+    let mut used = vec![0i64; inst.alpha + 1];
+    for &g in &inst.grid0 { if g > 0 { used[g as usize] += 1; } }
+    let mut overflow = 0i64;
+    for c in 1..=inst.alpha { if used[c] > inst.counts[c] { overflow += used[c] - inst.counts[c]; } }
+    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, used, overflow, nodes: 0 };
     let t = std::time::Instant::now();
     let sat = solver.run();
     let dt = t.elapsed().as_secs_f64();

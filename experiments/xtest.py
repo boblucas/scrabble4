@@ -166,10 +166,54 @@ def gen():
           f"{sum(1 for _,t,_ in cases if t=='UNSAT')} UNSAT")
 
 
+def gen_hard():
+    """Hunt UNSAT (and harder SAT) cases: scaled bag (tile-starved) on N=7, plus a few N=9."""
+    os.makedirs(TESTDIR, exist_ok=True)
+    write_dict('7'); write_dict('9')
+    made = 0
+    # N=7 scaled bag -> tile-starved; long stubs stress budget AND word legality
+    rules7 = construct_rules('dutch', '7')
+    sevens = [rules7.alphabet.to_str(w) for w in rules7.words if len(w) == 7]
+    for word in sevens[::37]:
+        if made >= 12: break
+        ts = ''.join(word[x].upper() if x % 2 == 0 else word[x].lower() for x in range(7))
+        for Lset in [{0: 6, 2: 6, 4: 6, 6: 6}, {0: 7, 2: 7, 4: 7, 6: 7}, {0: 5, 2: 6, 4: 7, 6: 5}]:
+            inst, meta = build_instance('7', word, ts, Lset, scale=True)   # scaled -> tile-starved
+            if inst is None: continue
+            t = time.time(); truth = cpsat_decide(meta, cap=90); dt = time.time() - t
+            if truth == 'UNKNOWN': continue
+            name = f"h7_{word}_{'-'.join(str(Lset[c]) for c in [0,2,4,6])}"
+            dump_simple(inst, truth, os.path.join(TESTDIR, name + '.txt'))
+            print(f"  {name}: truth={truth} ({dt:.1f}s)"); made += 1
+            if made >= 12: break
+    print(f"generated {made} hard instances")
+
+
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'gen'
     if cmd == 'gen':
         gen()
+    elif cmd == 'genhard':
+        gen_hard()
+    elif cmd == 'dumpinst':
+        # dumpinst <board> <main> <turn> <len0,len1,...for scoring cols in order> [scale]
+        os.makedirs(TESTDIR, exist_ok=True)
+        board, main, turn = sys.argv[2], sys.argv[3], sys.argv[4]
+        lens = [int(x) for x in sys.argv[5].split(',')]
+        scale = (len(sys.argv) > 6 and sys.argv[6] == 'scale')
+        write_dict(board)
+        scoring = [x for x in range(len(turn)) if turn[x].isupper()]
+        Lvec = {c: lens[i] for i, c in enumerate(scoring)}
+        inst, meta = build_instance(board, main, turn, Lvec, scale=scale)
+        if inst is None:
+            print("no candidates for some column at these lengths"); sys.exit(1)
+        cap = int(sys.argv[7]) if len(sys.argv) > 7 else 0
+        if cap:
+            for blk in inst['scoring']:
+                blk['words'] = blk['words'][:cap]
+        name = f"r{board}_{main}_{'-'.join(map(str, lens))}{'_sc' if scale else ''}{'_cap'+str(cap) if cap else ''}"
+        dump_simple(inst, 'UNKNOWN', os.path.join(TESTDIR, name + '.txt'))
+        print(f"dumped {name} (scoring cols {scoring}, lens {lens}) -> {TESTDIR}/{name}.txt")
     elif cmd == 'truth':
         inst = json.load(open(sys.argv[2]))
         # rebuild meta from instance is non-trivial; ground truth is stored at gen time as _truth
