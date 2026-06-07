@@ -27,7 +27,14 @@ struct Inst {
     scoring_cols: Vec<usize>,
     scoring_len: Vec<usize>,
     scoring_words: Vec<Vec<Vec<u8>>>, // per scoring col: candidate stub words (len = len-1)
+    // static per-cell info (computed once after parse):
+    cell_mask: Vec<u32>,       // bit (letter-1) set = letter possible at this cell (preplaced/forced=exact)
+    can_active: Vec<bool>,     // cell is or can become active (hold a tile)
+    #[allow(dead_code)]
+    can_empty: Vec<bool>,      // cell can be empty (no tile); kept for the cell model / future MRV
 }
+
+#[inline] fn bit(l: u8) -> u32 { 1u32 << (l - 1) }
 
 fn idx(x: usize, y: usize, w: usize) -> usize { y * w + x }
 
@@ -109,7 +116,29 @@ fn parse(path: &str) -> Inst {
         for r in 1..h { let id = idx(col, r, w); grid0[id] = -1; kind[id] = 2; }
     }
     let _ = scoring_set;
-    Inst { w, h, alpha, blanks, counts, grid0, kind, scol_of, scoring_cols, scoring_len, scoring_words }
+    // static per-cell domain info
+    let all_mask: u32 = if alpha >= 26 { 0x03ff_ffff } else { (1u32 << alpha) - 1 };
+    let mut cell_mask = vec![0u32; w * h];
+    let mut can_active = vec![false; w * h];
+    let mut can_empty = vec![false; w * h];
+    for id in 0..w * h {
+        match kind[id] {
+            0 => {
+                if grid0[id] > 0 { cell_mask[id] = bit(grid0[id] as u8); can_active[id] = true; }
+                else { cell_mask[id] = 0; can_empty[id] = true; }   // forced-empty
+            }
+            1 => {                                                  // scoring-stub: union over candidate words
+                let si = scol_of[id] as usize; let col = scoring_cols[si];
+                let r = id / w; let posn = r - 1;
+                let mut m = 0u32;
+                for wd in &scoring_words[si] { m |= bit(wd[posn]); }
+                cell_mask[id] = m; can_active[id] = true; let _ = col;
+            }
+            _ => { cell_mask[id] = all_mask; can_active[id] = true; can_empty[id] = true; } // bridge
+        }
+    }
+    Inst { w, h, alpha, blanks, counts, grid0, kind, scol_of, scoring_cols, scoring_len, scoring_words,
+           cell_mask, can_active, can_empty }
     .with_dict(&dict_path)
 }
 
@@ -122,19 +151,61 @@ impl Inst {
 #[inline] fn key_push(key: u64, l: u8) -> u64 { (key << 6) | (l as u64) }
 fn key_of(run: &[u8]) -> u64 { let mut k = 1u64; for &l in run { k = key_push(k, l); } k }
 
-struct Dict { words: std::collections::HashSet<u64>, prefixes: std::collections::HashSet<u64> }
+// Forward trie over the <=hmax dict. Nodes hold 27 child slots (index 1..=26 = letter codes; 0 unused)
+// and an is_word flag. Backs both membership (words) and prefix queries, and masked pattern matching.
+const TR_CH: usize = 27;
+struct Dict {
+    words: std::collections::HashSet<u64>,
+    prefixes: std::collections::HashSet<u64>,
+    // trie
+    child: Vec<[i32; TR_CH]>,   // child[node][letter] = node index or -1
+    is_word: Vec<bool>,
+}
 fn load_dict(path: &str, hmax: usize) -> Dict {
     let mut s = String::new();
     fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
     let mut words = HashSet::new(); let mut prefixes = HashSet::new();
+    let mut child: Vec<[i32; TR_CH]> = vec![[-1i32; TR_CH]];
+    let mut is_word: Vec<bool> = vec![false];
     for line in s.lines() {
         let v: Vec<u8> = line.split_whitespace().map(|t| t.parse().unwrap()).collect();
         if v.is_empty() || v.len() > hmax { continue; }
         let mut k = 1u64;
-        for &l in &v { k = key_push(k, l); prefixes.insert(k); }
+        let mut node = 0usize;
+        for &l in &v {
+            k = key_push(k, l); prefixes.insert(k);
+            let li = l as usize;
+            let nxt = child[node][li];
+            node = if nxt < 0 {
+                let id = child.len();
+                child.push([-1i32; TR_CH]); is_word.push(false);
+                child[node][li] = id as i32;
+                id
+            } else { nxt as usize };
+        }
+        is_word[node] = true;
         words.insert(k);
     }
-    Dict { words, prefixes }
+    Dict { words, prefixes, child, is_word }
+}
+
+impl Dict {
+    // Does there exist a complete word whose letter at position i is in masks[i] (bit (letter-1) set)?
+    fn pattern_word(&self, masks: &[u32]) -> bool { self.pm(0, masks, 0, true) }
+    // Does there exist a word with PREFIX matching masks (i.e. trie path of len masks.len() exists)?
+    fn pattern_prefix(&self, masks: &[u32]) -> bool { self.pm(0, masks, 0, false) }
+    fn pm(&self, node: usize, masks: &[u32], i: usize, need_word: bool) -> bool {
+        if i == masks.len() { return if need_word { self.is_word[node] } else { true }; }
+        let mut m = masks[i];
+        let row = &self.child[node];
+        while m != 0 {
+            let b = m.trailing_zeros();      // letter-1
+            m &= m - 1;
+            let c = row[(b + 1) as usize];
+            if c >= 0 && self.pm(c as usize, masks, i + 1, need_word) { return true; }
+        }
+        false
+    }
 }
 
 // solver state during DFS
@@ -271,19 +342,49 @@ impl<'a> Solver<'a> {
 
     // prefix-check pruning: placing letter at (x,y), the assigned-contiguous H run ending here and
     // V run ending here must be prefixes of some word (they may extend right/down later).
+    // The HORIZONTAL check additionally looks RIGHT through forced-active cells (placed letters and
+    // active scoring-stub cells, whose letters are restricted to their word-domain), so a placement
+    // that cannot complete a valid cross-word with the forced right neighbours is pruned now
+    // (forward checking via per-cell domain masks).
     fn place_ok(&mut self, x: usize, y: usize, l: u8) -> bool {
         let w = self.inst.w; let h = self.inst.h;
-        // horizontal run-so-far (left part + this). Right neighbour (processed later) is undecided
-        // (-1) -> run may extend, prefix-check; or forced-empty(0)/edge -> run CLOSES, full-word check.
+        // horizontal forced span [sx..e]: left = placed letters, then this cell, then right through
+        // FORCED-ACTIVE cells (placed letters OR active scoring-stub cells) until a cell that can be
+        // empty (bridge undecided / forced-empty / edge) -- the closure boundary.
         let mut sx = x;
         while sx > 0 && self.grid[idx(sx - 1, y, w)] > 0 { sx -= 1; }
-        let mut hk = 1u64; let mut hlen = 0usize;
-        for cx in sx..x { hk = key_push(hk, self.grid[idx(cx, y, w)] as u8); hlen += 1; }
-        hk = key_push(hk, l); hlen += 1;
-        if hlen >= 2 {
-            let h_closes = x + 1 == w || self.grid[idx(x + 1, y, w)] == 0;
-            if h_closes { if !self.dict.words.contains(&hk) { return false; } }
-            else if !self.dict.prefixes.contains(&hk) { return false; }
+        let mut masks: [u32; 8] = [0; 8];
+        let mut mlen = 0usize;
+        let mut bad = false;
+        for cx in sx..x { masks[mlen] = bit(self.grid[idx(cx, y, w)] as u8); mlen += 1; }
+        masks[mlen] = bit(l); mlen += 1;
+        // extend right through forced-active cells
+        let mut ex = x + 1;
+        while ex < w {
+            let cid = idx(ex, y, w);
+            let g = self.grid[cid];
+            if g > 0 { if mlen >= 8 { bad = true; break; } masks[mlen] = bit(g as u8); mlen += 1; ex += 1; }
+            else if g == -1 && self.inst.kind[cid] == 1 {            // unplaced active scoring-stub cell
+                if mlen >= 8 { bad = true; break; } masks[mlen] = self.inst.cell_mask[cid]; mlen += 1; ex += 1;
+            } else { break; }                                        // stopper: can-be-empty cell or edge
+        }
+        if bad { return false; }   // forced run already exceeds hmax -> illegal
+        if mlen >= 2 {
+            // run can close at e iff the stopper (ex) can be empty / is the edge; it ALWAYS can here
+            // because we stopped at a non-forced-active cell. It can EXTEND iff the stopper can be active.
+            let closes = ex == w || !self.inst.can_active[idx(ex, y, w)];
+            let extends = ex < w && self.inst.can_active[idx(ex, y, w)];
+            // need: (closes -> a word of this exact length matches) AND/OR (extends -> a prefix matches)
+            let ms = &masks[..mlen];
+            if closes && extends {
+                // closure boundary is a bridge: either close (word) or extend (prefix). Prefix subsumes word.
+                if !self.dict.pattern_prefix(ms) { return false; }
+            } else if closes {
+                if !self.dict.pattern_word(ms) { return false; }
+            } else {
+                // extends only (shouldn't happen: stopper non-forced-active is always can_empty), be safe
+                if !self.dict.pattern_prefix(ms) { return false; }
+            }
         }
         // vertical: skip for scoring-stub cells (their vertical = pre-validated stub).
         if self.inst.kind[idx(x, y, w)] != 1 {
@@ -384,7 +485,7 @@ impl<'a> Solver<'a> {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let path = &args[1];
-    let mut inst = parse(path);
+    let inst = parse(path);
     // re-read dict path from file (parse dropped it); read DICT line
     let mut s = String::new(); fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
     let mut dict_path = String::new(); let mut hmax = 8usize;
@@ -410,9 +511,14 @@ fn main() {
         let c = inst.scoring_cols[si];
         !((c > 0 && scol_set.contains(&(c - 1))) || (c + 1 < inst.w && scol_set.contains(&(c + 1))))
     }).collect();
-    // only defer if a coupled block REMAINS in phase 1 to prune the bridges; else (all isolated, e.g.
-    // N=7) defer none and use the fast interleaved row-major search.
-    if free_cols.len() == inst.scoring_cols.len() { free_cols.clear(); }
+    // NOTE: free-column deferral is now OFF by default. With the forward-checking horizontal
+    // cross-check (place_ok extends right/left through forced-active scoring cells using their
+    // domain masks), keeping ALL scoring columns IN the interleaved row-major search prunes the
+    // bridge cells dramatically -- deferring those columns removes the forced neighbours that make
+    // the cross-check bite, so it HURTS badly (small N=11 vec: 23k nodes interleaved vs >1.4B
+    // deferred). Opt back in with DEFER=1 only for experiments.
+    if std::env::var("DEFER").is_err() { free_cols.clear(); }
+    else if free_cols.len() == inst.scoring_cols.len() { free_cols.clear(); }
     let free_col_pos: HashSet<usize> = free_cols.iter().map(|&si| inst.scoring_cols[si]).collect();
     let deferred: Vec<bool> = (0..inst.w * inst.h)
         .map(|id| inst.kind[id] == 1 && free_col_pos.contains(&(id % inst.w))).collect();
