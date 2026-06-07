@@ -219,6 +219,13 @@ struct Solver<'a> {
     used: Vec<i64>,             // tiles used per code (incremental)
     overflow: i64,              // sum of per-code (used-counts) over codes where used>counts == blanks needed
     nodes: u64,
+    rowhist: Vec<u64>,
+    always_conn: bool,
+    iso_cols: Vec<usize>,       // isolated scoring columns (no adjacent scoring col): assigned EAGERLY
+                                // whole-word at the TOP of the search (phase 0) so their large
+                                // word-domains are factored to one branch point instead of being
+                                // re-multiplied through the interleaved bridge search.
+    eager_iso: bool,
 }
 
 impl<'a> Solver<'a> {
@@ -236,7 +243,38 @@ impl<'a> Solver<'a> {
 }
 
 impl<'a> Solver<'a> {
-    fn run(&mut self) -> bool { self.dfs(0) }
+    fn run(&mut self) -> bool {
+        if self.eager_iso && !self.iso_cols.is_empty() { self.dfs_iso(0) } else { self.dfs(0) }
+    }
+
+    // PHASE 0 (eager): assign each ISOLATED scoring column a whole candidate word, recursing over the
+    // isolated columns, then hand off to the interleaved row-major DFS (which skips the now-filled
+    // cells). SOUND: an isolated column has bridge (or edge) neighbours only, so its cells form no
+    // horizontal run until the adjacent bridge is decided as a letter -- so committing the column word
+    // here can neither falsely accept nor falsely reject; the later place_ok on that bridge validates
+    // the cross-word. Doing this FIRST factors the big word-domains (e.g. col10: 562 words) to a single
+    // top-level branch instead of re-multiplying them under every partial bridge assignment.
+    fn dfs_iso(&mut self, j: usize) -> bool {
+        if j == self.iso_cols.len() { return self.dfs(0); }
+        self.nodes += 1;
+        let si = self.iso_cols[j];
+        let col = self.inst.scoring_cols[si];
+        let len = self.inst.scoring_len[si];
+        let nwords = self.inst.scoring_words[si].len();
+        for wi in 0..nwords {
+            let word = self.inst.scoring_words[si][wi].clone();
+            let mut bok = true;
+            for &l in &word { if !self.add_letter(l as usize) { bok = false; break; } }
+            if !bok { for &l in &word { self.rm_letter(l as usize); } continue; }
+            for (k, &l) in word.iter().enumerate() { self.grid[idx(col, k + 1, self.inst.w)] = l as i16; }
+            let mut ok = true;
+            for k in 0..word.len() { if !self.place_ok(col, k + 1, word[k]) { ok = false; break; } }
+            if ok && self.dfs_iso(j + 1) { return true; }
+            for k in 1..len { self.grid[idx(col, k, self.inst.w)] = -1; }
+            for &l in &word { self.rm_letter(l as usize); }
+        }
+        false
+    }
 
     // Geometric prune: connectivity depends only on POSITIONS (letters are irrelevant). The "potential
     // active" graph = every cell not yet decided EMPTY (grid != 0: active letters OR undecided -1).
@@ -260,7 +298,7 @@ impl<'a> Solver<'a> {
 
     fn dfs(&mut self, pos: usize) -> bool {
         self.nodes += 1;
-        if self.nodes % 5_000_000 == 0 { eprintln!("  nodes={}M", self.nodes / 1_000_000); }
+        if self.nodes % 20_000_000 == 0 { eprintln!("  nodes={}M rowhist={:?}", self.nodes / 1_000_000, self.rowhist); }
         let w = self.inst.w; let h = self.inst.h; let n = w * h;
         // find next unassigned cell in row-major from `pos`
         let mut id = pos;
@@ -269,6 +307,8 @@ impl<'a> Solver<'a> {
             return self.dfs_free(0);   // phase 2: assign the isolated free columns whole-word, last
         }
         let x = id % w; let y = id / w;
+        self.rowhist[y] += 1;
+        if self.always_conn && !self.can_still_connect() { return false; }
         let kind = self.inst.kind[id];
         if kind == 1 {
             // scoring-stub cell: branch over letters consistent with the column's candidate words
@@ -507,10 +547,13 @@ fn main() {
     // free columns = scoring columns with NO adjacent scoring column (isolated -> coupled only via
     // bridges). Defer their stub cells to phase 2 so their large domains don't multiply the search.
     let scol_set: HashSet<usize> = inst.scoring_cols.iter().cloned().collect();
-    let mut free_cols: Vec<usize> = (0..inst.scoring_cols.len()).filter(|&si| {
-        let c = inst.scoring_cols[si];
-        !((c > 0 && scol_set.contains(&(c - 1))) || (c + 1 < inst.w && scol_set.contains(&(c + 1))))
-    }).collect();
+    let is_isolated = |si: usize| { let c = inst.scoring_cols[si];
+        !((c > 0 && scol_set.contains(&(c - 1))) || (c + 1 < inst.w && scol_set.contains(&(c + 1)))) };
+    let mut free_cols: Vec<usize> = (0..inst.scoring_cols.len()).filter(|&si| is_isolated(si)).collect();
+    // isolated scoring columns to assign EAGERLY (whole-word, top of search), largest-domain LAST so the
+    // smaller domains commit first and prune the bag before the big column branches.
+    let mut iso_cols: Vec<usize> = (0..inst.scoring_cols.len()).filter(|&si| is_isolated(si)).collect();
+    iso_cols.sort_by_key(|&si| inst.scoring_words[si].len());
     // NOTE: free-column deferral is now OFF by default. With the forward-checking horizontal
     // cross-check (place_ok extends right/left through forced-active scoring cells using their
     // domain masks), keeping ALL scoring columns IN the interleaved row-major search prunes the
@@ -527,9 +570,18 @@ fn main() {
     for &g in &inst.grid0 { if g > 0 { used[g as usize] += 1; } }
     let mut overflow = 0i64;
     for c in 1..=inst.alpha { if used[c] > inst.counts[c] { overflow += used[c] - inst.counts[c]; } }
-    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, deferred, free_cols, used, overflow, nodes: 0 };
+    // EAGER iso assignment is OFF by default: committing an isolated column's whole word at the TOP
+    // of the search forces the entire coupled-block+bridge subtree to be (nearly) re-solved for each
+    // of that column's candidate words (e.g. 562 for a len-9 col10), since connectivity/budget don't
+    // distinguish them early -- measured strictly worse (a 0.01s vector -> >60s). Opt in with EAGER=1.
+    let eager_iso = std::env::var("EAGER").is_ok() && std::env::var("DEFER").is_err();
+    eprintln!("eager isolated scoring columns: {:?}", iso_cols.iter().map(|&si| inst.scoring_cols[si]).collect::<Vec<_>>());
+    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, deferred, free_cols, used, overflow, nodes: 0, rowhist: vec![0u64; inst.h], always_conn: std::env::var("ACONN").is_ok(), iso_cols, eager_iso };
     let t = std::time::Instant::now();
     let sat = solver.run();
     let dt = t.elapsed().as_secs_f64();
+    if std::env::var("ROWHIST").is_ok() {
+        eprintln!("rowhist: {:?}", solver.rowhist);
+    }
     println!("{} nodes={} time={:.3}s", if sat { "SAT" } else { "UNSAT" }, solver.nodes, dt);
 }
