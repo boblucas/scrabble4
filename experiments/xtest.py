@@ -37,25 +37,37 @@ def build_instance(board, main, turn, Lvec, scale=True):
         blanks = round(rules.blank_count * f)
     scoring = [x for x in range(W) if turn[x].isupper()]
     pre = [x for x in range(W) if not turn[x].isupper()]
-    # candidate stub words (w[1:]) per scoring column, of the fixed length
+    # candidate stub words (w[1:]) per scoring column, of the fixed length.
+    # Each candidate also carries grossV = the word's VERTICAL score (only the row-0 tile gets the
+    # board multipliers, matching 31_length_level.inner_best_legal: placed=[i==0...]). All candidates
+    # of a column share the same row-0 letter (mt[c]), so dedup by stub is safe (same stub => same word
+    # => same grossV).
     doms = {}
     for c in scoring:
-        L = mt[c]; out = []
+        L = mt[c]; seen = set(); out = []
         for w in rules.words:
             if w and w[0] == L and len(w) == Lvec[c] and (len(w) == 1 or w[1:] in rules.words_lookup):
-                out.append(tuple(w[1:]))
-        out = list(dict.fromkeys(out))                 # dedup identical stubs
+                stub = tuple(w[1:])
+                if stub in seen:
+                    continue
+                seen.add(stub)
+                sc, _ = get_word_score(rules, w, c, 0, 0, [i == 0 for i in range(len(w))])
+                out.append((stub, int(sc)))
         doms[c] = out
         if not out:
             return None, None                          # no candidate of this length -> skip
     inst = {
         'W': W, 'H': H, 'hmax': HMAX,
         'preplaced': [[x, 0, mt[x]] for x in pre],
-        'scoring': [{'col': c, 'len': Lvec[c], 'words': [list(s) for s in doms[c]]} for c in scoring],
+        'scoring': [{'col': c, 'len': Lvec[c],
+                     'words': [list(s) for s, _ in doms[c]],
+                     'gross': [g for _, g in doms[c]]} for c in scoring],
         'nonscoring_cols': pre,
         'alphabet_size': len(rules.abc),
         # available for SETUP cells = bag minus the main tiles newly placed at scoring columns
         'counts': {str(code): counts[code] - Counter(mt[c] for c in scoring)[code] for code in counts},
+        # face value per letter code (for the blank penalty: a blanked stub tile scores 0)
+        'scores': {str(code): rules.scores[code] for code in rules.scores},
         'blanks': blanks,
         'dict_path': f'experiments/xtests/dict_{board}.txt',     # shared <=HMAX word list (codes)
     }
@@ -100,19 +112,97 @@ def cpsat_decide(meta, cap=120.0):
     return {cp_model.OPTIMAL: 'SAT', cp_model.FEASIBLE: 'SAT', cp_model.INFEASIBLE: 'UNSAT'}.get(r, 'UNKNOWN')
 
 
+def cpsat_maxscore(meta, cap=180.0):
+    """Ground truth for --maxscore: the MAXIMUM vertical score (grossV - blank penalty) over all legal
+    connected boards for these fixed lengths. Mirrors 31_length_level.inner_best_legal with floor=-1
+    (full maximize). Returns (status, score) where status in OPTIMAL/INFEASIBLE/UNKNOWN; score is the
+    optimal int objective (None if not OPTIMAL)."""
+    rules, W, H = meta['rules'], meta['rules'].W, meta['rules'].H
+    mt, scoring, pre, Lvec = meta['mt'], meta['scoring'], meta['pre'], meta['Lvec']
+    counts, blanks = meta['counts'], meta['blanks']
+    m = cp_model.CpModel(); m.prefix = 'i'
+    row_aut = position_independent_row_automaton([w for w in rules.words if len(w) <= HMAX])
+    cols = [row_aut if x not in scoring else None for x in range(W)]
+    cells = create_board(m, [row_aut] * H, cols, alphabet_size=len(rules.abc))
+    for x in pre:
+        m.add(cells[(x, 0)].letter[mt[x]] == 1)
+    for x in scoring:
+        m.add(cells[(x, 0)].active == 0)
+    xv = {}; items = {}
+    for c in scoring:
+        words = []
+        for w in rules.words:
+            if w and w[0] == mt[c] and len(w) == Lvec[c] and (len(w) == 1 or w[1:] in rules.words_lookup):
+                words.append(w)
+        # dedup identical stubs (same stub => same full word => same gross); keep full word for score
+        seen = set(); uniq = []
+        for w in words:
+            stub = tuple(w[1:])
+            if stub in seen: continue
+            seen.add(stub); uniq.append(w)
+        its = []
+        for w in uniq:
+            sc, _ = get_word_score(rules, w, c, 0, 0, [i == 0 for i in range(len(w))])
+            its.append((tuple(w[1:]), int(sc)))
+        items[c] = its
+        vs = []
+        for i, (stub, sc) in enumerate(its):
+            v = m.new_bool_var(f'x_{c}_{i}'); xv[(c, i)] = v; vs.append(v)
+            for r in range(1, Lvec[c]):
+                m.add(cells[(c, r)].letter[stub[r - 1]] == 1).only_enforce_if(v)
+            for r in range(Lvec[c], H):
+                m.add(cells[(c, r)].active == 0).only_enforce_if(v)
+        m.add(sum(vs) == 1)
+    newly = Counter(mt[c] for c in scoring)
+    limit_letter_count(m, cells, Counter({code: counts[code] - newly[code] for code in counts}))
+    penalty = 0
+    if blanks:
+        m.add(sum(cell.blank for cell in cells.values()) <= blanks)
+        for code in counts:
+            terms = []
+            for c in scoring:
+                for r in range(1, H):
+                    cell = cells[(c, r)]
+                    b = m.new_bool_var(f'blk_{c}_{r}_{code}')
+                    m.add(b <= cell.blank); m.add(b <= cell.letter[code]); m.add(b >= cell.blank + cell.letter[code] - 1)
+                    terms.append(b)
+            o = m.new_int_var(0, blanks, f'o_{code}'); m.add(o == sum(terms))
+            penalty = penalty + o * rules.scores[code]
+    else:
+        m.add(sum(cell.blank for cell in cells.values()) <= 0)
+    if pre:
+        single_component(m, cells, (pre[0], 0))
+    obj = sum(xv[(c, i)] * sc for c in scoring for i, (stub, sc) in enumerate(items[c])) - penalty
+    m.maximize(obj)
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = 24; s.parameters.max_presolve_iterations = 1
+    s.parameters.max_time_in_seconds = cap
+    r = s.Solve(m)
+    if r == cp_model.OPTIMAL:
+        return 'OPTIMAL', int(s.objective_value)
+    if r == cp_model.INFEASIBLE:
+        return 'INFEASIBLE', None
+    if r == cp_model.FEASIBLE:
+        return 'FEASIBLE', int(s.objective_value)
+    return 'UNKNOWN', None
+
+
 def dump_simple(inst, truth, path):
     """Dead-simple line format the Rust solver parses with split_whitespace."""
     L = []
     L.append(f"DIMS {inst['W']} {inst['H']} {inst['hmax']} {inst['alphabet_size']} {inst['blanks']}")
     L.append("COUNTS " + ' '.join(f"{k}:{v}" for k, v in inst['counts'].items()))
+    L.append("SCORES " + ' '.join(f"{k}:{v}" for k, v in inst.get('scores', {}).items()))
     L.append("PREPLACED " + ' '.join(f"{x},{y},{c}" for x, y, c in inst['preplaced']))
     L.append("NONSCORING " + ' '.join(map(str, inst['nonscoring_cols'])))
     L.append(f"DICT {inst['dict_path']}")
     L.append(f"NSCORING {len(inst['scoring'])}")
     for blk in inst['scoring']:
         L.append(f"SCOL {blk['col']} {blk['len']} {len(blk['words'])}")
-        for w in blk['words']:
-            L.append("WORD " + ' '.join(map(str, w)))
+        gross = blk.get('gross', [0] * len(blk['words']))
+        for w, g in zip(blk['words'], gross):
+            # WORDV carries the vertical score as the first token (for --maxscore); the Rust solver
+            # also still accepts the legacy "WORD <codes...>" form (gross defaults to 0, decision-only).
+            L.append(f"WORDV {g} " + ' '.join(map(str, w)))
     L.append(f"TRUTH {truth}")
     with open(path, 'w') as fp:
         fp.write('\n'.join(L) + '\n')
@@ -188,12 +278,98 @@ def gen_hard():
     print(f"generated {made} hard instances")
 
 
+def gen_score():
+    """Generate SCORE ground-truth instances (N=7 full + scaled bag, a few N=9). Each carries per-word
+    grossV + SCORES, and a `TRUTH MAXSCORE <s>` (or `MAXSCORE_UNSAT`) line from cpsat_maxscore. These
+    validate `xfill --maxscore` (Rust max MUST equal CP-SAT inner max). Files: experiments/xtests/s*.txt"""
+    os.makedirs(TESTDIR, exist_ok=True)
+    write_dict('7'); write_dict('9')
+    made = 0
+    rules7 = construct_rules('dutch', '7')
+    sevens = [rules7.alphabet.to_str(w) for w in rules7.words if len(w) == 7]
+    plan = []
+    # full-bag N=7 (rich, mostly SAT): a spread of length-vectors over a sample of main words
+    for word in sevens[::29][:8]:
+        for Lset in [{0: 3, 2: 3, 4: 3, 6: 3}, {0: 4, 2: 2, 4: 5, 6: 3}, {0: 5, 2: 4, 4: 4, 6: 2}]:
+            plan.append(('7', word, False, Lset, 'sf'))
+    # scaled-bag N=7 (tile-starved -> blanks/penalty bite): exercises the penalty model
+    for word in sevens[::53][:6]:
+        for Lset in [{0: 5, 2: 6, 4: 7, 6: 5}, {0: 6, 2: 6, 4: 6, 6: 6}]:
+            plan.append(('7', word, True, Lset, 'ss'))
+    # a few N=9 (scoring at 0,2,4,6,8)
+    rules9 = construct_rules('dutch', '9')
+    nines = [rules9.alphabet.to_str(w) for w in rules9.words if len(w) == 9]
+    for word in nines[::101][:4]:
+        for Lset in [{0: 3, 2: 3, 4: 3, 6: 3, 8: 3}, {0: 4, 2: 3, 4: 5, 6: 3, 8: 4}]:
+            plan.append(('9', word, True, Lset, 's9'))
+    cases = []
+    for board, word, scale, Lset, tag in plan:
+        if made >= 40: break
+        turn_letters = sorted(Lset.keys())
+        ts = ''.join(word[x].upper() if x in turn_letters else word[x].lower() for x in range(len(word)))
+        inst, meta = build_instance(board, word, ts, Lset, scale=scale)
+        if inst is None: continue
+        t = time.time(); status, score = cpsat_maxscore(meta, cap=120); dt = time.time() - t
+        if status not in ('OPTIMAL', 'INFEASIBLE'):
+            print(f"  skip {word} {Lset}: cpsat {status} ({dt:.1f}s)"); continue
+        truth = f"MAXSCORE {score}" if status == 'OPTIMAL' else "MAXSCORE_UNSAT"
+        name = f"{tag}_{board}_{word}_{'-'.join(str(Lset[c]) for c in turn_letters)}"
+        path = os.path.join(TESTDIR, name + '.txt')
+        dump_simple(inst, truth, path)
+        cases.append((name, truth, dt))
+        print(f"  {name}: {truth} ({dt:.1f}s) -> {path}"); made += 1
+    print(f"\ngenerated {made} score instances")
+
+
+def score_check():
+    """Run `xfill --maxscore` on every s*.txt and assert the Rust MAX equals the CP-SAT TRUTH score
+    (or both UNSAT). This is the soundness guard for the optimization."""
+    import glob, subprocess
+    BIN = 'experiments/xfill_rs/target/release/xfill'
+    files = sorted(glob.glob(os.path.join(TESTDIR, 's*_*.txt')))
+    npass = nfail = 0
+    for f in files:
+        truth_line = None
+        for line in open(f):
+            if line.startswith('TRUTH'):
+                truth_line = line.strip(); break
+        toks = truth_line.split() if truth_line else []
+        if len(toks) >= 2 and toks[1] == 'MAXSCORE':
+            want = ('MAX', int(toks[2]))
+        elif len(toks) >= 2 and toks[1] == 'MAXSCORE_UNSAT':
+            want = ('LE', -1)
+        else:
+            print(f"  {os.path.basename(f)}: no MAXSCORE truth, skip"); continue
+        try:
+            out = subprocess.run([BIN, f, '--maxscore', '-1'], capture_output=True, text=True,
+                                 timeout=float(os.environ.get('XFILL_CAP', '30'))).stdout
+        except subprocess.TimeoutExpired:
+            out = 'TIMEOUT'
+        verdict = out.split()[0] if out.split() else '?'
+        if verdict == 'MAX':
+            got = ('MAX', int(out.split()[1]))
+        elif verdict == 'LE':
+            got = ('LE', -1)
+        else:
+            got = (verdict, None)
+        ok = (got == want)
+        npass += ok; nfail += (not ok)
+        flag = 'ok ' if ok else 'FAIL'
+        print(f"  [{flag}] {os.path.basename(f):42s} want={want} got={got}  ({out.strip()})")
+    print(f"\nscore-check: {npass}/{npass+nfail} pass" + (" -- ALL GOOD" if nfail == 0 else f" -- {nfail} FAIL"))
+    return nfail == 0
+
+
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'gen'
     if cmd == 'gen':
         gen()
     elif cmd == 'genhard':
         gen_hard()
+    elif cmd == 'genscore':
+        gen_score()
+    elif cmd == 'scorecheck':
+        ok = score_check(); sys.exit(0 if ok else 1)
     elif cmd == 'dumpinst':
         # dumpinst <board> <main> <turn> <len0,len1,...for scoring cols in order> [scale]
         os.makedirs(TESTDIR, exist_ok=True)

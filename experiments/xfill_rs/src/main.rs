@@ -21,12 +21,15 @@ struct Inst {
     alpha: usize,
     blanks: i64,
     counts: Vec<i64>,            // index by code (1..=alpha); [0] unused
+    scores: Vec<i64>,           // face value per code (1..=alpha); [0] unused; for blank penalty
     grid0: Vec<i16>,            // initial: -1 unassigned, 0 empty(forced), >0 letter(preplaced)
     kind: Vec<u8>,              // 0 = fixed (preplaced/forced-empty), 1 = scoring-stub cell, 2 = bridge
     scol_of: Vec<i32>,         // for scoring-stub cells: which scoring column index; else -1
     scoring_cols: Vec<usize>,
     scoring_len: Vec<usize>,
     scoring_words: Vec<Vec<Vec<u8>>>, // per scoring col: candidate stub words (len = len-1)
+    scoring_gross: Vec<Vec<i64>>,    // per scoring col: vertical score per candidate word (parallel)
+    scoring_best: Vec<i64>,          // per scoring col: max gross over its candidates (UB term)
     // static per-cell info (computed once after parse):
     cell_mask: Vec<u32>,       // bit (letter-1) set = letter possible at this cell (preplaced/forced=exact)
     can_active: Vec<bool>,     // cell is or can become active (hold a tile)
@@ -43,11 +46,13 @@ fn parse(path: &str) -> Inst {
     fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
     let mut w = 0; let mut h = 0; let mut alpha = 0; let mut blanks = 0i64;
     let mut counts: Vec<i64> = Vec::new();
+    let mut scores: Vec<i64> = Vec::new();
     let mut preplaced: Vec<(usize, usize, i16)> = Vec::new();
     let mut nonscoring: Vec<usize> = Vec::new();
     let mut scoring_cols: Vec<usize> = Vec::new();
     let mut scoring_len: Vec<usize> = Vec::new();
     let mut scoring_words: Vec<Vec<Vec<u8>>> = Vec::new();
+    let mut scoring_gross: Vec<Vec<i64>> = Vec::new();
     let mut dict_path = String::new();
     let mut cur_col: i64 = -1;
     let lines: Vec<&str> = s.lines().collect();
@@ -64,6 +69,7 @@ fn parse(path: &str) -> Inst {
                 alpha = it.next().unwrap().parse().unwrap();
                 blanks = it.next().unwrap().parse().unwrap();
                 counts = vec![0; alpha + 1];
+                scores = vec![0; alpha + 1];
             }
             "COUNTS" => {
                 for tok in it {
@@ -71,6 +77,14 @@ fn parse(path: &str) -> Inst {
                     let c: usize = p.next().unwrap().parse().unwrap();
                     let n: i64 = p.next().unwrap().parse().unwrap();
                     if c < counts.len() { counts[c] = n; }
+                }
+            }
+            "SCORES" => {
+                for tok in it {
+                    let mut p = tok.split(':');
+                    let c: usize = p.next().unwrap().parse().unwrap();
+                    let n: i64 = p.next().unwrap().parse().unwrap();
+                    if c < scores.len() { scores[c] = n; }
                 }
             }
             "PREPLACED" => {
@@ -86,12 +100,20 @@ fn parse(path: &str) -> Inst {
                 let col: usize = it.next().unwrap().parse().unwrap();
                 let len: usize = it.next().unwrap().parse().unwrap();
                 let _nw: usize = it.next().unwrap().parse().unwrap();
-                scoring_cols.push(col); scoring_len.push(len); scoring_words.push(Vec::new());
+                scoring_cols.push(col); scoring_len.push(len);
+                scoring_words.push(Vec::new()); scoring_gross.push(Vec::new());
                 cur_col = (scoring_cols.len() - 1) as i64;
             }
-            "WORD" => {
+            "WORD" => {                                              // legacy: codes only, gross=0
                 let v: Vec<u8> = it.map(|t| t.parse().unwrap()).collect();
                 scoring_words[cur_col as usize].push(v);
+                scoring_gross[cur_col as usize].push(0);
+            }
+            "WORDV" => {                                             // gross score then codes
+                let g: i64 = it.next().unwrap().parse().unwrap();
+                let v: Vec<u8> = it.map(|t| t.parse().unwrap()).collect();
+                scoring_words[cur_col as usize].push(v);
+                scoring_gross[cur_col as usize].push(g);
             }
             "TRUTH" => {}
             _ => {}
@@ -111,7 +133,13 @@ fn parse(path: &str) -> Inst {
         for r in 1..len { let id = idx(col, r, w); grid0[id] = -1; kind[id] = 1; scol_of[id] = si as i32; }
         // (col,0) and (col, len..h) stay 0/forced-empty
     }
-    // bridge cells: non-scoring columns, rows 1..h-1
+    // bridge cells: non-scoring columns, rows 1..h-1.
+    // NOTE on depth: a tempting "no bridge below the deepest scoring column" restriction is UNSOUND --
+    // a horizontal word can force bridge letters that only form a VALID vertical word by extending one
+    // row past the deepest column (e.g. forced "ci" is invalid but "cid" is a word, needing a bridge at
+    // that deeper row). Emptying such a deep cell shortens the vertical run into an INVALID word, so it
+    // is not free. We therefore keep the full bridge range and tame the deep-bridge explosion in the
+    // search itself (connectivity-aware pruning) rather than by truncating the board.
     for &col in &nonscoring {
         for r in 1..h { let id = idx(col, r, w); grid0[id] = -1; kind[id] = 2; }
     }
@@ -137,7 +165,10 @@ fn parse(path: &str) -> Inst {
             _ => { cell_mask[id] = all_mask; can_active[id] = true; can_empty[id] = true; } // bridge
         }
     }
-    Inst { w, h, alpha, blanks, counts, grid0, kind, scol_of, scoring_cols, scoring_len, scoring_words,
+    let scoring_best: Vec<i64> = scoring_gross.iter()
+        .map(|gs| gs.iter().cloned().max().unwrap_or(0)).collect();
+    Inst { w, h, alpha, blanks, counts, scores, grid0, kind, scol_of, scoring_cols, scoring_len,
+           scoring_words, scoring_gross, scoring_best,
            cell_mask, can_active, can_empty }
     .with_dict(&dict_path)
 }
@@ -226,6 +257,20 @@ struct Solver<'a> {
                                 // word-domains are factored to one branch point instead of being
                                 // re-multiplied through the interleaved bridge search.
     eager_iso: bool,
+    // ----- score-maximization mode -----
+    maxscore: bool,             // if true, run() maximizes grossV - penalty instead of deciding
+    best: i64,                  // best score strictly greater than the floor found so far (= floor init)
+    col_committed: Vec<bool>,   // per scoring col: all its stub cells assigned (word determined)
+    committed_gross: i64,       // sum of chosen-word gross over committed columns
+    remaining_best: i64,        // sum of col_ub over NOT-yet-committed columns (UB term)
+    col_ub: Vec<i64>,           // per col: best gross among candidate words consistent with its partial
+                                // stub so far (= scoring_best when untouched); tightens the UB as prefixes
+                                // get fixed. For committed columns this is its chosen gross.
+    node_cap: u64,              // diagnostic: abort the search after this many nodes (0 = no cap)
+    no_ub: bool,                // diagnostic: disable the gross-floor UB prune (soundness cross-check)
+    seen_buf: Vec<u32>,         // reusable BFS visited buffer for sealed_ok (gen-stamped, alloc-free)
+    seen_gen: u32,
+    bfs_stack: Vec<usize>,      // reusable BFS stack for sealed_ok
 }
 
 impl<'a> Solver<'a> {
@@ -244,7 +289,229 @@ impl<'a> Solver<'a> {
 
 impl<'a> Solver<'a> {
     fn run(&mut self) -> bool {
+        if self.maxscore { self.maximize(); return false; }  // result reported via self.best in main
         if self.eager_iso && !self.iso_cols.is_empty() { self.dfs_iso(0) } else { self.dfs(0) }
+    }
+
+    // ===== SCORE MAXIMIZATION =====================================================================
+    // Maximize (sum of chosen-word vertical gross scores) - (blank penalty), over all LEGAL CONNECTED
+    // boards for the fixed length-vector. Same model as 31_length_level.inner_best_legal.
+    //
+    // STRATEGY (rising-floor decisions, like inner_best_legal's `obj>=floor+1` loop): treat each call as
+    // a DECISION "is there a legal connected board whose score strictly beats self.best?". dfs_score
+    // STOPS (returns true) at the first such board, recording its score -> self.best ratchets up. Re-run
+    // until no board beats best (returns false) -> best is the proven maximum. This is far faster than
+    // exhaustively searching for the best leaf: each decision stops at the first feasible improver, and
+    // the gross-floor UB prune (committed+remaining_best <= best) makes the final "nothing beats it"
+    // proof a fast pruned-infeasibility search (the decision solver's strength), instead of enumerating
+    // the whole bridge subtree under every committed column set.
+    fn maximize(&mut self) {
+        loop {
+            let n0 = self.nodes;
+            // reset per-attempt search state (grid/budget are restored by the DFS unwind; col_ub/
+            // remaining_best/committed are all back to base because dfs_score fully unwinds on return).
+            let found = self.dfs_score(0);
+            if std::env::var("MAXVERB").is_ok() {
+                eprintln!("  [iter] best={} found={} rem_best={} committed={} nodes_delta={}",
+                    self.best, found, self.remaining_best, self.committed_gross, self.nodes - n0);
+            }
+            if !found { break; }   // no board strictly beats self.best -> proven optimum (= self.best)
+        }
+    }
+
+    // Returns true as soon as a legal connected board with score > self.best is found (and sets best to
+    // that score). Returns false if the whole tree is exhausted without beating best.
+    fn dfs_score(&mut self, pos: usize) -> bool {
+        self.nodes += 1;
+        if self.nodes % 20_000_000 == 0 {
+            eprintln!("  nodes={}M best={} committed={} rem_best={} rowhist={:?}",
+                self.nodes / 1_000_000, self.best, self.committed_gross, self.remaining_best, self.rowhist);
+        }
+        if self.node_cap > 0 && self.nodes >= self.node_cap { return false; }   // diagnostic abort
+        // UB prune: nothing reachable below can STRICTLY beat the current floor (penalty>=0 so score
+        // <= committed+remaining_best).
+        if !self.no_ub && self.committed_gross + self.remaining_best <= self.best { return false; }
+        let w = self.inst.w; let h = self.inst.h; let n = w * h;
+        let mut id = pos;
+        while id < n && self.grid[id] != -1 { id += 1; }
+        if id >= n { return self.score_leaf(); }
+        let x = id % w; let y = id / w;
+        self.rowhist[y] += 1;
+        let kind = self.inst.kind[id];
+        if kind == 1 {
+            let si = self.inst.scol_of[id] as usize;
+            let col = self.inst.scoring_cols[si];
+            let posn = y - 1;
+            let len = self.inst.scoring_len[si];
+            // candidate letters at this cell + the best gross of any consistent word using that letter
+            // (for descending ordering -> find a strong incumbent fast, sharpening the B&B floor).
+            let mut cand: Vec<(u8, i64)> = Vec::new();   // (letter, best-consistent-gross via this letter)
+            'words: for (wi, wd) in self.inst.scoring_words[si].iter().enumerate() {
+                for r in 1..len {
+                    let cid = idx(col, r, w);
+                    let g = self.grid[cid];
+                    if g > 0 && (wd[r - 1] as i16) != g { continue 'words; }
+                }
+                let l = wd[posn];
+                let g = self.inst.scoring_gross[si][wi];
+                if let Some(e) = cand.iter_mut().find(|e| e.0 == l) { if g > e.1 { e.1 = g; } }
+                else { cand.push((l, g)); }
+            }
+            cand.sort_by(|a, b| b.1.cmp(&a.1));          // high-gross letters first
+            let prev_ub = self.col_ub[si];
+            for (l, _) in cand {
+                if !self.place_ok(x, y, l) { continue; }
+                if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
+                self.grid[id] = l as i16;
+                // tighten this column's UB to the best gross consistent with the now-extended prefix.
+                let new_ub = self.col_best_consistent(si, col);
+                self.remaining_best += new_ub - prev_ub;
+                self.col_ub[si] = new_ub;
+                let committed = self.commit_if_col_done(si, col);
+                let hit = self.sealed_ok(id) && self.dfs_score(id + 1);
+                self.uncommit(si, committed);
+                self.remaining_best += prev_ub - self.col_ub[si];
+                self.col_ub[si] = prev_ub;
+                self.grid[id] = -1;
+                self.rm_letter(l as usize);
+                if hit { return true; }
+            }
+            false
+        } else {
+            // bridge cell: EMPTY then letters
+            self.grid[id] = 0;
+            if self.closed_runs_ok(x, y) && self.sealed_ok(id) && self.dfs_score(id + 1) {
+                self.grid[id] = -1; return true;
+            }
+            self.grid[id] = -1;
+            for l in 1..=self.inst.alpha as i16 {
+                if !self.place_ok(x, y, l as u8) { continue; }
+                if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
+                self.grid[id] = l;
+                let hit = self.sealed_ok(id) && self.dfs_score(id + 1);
+                self.grid[id] = -1;
+                self.rm_letter(l as usize);
+                if hit { return true; }
+            }
+            false
+        }
+    }
+
+    // SEALED-CELL connectivity prune (sound, for score maximization's deep-bridge tail). Row-major fill
+    // means when we decide cell `id`=(x,y), the cell directly ABOVE it, (x,y-1)=s, now has all four
+    // neighbours decided -> it is SEALED. If s is active, it must ultimately join the root component.
+    // OPTIMISTIC reachability: flood from s through cells that are decided-active (idx<=id, grid>0) OR
+    // still-undecided & not-forced-empty (idx>id, grid!=0, i.e. could become active). If even this
+    // most-generous flood cannot reach the root, NO completion can connect s -> prune. Sound: undecided
+    // cells are treated as freely active, so we never prune a configuration that could still connect.
+    // Tight in practice because undecided cells all lie at/after the row-major frontier (current row to
+    // the right, or below) -- a deep active cell walled off above by decided-empty cells is caught.
+    fn sealed_ok(&mut self, id: usize) -> bool {
+        let w = self.inst.w; let h = self.inst.h;
+        if id < w { return true; }                 // no cell above
+        let s = id - w;                            // the just-sealed cell (x, y-1)
+        if self.grid[s] <= 0 { return true; }      // sealed cell empty -> nothing to connect
+        let root = self.mandatory[0];
+        if s == root { return true; }
+        self.seen_gen = self.seen_gen.wrapping_add(1);
+        let g = self.seen_gen;
+        self.bfs_stack.clear();
+        self.bfs_stack.push(s); self.seen_buf[s] = g;
+        // traversable = decided-active (idx<=id, grid>0) OR undecided-potential (idx>id, not forced-empty)
+        while let Some(p) = self.bfs_stack.pop() {
+            let px = p % w; let py = p / w;
+            macro_rules! visit { ($q:expr) => {{ let q = $q;
+                if self.seen_buf[q] != g {
+                    let t = if q <= id { self.grid[q] > 0 } else { self.grid[q] != 0 };
+                    if t { if q == root { return true; } self.seen_buf[q] = g; self.bfs_stack.push(q); }
+                }
+            }}; }
+            if px > 0 { visit!(p - 1); }
+            if px + 1 < w { visit!(p + 1); }
+            if py > 0 { visit!(p - w); }
+            if py + 1 < h { visit!(p + w); }
+        }
+        false                                       // root unreachable even optimistically -> doomed
+    }
+
+    // Best gross over candidate words of column si consistent with its current partial stub (>0 cells).
+    fn col_best_consistent(&self, si: usize, col: usize) -> i64 {
+        let w = self.inst.w;
+        let len = self.inst.scoring_len[si];
+        let mut best = i64::MIN;
+        'words: for (wi, wd) in self.inst.scoring_words[si].iter().enumerate() {
+            for r in 1..len {
+                let g = self.grid[idx(col, r, w)];
+                if g > 0 && (wd[r - 1] as i16) != g { continue 'words; }
+            }
+            let gr = self.inst.scoring_gross[si][wi];
+            if gr > best { best = gr; }
+        }
+        if best == i64::MIN { 0 } else { best }
+    }
+
+    // After assigning a stub cell of column si, if ALL its stub cells are now assigned, the word is
+    // determined: commit its gross and remove the column from remaining_best (its col_ub already equals
+    // the chosen word's gross, since the full prefix pins exactly one word). Returns Some(gross) so
+    // uncommit can undo exactly.
+    #[inline]
+    fn commit_if_col_done(&mut self, si: usize, col: usize) -> Option<i64> {
+        let w = self.inst.w;
+        let len = self.inst.scoring_len[si];
+        for r in 1..len { if self.grid[idx(col, r, w)] <= 0 { return None; } }
+        let g = self.col_ub[si];                  // = chosen word's gross (full prefix pins one word)
+        self.col_committed[si] = true;
+        self.committed_gross += g;
+        self.remaining_best -= self.col_ub[si];
+        Some(g)
+    }
+    #[inline]
+    fn uncommit(&mut self, si: usize, committed: Option<i64>) {
+        if let Some(g) = committed {
+            self.col_committed[si] = false;
+            self.committed_gross -= g;
+            self.remaining_best += self.col_ub[si];
+        }
+    }
+
+    // At a complete board: if legal (all runs valid, connected, budget feasible) and its score (gross -
+    // minimal blank penalty) STRICTLY beats best, record it and return true (improver found -> unwind).
+    // Otherwise return false (keep searching; e.g. a high-gross board whose penalty drags it <= best).
+    fn score_leaf(&mut self) -> bool {
+        if !self.leaf_ok() { return false; }
+        let penalty = self.min_blank_penalty();
+        let score = self.committed_gross - penalty;
+        if score > self.best { self.best = score; return true; }
+        false
+    }
+
+    // Minimum blank penalty for the CURRENT full board. For each over-used letter code we MUST blank
+    // (used-count) cells of that code; blanking a bridge cell is free, a scoring-stub cell costs its
+    // face value. So per code: penalty += face[code] * max(0, overflow[code] - bridge_cells[code]).
+    // Codes are independent (a blank for code X sits on a cell holding X) -> this greedy is optimal and
+    // matches CP-SAT's penalty minimization. (leaf_ok already verified total overflow <= blanks.)
+    fn min_blank_penalty(&self) -> i64 {
+        let w = self.inst.w;
+        let a = self.inst.alpha;
+        let mut used = vec![0i64; a + 1];
+        let mut bridge = vec![0i64; a + 1];    // bridge cells holding each code (free to blank)
+        for id in 0..self.grid.len() {
+            let g = self.grid[id];
+            if g > 0 {
+                used[g as usize] += 1;
+                if self.inst.kind[id] == 2 { bridge[g as usize] += 1; }
+            }
+        }
+        let _ = w;
+        let mut penalty = 0i64;
+        for c in 1..=a {
+            let overflow = used[c] - self.inst.counts[c];
+            if overflow > 0 {
+                let on_stub = overflow - bridge[c];     // must blank this many STUB cells of code c
+                if on_stub > 0 { penalty += on_stub * self.inst.scores[c]; }
+            }
+        }
+        penalty
     }
 
     // PHASE 0 (eager): assign each ISOLATED scoring column a whole candidate word, recursing over the
@@ -525,6 +792,14 @@ impl<'a> Solver<'a> {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let path = &args[1];
+    // --maxscore [floor]: score-maximization mode. Returns the MAX legal vertical score, or "LE floor"
+    // if nothing beats `floor`. floor defaults to -1 (so any legal board reports its score). The floor
+    // seeds branch-and-bound: a node is pruned when its UB (committed_gross + remaining_best) <= best.
+    let maxscore = args.iter().any(|a| a == "--maxscore");
+    let floor: i64 = if maxscore {
+        args.iter().position(|a| a == "--maxscore")
+            .and_then(|i| args.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(-1)
+    } else { -1 };
     let inst = parse(path);
     // re-read dict path from file (parse dropped it); read DICT line
     let mut s = String::new(); fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
@@ -576,12 +851,29 @@ fn main() {
     // distinguish them early -- measured strictly worse (a 0.01s vector -> >60s). Opt in with EAGER=1.
     let eager_iso = std::env::var("EAGER").is_ok() && std::env::var("DEFER").is_err();
     eprintln!("eager isolated scoring columns: {:?}", iso_cols.iter().map(|&si| inst.scoring_cols[si]).collect::<Vec<_>>());
-    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, deferred, free_cols, used, overflow, nodes: 0, rowhist: vec![0u64; inst.h], always_conn: std::env::var("ACONN").is_ok(), iso_cols, eager_iso };
+    let ncols = inst.scoring_cols.len();
+    let remaining_best: i64 = inst.scoring_best.iter().sum();
+    let col_ub = inst.scoring_best.clone();
+    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, deferred, free_cols, used,
+        overflow, nodes: 0, rowhist: vec![0u64; inst.h], always_conn: std::env::var("ACONN").is_ok(),
+        iso_cols, eager_iso,
+        maxscore, best: floor, col_committed: vec![false; ncols], committed_gross: 0, remaining_best, col_ub,
+        node_cap: std::env::var("MAXNODES").ok().and_then(|s| s.parse().ok()).unwrap_or(0),
+        no_ub: std::env::var("NOUB").is_ok(),
+        seen_buf: vec![0u32; inst.w * inst.h], seen_gen: 0, bfs_stack: Vec::with_capacity(inst.w * inst.h) };
     let t = std::time::Instant::now();
     let sat = solver.run();
     let dt = t.elapsed().as_secs_f64();
     if std::env::var("ROWHIST").is_ok() {
         eprintln!("rowhist: {:?}", solver.rowhist);
     }
-    println!("{} nodes={} time={:.3}s", if sat { "SAT" } else { "UNSAT" }, solver.nodes, dt);
+    if maxscore {
+        if solver.best > floor {
+            println!("MAX {} nodes={} time={:.3}s", solver.best, solver.nodes, dt);
+        } else {
+            println!("LE {} nodes={} time={:.3}s", floor, solver.nodes, dt);
+        }
+    } else {
+        println!("{} nodes={} time={:.3}s", if sat { "SAT" } else { "UNSAT" }, solver.nodes, dt);
+    }
 }
