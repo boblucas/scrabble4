@@ -91,8 +91,7 @@ def cpsat_decide(meta, cap=120.0):
         m.add(sum(xs) == 1)
     newly = Counter(mt[c] for c in scoring)
     limit_letter_count(m, cells, Counter({code: counts[code] - newly[code] for code in counts}))
-    if blanks:
-        m.add(sum(cell.blank for cell in cells.values()) <= blanks)
+    m.add(sum(cell.blank for cell in cells.values()) <= blanks)   # ALWAYS (blanks==0 forbids all blanks)
     if pre:
         single_component(m, cells, (pre[0], 0))
     s = cp_model.CpSolver(); s.parameters.num_search_workers = 24; s.parameters.max_presolve_iterations = 1
