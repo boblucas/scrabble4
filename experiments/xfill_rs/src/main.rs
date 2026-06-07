@@ -275,31 +275,27 @@ impl<'a> Solver<'a> {
         let w = self.inst.w; let h = self.inst.h;
         // horizontal run-so-far (left part + this). Right neighbour (processed later) is undecided
         // (-1) -> run may extend, prefix-check; or forced-empty(0)/edge -> run CLOSES, full-word check.
-        let mut hrun = vec![l];
-        let mut cx = x as i64 - 1;
-        while cx >= 0 {
-            let g = self.grid[idx(cx as usize, y, w)];
-            if g > 0 { hrun.push(g as u8); cx -= 1; } else { break; }
-        }
-        hrun.reverse();
-        let h_closes = x + 1 == w || self.grid[idx(x + 1, y, w)] == 0;
-        if hrun.len() >= 2 {
-            if h_closes { if !self.dict.words.contains(&key_of(&hrun)) { return false; } }
-            else if !self.dict.prefixes.contains(&key_of(&hrun)) { return false; }
+        let mut sx = x;
+        while sx > 0 && self.grid[idx(sx - 1, y, w)] > 0 { sx -= 1; }
+        let mut hk = 1u64; let mut hlen = 0usize;
+        for cx in sx..x { hk = key_push(hk, self.grid[idx(cx, y, w)] as u8); hlen += 1; }
+        hk = key_push(hk, l); hlen += 1;
+        if hlen >= 2 {
+            let h_closes = x + 1 == w || self.grid[idx(x + 1, y, w)] == 0;
+            if h_closes { if !self.dict.words.contains(&hk) { return false; } }
+            else if !self.dict.prefixes.contains(&hk) { return false; }
         }
         // vertical: skip for scoring-stub cells (their vertical = pre-validated stub).
         if self.inst.kind[idx(x, y, w)] != 1 {
-            let mut vrun = vec![l];
-            let mut cy = y as i64 - 1;
-            while cy >= 0 {
-                let id2 = idx(x, cy as usize, w);
-                if self.grid[id2] > 0 && self.inst.kind[id2] != 1 { vrun.push(self.grid[id2] as u8); cy -= 1; } else { break; }
-            }
-            vrun.reverse();
-            let v_closes = y + 1 == h || self.grid[idx(x, y + 1, w)] == 0 || self.inst.kind[idx(x, y + 1, w)] == 1;
-            if vrun.len() >= 2 {
-                if v_closes { if !self.dict.words.contains(&key_of(&vrun)) { return false; } }
-                else if !self.dict.prefixes.contains(&key_of(&vrun)) { return false; }
+            let mut sy = y;
+            while sy > 0 && self.grid[idx(x, sy - 1, w)] > 0 && self.inst.kind[idx(x, sy - 1, w)] != 1 { sy -= 1; }
+            let mut vk = 1u64; let mut vlen = 0usize;
+            for cy in sy..y { vk = key_push(vk, self.grid[idx(x, cy, w)] as u8); vlen += 1; }
+            vk = key_push(vk, l); vlen += 1;
+            if vlen >= 2 {
+                let v_closes = y + 1 == h || self.grid[idx(x, y + 1, w)] == 0 || self.inst.kind[idx(x, y + 1, w)] == 1;
+                if v_closes { if !self.dict.words.contains(&vk) { return false; } }
+                else if !self.dict.prefixes.contains(&vk) { return false; }
             }
         }
         true
