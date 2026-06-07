@@ -117,7 +117,12 @@ impl Inst {
     fn with_dict(self, _p: &str) -> Inst { self }   // dict loaded separately
 }
 
-struct Dict { words: HashSet<Vec<u8>>, prefixes: HashSet<Vec<u8>> }
+// pack a run of letters (each 1..=alpha, <=8 letters) into a u64: key starts at 1 (sentinel) then
+// 6 bits per letter -> unique per (length, letters), no allocation, fast to hash.
+#[inline] fn key_push(key: u64, l: u8) -> u64 { (key << 6) | (l as u64) }
+fn key_of(run: &[u8]) -> u64 { let mut k = 1u64; for &l in run { k = key_push(k, l); } k }
+
+struct Dict { words: std::collections::HashSet<u64>, prefixes: std::collections::HashSet<u64> }
 fn load_dict(path: &str, hmax: usize) -> Dict {
     let mut s = String::new();
     fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
@@ -125,8 +130,9 @@ fn load_dict(path: &str, hmax: usize) -> Dict {
     for line in s.lines() {
         let v: Vec<u8> = line.split_whitespace().map(|t| t.parse().unwrap()).collect();
         if v.is_empty() || v.len() > hmax { continue; }
-        for k in 1..=v.len() { prefixes.insert(v[..k].to_vec()); }
-        words.insert(v);
+        let mut k = 1u64;
+        for &l in &v { k = key_push(k, l); prefixes.insert(k); }
+        words.insert(k);
     }
     Dict { words, prefixes }
 }
@@ -278,8 +284,8 @@ impl<'a> Solver<'a> {
         hrun.reverse();
         let h_closes = x + 1 == w || self.grid[idx(x + 1, y, w)] == 0;
         if hrun.len() >= 2 {
-            if h_closes { if !self.dict.words.contains(&hrun) { return false; } }
-            else if !self.dict.prefixes.contains(&hrun) { return false; }
+            if h_closes { if !self.dict.words.contains(&key_of(&hrun)) { return false; } }
+            else if !self.dict.prefixes.contains(&key_of(&hrun)) { return false; }
         }
         // vertical: skip for scoring-stub cells (their vertical = pre-validated stub).
         if self.inst.kind[idx(x, y, w)] != 1 {
@@ -292,8 +298,8 @@ impl<'a> Solver<'a> {
             vrun.reverse();
             let v_closes = y + 1 == h || self.grid[idx(x, y + 1, w)] == 0 || self.inst.kind[idx(x, y + 1, w)] == 1;
             if vrun.len() >= 2 {
-                if v_closes { if !self.dict.words.contains(&vrun) { return false; } }
-                else if !self.dict.prefixes.contains(&vrun) { return false; }
+                if v_closes { if !self.dict.words.contains(&key_of(&vrun)) { return false; } }
+                else if !self.dict.prefixes.contains(&key_of(&vrun)) { return false; }
             }
         }
         true
@@ -307,7 +313,7 @@ impl<'a> Solver<'a> {
             let mut run = Vec::new(); let mut cx = x as i64 - 1;
             while cx >= 0 { let g = self.grid[idx(cx as usize, y, w)]; if g > 0 { run.push(g as u8); cx -= 1; } else { break; } }
             run.reverse();
-            if run.len() >= 2 && !self.dict.words.contains(&run) { return false; }
+            if run.len() >= 2 && !self.dict.words.contains(&key_of(&run)) { return false; }
         }
         // vertical run ending at y-1 in col x (only validate NON-scoring columns here; scoring handled by word)
         if y > 0 && self.grid[idx(x, y - 1, w)] > 0 && self.inst.kind[idx(x, y - 1, w)] != 1 {
@@ -317,7 +323,7 @@ impl<'a> Solver<'a> {
                 if self.grid[id] > 0 && self.inst.kind[id] != 1 { run.push(self.grid[id] as u8); cy -= 1; } else { break; }
             }
             run.reverse();
-            if run.len() >= 2 && !self.dict.words.contains(&run) { return false; }
+            if run.len() >= 2 && !self.dict.words.contains(&key_of(&run)) { return false; }
         }
         true
     }
@@ -331,7 +337,7 @@ impl<'a> Solver<'a> {
                 if self.grid[idx(x, y, w)] > 0 {
                     let mut run = Vec::new(); let s = x;
                     while x < w && self.grid[idx(x, y, w)] > 0 { run.push(self.grid[idx(x, y, w)] as u8); x += 1; }
-                    if run.len() >= 2 && !self.dict.words.contains(&run) { return false; }
+                    if run.len() >= 2 && !self.dict.words.contains(&key_of(&run)) { return false; }
                     let _ = s;
                 } else { x += 1; }
             }
@@ -350,7 +356,7 @@ impl<'a> Solver<'a> {
                     while y < h && self.grid[idx(x, y, w)] > 0 && self.inst.kind[idx(x, y, w)] != 1 {
                         run.push(self.grid[idx(x, y, w)] as u8); y += 1;
                     }
-                    if run.len() >= 2 && !self.dict.words.contains(&run) { return false; }
+                    if run.len() >= 2 && !self.dict.words.contains(&key_of(&run)) { return false; }
                 } else { y += 1; }
             }
         }
