@@ -137,6 +137,8 @@ struct Solver<'a> {
     dict: &'a Dict,
     grid: Vec<i16>,
     mandatory: Vec<usize>,      // cells that are always active (preplaced + scoring-stub positions)
+    deferred: Vec<bool>,        // free-column stub cells: skipped in phase 1, assigned whole-word last
+    free_cols: Vec<usize>,      // scoring-column indices that are isolated (no adjacent scoring col)
     used: Vec<i64>,             // tiles used per code (incremental)
     overflow: i64,              // sum of per-code (used-counts) over codes where used>counts == blanks needed
     nodes: u64,
@@ -185,9 +187,9 @@ impl<'a> Solver<'a> {
         let w = self.inst.w; let h = self.inst.h; let n = w * h;
         // find next unassigned cell in row-major from `pos`
         let mut id = pos;
-        while id < n && self.grid[id] != -1 { id += 1; }
+        while id < n && (self.grid[id] != -1 || self.deferred[id]) { id += 1; }  // skip assigned + deferred(free)
         if id >= n {
-            return self.leaf_ok();
+            return self.dfs_free(0);   // phase 2: assign the isolated free columns whole-word, last
         }
         let x = id % w; let y = id / w;
         let kind = self.inst.kind[id];
@@ -233,6 +235,32 @@ impl<'a> Solver<'a> {
             }
             false
         }
+    }
+
+    // PHASE 2: assign the isolated free columns whole-word, last (so their large domains don't
+    // multiply the tree). Their horizontal runs are determined by the now-fixed bridges; the
+    // vertical is the pre-validated stub. place_ok gives left-anchored prefix/closure pruning;
+    // leaf_ok is the final full check.
+    fn dfs_free(&mut self, j: usize) -> bool {
+        self.nodes += 1;
+        if j == self.free_cols.len() { return self.leaf_ok(); }
+        let si = self.free_cols[j];
+        let col = self.inst.scoring_cols[si];
+        let len = self.inst.scoring_len[si];
+        let nwords = self.inst.scoring_words[si].len();
+        for wi in 0..nwords {
+            let word = self.inst.scoring_words[si][wi].clone();
+            let mut bok = true;
+            for &l in &word { if !self.add_letter(l as usize) { bok = false; break; } }
+            if !bok { for &l in &word { self.rm_letter(l as usize); } continue; }
+            for (k, &l) in word.iter().enumerate() { self.grid[idx(col, k + 1, self.inst.w)] = l as i16; }
+            let mut ok = true;
+            for k in 0..word.len() { if !self.place_ok(col, k + 1, word[k]) { ok = false; break; } }
+            if ok && self.dfs_free(j + 1) { return true; }
+            for k in 1..len { self.grid[idx(col, k, self.inst.w)] = -1; }
+            for &l in &word { self.rm_letter(l as usize); }
+        }
+        false
     }
 
     // prefix-check pruning: placing letter at (x,y), the assigned-contiguous H run ending here and
@@ -373,12 +401,25 @@ fn main() {
     // mandatory cells: preplaced (grid0>0) + scoring-stub positions (kind==1)
     let mandatory: Vec<usize> = (0..inst.w * inst.h)
         .filter(|&id| inst.grid0[id] > 0 || inst.kind[id] == 1).collect();
-    // initial tile usage from pre-placed tiles
+    // free columns = scoring columns with NO adjacent scoring column (isolated -> coupled only via
+    // bridges). Defer their stub cells to phase 2 so their large domains don't multiply the search.
+    let scol_set: HashSet<usize> = inst.scoring_cols.iter().cloned().collect();
+    let mut free_cols: Vec<usize> = (0..inst.scoring_cols.len()).filter(|&si| {
+        let c = inst.scoring_cols[si];
+        !((c > 0 && scol_set.contains(&(c - 1))) || (c + 1 < inst.w && scol_set.contains(&(c + 1))))
+    }).collect();
+    // only defer if a coupled block REMAINS in phase 1 to prune the bridges; else (all isolated, e.g.
+    // N=7) defer none and use the fast interleaved row-major search.
+    if free_cols.len() == inst.scoring_cols.len() { free_cols.clear(); }
+    let free_col_pos: HashSet<usize> = free_cols.iter().map(|&si| inst.scoring_cols[si]).collect();
+    let deferred: Vec<bool> = (0..inst.w * inst.h)
+        .map(|id| inst.kind[id] == 1 && free_col_pos.contains(&(id % inst.w))).collect();
+    eprintln!("free (isolated) scoring columns: {:?}", free_cols.iter().map(|&si| inst.scoring_cols[si]).collect::<Vec<_>>());
     let mut used = vec![0i64; inst.alpha + 1];
     for &g in &inst.grid0 { if g > 0 { used[g as usize] += 1; } }
     let mut overflow = 0i64;
     for c in 1..=inst.alpha { if used[c] > inst.counts[c] { overflow += used[c] - inst.counts[c]; } }
-    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, used, overflow, nodes: 0 };
+    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, deferred, free_cols, used, overflow, nodes: 0 };
     let t = std::time::Instant::now();
     let sat = solver.run();
     let dt = t.elapsed().as_secs_f64();
