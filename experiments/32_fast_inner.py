@@ -60,6 +60,9 @@ CAP = arg('--cap', 90.0, float)            # per-inner-call wall cap (seconds)
 MAXSEC = arg('--maxsec', 7200.0, float)    # overall wall cap
 KNAP_CAP = arg('--knap-cap', 20.0, float)  # per-vector tile-aware knapsack UB solve cap (LEVER 1)
 NO_KNAP = '--no-knap' in sys.argv          # disable LEVER 1 (for A/B comparison)
+CEILING_ONLY = '--ceiling-only' in sys.argv  # compute only the SOUND bracket ceiling (LEVER-1 knapsack,
+                                             # no inner) -- the max tile-aware effUB over geom-feasible
+                                             # length-vectors.  Pair with --seed-best as the lower bound.
 main_word = arg('--main', 'bouwfysicus')
 turn_str = arg('--turn', 'BOUWfYsiCuS')
 BOOTSTRAP = arg('--bootstrap', '')         # ";"-separated explicit length-vectors to seed `best` first
@@ -532,5 +535,52 @@ def _render_grid(grid, Lvec, score):
     return '\n'.join(lines)
 
 
+def ceiling_only():
+    """LEVER-1-only: compute the SOUND bracket ceiling = max tile-aware effUB over geom-feasible
+    length-vectors, WITHOUT calling the inner.  Enumerate by descending optimistic UB; geom-prune (cheap);
+    knapsack the survivors; track the running max effUB; STOP when the next optimistic UB <= the ceiling
+    (no later vector can raise it).  Reports the bracket [seed-best, ceiling].  This is the fast,
+    reproducible upper-bound half of the N=11 result (the inner can't beat the hard-tail vectors, so the
+    knapsack ceiling IS the honest bracket top)."""
+    t0 = time.time()
+    ceiling = SEED_BEST if SEED_BEST >= 0 else -1
+    cvec = None
+    mo, lv = build_outer()
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = 4; s.parameters.max_presolve_iterations = 1
+    opt = geom = knaps = 0
+    while True:
+        if s.Solve(mo) not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            print("outer exhausted"); break
+        UB = int(s.objective_value)
+        Lvec = {c: next(l for l in lengths[c] if s.Value(lv[(c, l)])) for c in scoring_cols}
+        mo.add_bool_or([lv[(c, Lvec[c])].Not() for c in scoring_cols])
+        if UB <= ceiling:
+            print(f"STOP: optimistic UB {UB} <= ceiling {ceiling} -> ceiling is FINAL "
+                  f"({time.time()-t0:.0f}s)"); break
+        opt += 1
+        fx = setup_fixed_cells(W, H, turn_str, main_tup, {c: tuple([0] * Lvec[c]) for c in scoring_cols})
+        if not ORACLE.can_connect(fx, bridge_budget_lengths(Lvec)):
+            continue
+        geom += 1
+        k = knap_ub(Lvec); knaps += 1
+        if k is None:
+            continue
+        eff = min(UB, k)
+        if eff > ceiling:
+            ceiling = eff; cvec = lvec_key(Lvec)
+            print(f"  CEILING {ceiling} @ {cvec} [opt={opt} geom={geom} knap={knaps} "
+                  f"{time.time()-t0:.0f}s]", flush=True)
+        if opt % 1000 == 0:
+            print(f"  ...opt={opt} geom={geom} knap={knaps} UB={UB} ceiling={ceiling} "
+                  f"[{time.time()-t0:.0f}s]", flush=True)
+    lo = SEED_BEST if SEED_BEST >= 0 else '?'
+    print(f"\n==== {main_word} N={W}: SOUND BRACKET [{lo}, {ceiling}]  "
+          f"(ceiling vec {cvec}; {opt} vectors, {geom} geom-feasible, {knaps} knapsacks, "
+          f"{time.time()-t0:.0f}s) ====")
+
+
 if __name__ == '__main__':
-    main()
+    if CEILING_ONLY:
+        ceiling_only()
+    else:
+        main()
