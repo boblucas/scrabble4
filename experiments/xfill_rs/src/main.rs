@@ -175,6 +175,137 @@ fn parse(path: &str) -> Inst {
 
 impl Inst {
     fn with_dict(self, _p: &str) -> Inst { self }   // dict loaded separately
+
+    // Is cell (col, r) GUARANTEED empty in every legal board of this length-vector?
+    // True iff: off-board, OR a scoring column that is inactive at row r (past its length / row 0).
+    // A bridge (non-scoring) column is NOT guaranteed empty (it can hold a letter), so returns false.
+    fn definitely_empty(&self, col: i64, r: usize) -> bool {
+        if col < 0 || col as usize >= self.w { return true; }            // off-board edge
+        let c = col as usize;
+        let id = idx(c, r, self.w);
+        // bridge cell (kind 2) can be active -> not guaranteed empty.
+        if self.kind[id] == 2 { return false; }
+        // preplaced active row-0 letter (kind 0, grid0>0) is active; forced-empty (kind 0, grid0==0) is empty.
+        if self.kind[id] == 0 { return self.grid0[id] == 0; }
+        // scoring-stub cell (kind 1) is active here -> not empty.
+        false
+    }
+
+    // ARC-CONSISTENCY over adjacent scoring-column word-domains via the binary "forced 2-letter word"
+    // constraint. SOUND & GLOBAL: when two adjacent scoring columns ca, cb=ca+1 are both active at a row
+    // r AND the flanking cells (ca-1, r) and (cb+1, r) are GUARANTEED empty in every legal board, the
+    // cells (ca,r),(cb,r) form an isolated maximal horizontal run of length 2 -> their letters MUST be a
+    // valid 2-letter dict word, for EVERY legal board. So a candidate word W of column ca is viable only
+    // if SOME candidate word of cb is compatible with it across all such rows (and vice versa). Removing a
+    // word with no support never discards a feasible board (AC-3 only deletes provably-unsupportable
+    // values), so this is sound. It captures the JOINT col-pair infeasibility the row-major letter search
+    // discovers only leaf-by-leaf -- e.g. the full-height-col0 + near-full-height-col1 hard tail, where
+    // NO (W0,W1) pair forms valid 2-words on all overlap rows, collapsing the domain to empty = instant UNSAT.
+    //
+    // Returns true if the instance is PROVEN UNSAT (some column's domain became empty). On return the
+    // surviving words/gross are kept and cell_mask / scoring_best are recomputed for the search.
+    fn arc_consistency(&mut self, dict: &Dict) -> bool {
+        let ncols = self.scoring_cols.len();
+        if ncols == 0 { return false; }
+        // map column position -> scoring index
+        let mut si_of_col: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
+        for (si, &c) in self.scoring_cols.iter().enumerate() { si_of_col.insert(c, si); }
+        // build binary constraints between adjacent scoring columns: (si_a, si_b, rows[])
+        // rows = stub positions (r in 1..) where both active and an isolated 2-run is forced.
+        let mut cons: Vec<(usize, usize, Vec<usize>)> = Vec::new();
+        for (&ca, &sa) in si_of_col.iter() {
+            let cb = ca + 1;
+            if let Some(&sb) = si_of_col.get(&cb) {
+                let la = self.scoring_len[sa]; let lb = self.scoring_len[sb];
+                let mut rows = Vec::new();
+                for r in 1..la.min(lb) {           // both active rows
+                    if self.definitely_empty(ca as i64 - 1, r) && self.definitely_empty(cb as i64 + 1, r) {
+                        rows.push(r);
+                    }
+                }
+                if !rows.is_empty() { cons.push((sa, sb, rows)); }
+            }
+        }
+        if cons.is_empty() { return false; }
+        // alive[si] = bitmask-free Vec<bool> over word indices
+        let mut alive: Vec<Vec<bool>> = (0..ncols)
+            .map(|si| vec![true; self.scoring_words[si].len()]).collect();
+        // 2-letter word membership via the dict (key_of([a,b])).
+        let two_ok = |a: u8, b: u8| -> bool { dict.words.contains(&key_of(&[a, b])) };
+        // does word index `wi` of column `xs` have a supporting alive word in column `ys` over `rows`?
+        // `a_is_left` = true when xs is the LEFT column (ca) of the pair, so the 2-word is (x[r], y[r]).
+        let has_support = |xs: usize, wi: usize, ys: usize, rows: &[usize],
+                           a_is_left: bool, words: &Vec<Vec<Vec<u8>>>, alive: &Vec<Vec<bool>>| -> bool {
+            let wx = &words[xs][wi];
+            'cand: for (yj, wy) in words[ys].iter().enumerate() {
+                if !alive[ys][yj] { continue; }
+                for &r in rows {
+                    let lx = wx[r - 1]; let ly = wy[r - 1];
+                    let (a, b) = if a_is_left { (lx, ly) } else { (ly, lx) };
+                    if !two_ok(a, b) { continue 'cand; }
+                }
+                return true;
+            }
+            false
+        };
+        // AC-3 worklist: each directed arc (xs <- ys) means "prune xs against ys".
+        let mut queue: std::collections::VecDeque<(usize, usize, usize)> = std::collections::VecDeque::new();
+        // store arcs as (xs, ys, cidx) where cidx indexes cons (to recover rows + orientation)
+        for (ci, (sa, sb, _)) in cons.iter().enumerate() {
+            queue.push_back((*sa, *sb, ci));
+            queue.push_back((*sb, *sa, ci));
+        }
+        while let Some((xs, ys, ci)) = queue.pop_front() {
+            let (sa, _sb, ref rows) = cons[ci];
+            let a_is_left = xs == sa;          // xs is the left column of this constraint?
+            let mut removed_any = false;
+            for wi in 0..self.scoring_words[xs].len() {
+                if !alive[xs][wi] { continue; }
+                if !has_support(xs, wi, ys, rows, a_is_left, &self.scoring_words, &alive) {
+                    alive[xs][wi] = false; removed_any = true;
+                }
+            }
+            if removed_any {
+                if !alive[xs].iter().any(|&b| b) { return true; }     // domain emptied -> UNSAT
+                // re-enqueue arcs pointing INTO xs (neighbors must be re-checked against the shrunk xs).
+                for (cj, (sa2, sb2, _)) in cons.iter().enumerate() {
+                    if *sb2 == xs { queue.push_back((*sa2, *sb2, cj)); }
+                    if *sa2 == xs { queue.push_back((*sb2, *sa2, cj)); }
+                }
+            }
+        }
+        // compact each column's words/gross to the survivors and recompute derived fields.
+        let mut pruned = false;
+        for si in 0..ncols {
+            if alive[si].iter().all(|&b| b) { continue; }
+            pruned = true;
+            let mut nw: Vec<Vec<u8>> = Vec::new();
+            let mut ng: Vec<i64> = Vec::new();
+            for (wi, &a) in alive[si].iter().enumerate() {
+                if a { nw.push(self.scoring_words[si][wi].clone()); ng.push(self.scoring_gross[si][wi]); }
+            }
+            self.scoring_words[si] = nw;
+            self.scoring_gross[si] = ng;
+        }
+        if pruned { self.recompute_derived(); }
+        false
+    }
+
+    // Recompute cell_mask (scoring-stub union) and scoring_best after the word-domains change.
+    fn recompute_derived(&mut self) {
+        let w = self.w;
+        for id in 0..w * self.h {
+            if self.kind[id] == 1 {
+                let si = self.scol_of[id] as usize;
+                let r = id / w; let posn = r - 1;
+                let mut m = 0u32;
+                for wd in &self.scoring_words[si] { m |= bit(wd[posn]); }
+                self.cell_mask[id] = m;
+            }
+        }
+        self.scoring_best = self.scoring_gross.iter()
+            .map(|gs| gs.iter().cloned().max().unwrap_or(0)).collect();
+    }
 }
 
 // pack a run of letters (each 1..=alpha, <=8 letters) into a u64: key starts at 1 (sentinel) then
@@ -843,7 +974,7 @@ fn main() {
         args.iter().position(|a| a == "--maxscore")
             .and_then(|i| args.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(-1)
     } else { -1 };
-    let inst = parse(path);
+    let mut inst = parse(path);
     // re-read dict path from file (parse dropped it); read DICT line
     let mut s = String::new(); fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
     let mut dict_path = String::new(); let mut hmax = 8usize;
@@ -858,6 +989,24 @@ fn main() {
     let td = std::time::Instant::now();
     let dict = load_dict(&dict_path, hmax);
     eprintln!("dict loaded: {} words, {} prefixes, {:.2}s", dict.words.len(), dict.prefixes.len(), td.elapsed().as_secs_f64());
+    // ARC-CONSISTENCY presolve over adjacent scoring-column word-domains (the forced-2-letter-word join).
+    // Sound, global; collapses the full-height adjacent-block hard tail. Opt out with NOAC=1 for A/B.
+    if std::env::var("NOAC").is_err() {
+        let tac = std::time::Instant::now();
+        let unsat = inst.arc_consistency(&dict);
+        eprintln!("arc-consistency: {} surviving words/col, {:.3}s{}",
+            inst.scoring_words.iter().map(|v| v.len()).collect::<Vec<_>>().iter().sum::<usize>(),
+            tac.elapsed().as_secs_f64(), if unsat { " -> UNSAT (empty domain)" } else { "" });
+        if unsat {
+            // No legal board exists for this length-vector. Report UNSAT / LE floor with 0 search nodes.
+            if maxscore {
+                println!("LE {} nodes=0 time=0.000s", floor);
+            } else {
+                println!("UNSAT nodes=0 time=0.000s");
+            }
+            return;
+        }
+    }
     let grid = inst.grid0.clone();
     // mandatory cells: preplaced (grid0>0) + scoring-stub positions (kind==1)
     let mandatory: Vec<usize> = (0..inst.w * inst.h)
