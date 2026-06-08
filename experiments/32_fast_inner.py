@@ -71,6 +71,13 @@ SEED_BEST = arg('--seed-best', -1, int)    # initial lower bound (a KNOWN-achiev
                                            # unsound); we validate it via the inner before trusting it.
 SEED_LVEC = arg('--seed-lvec', '')         # the length-vector that achieves --seed-best (for validation
                                            # + board reconstruction), as "l0,l1,..." over scoring cols.
+FIX = arg('--fix', '')                     # SHARD the enumeration to a subspace: "col:len[,col:len]" pins
+                                           # those scoring columns to fixed lengths.  SOUND: each shard runs
+                                           # the identical per-vector logic on a disjoint slice; the UNION of
+                                           # shards over all values of a pinned col = the full space, so
+                                           # "all shards PROVEN" => globally PROVEN.  Caps per-shard outer
+                                           # clause-accumulation (the descending sweep's scaling bottleneck).
+WORKERS = arg('--workers', 4, int)         # CP-SAT search workers per solve (drop to 1-2 for parallel shards)
 
 rules = construct_rules('dutch', board)
 W, H = rules.W, rules.H
@@ -215,7 +222,7 @@ def _knap_ub_cached(key):
         if code in over:
             pen = pen + over[code] * rules.scores[code]
     m.maximize(sum(xv[(c, i)] * sc for c in scoring_cols for i, (w, sc, rq) in enumerate(items[c])) - pen)
-    s = cp_model.CpSolver(); s.parameters.num_search_workers = 4
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = WORKERS
     s.parameters.max_time_in_seconds = KNAP_CAP
     s.Solve(m)
     # best_objective_bound is a SOUND upper bound on the (integer) optimum even on timeout.  The objective
@@ -381,8 +388,15 @@ def main():
 
     # --- MAIN descending sweep -------------------------------------------------------------------
     mo, lv = build_outer()
+    if FIX:
+        for tok in FIX.split(','):
+            c_s, l_s = tok.split(':'); fc, fl = int(c_s), int(l_s)
+            if fc not in scoring_cols or fl not in lengths[fc]:
+                sys.exit(f"--fix {tok}: col {fc} not a scoring col or len {fl} unavailable")
+            mo.add(lv[(fc, fl)] == 1)
+        print(f"  SHARD --fix {FIX}: enumeration restricted to this subspace", flush=True)
     solver = cp_model.CpSolver()
-    solver.parameters.num_search_workers = 4
+    solver.parameters.num_search_workers = WORKERS
     solver.parameters.max_presolve_iterations = 1
     it = 0
     while True:
@@ -463,7 +477,7 @@ def main():
         print(f"     winning length-vector: { {c: best_lvec[c] for c in scoring_cols} }")
     if live_unres:
         print("     UNRESOLVED length-vectors with UB>best:")
-        for ub, lvk in sorted(live_unres, reverse=True)[:20]:
+        for ub, lvk in sorted(live_unres, key=lambda t: t[0], reverse=True)[:20]:
             print(f"       UB={ub}  {tuple(lvk[c] for c in scoring_cols)}")
 
     # Persist result + reconstruct/render the winning board.
@@ -546,7 +560,7 @@ def ceiling_only():
     ceiling = SEED_BEST if SEED_BEST >= 0 else -1
     cvec = None
     mo, lv = build_outer()
-    s = cp_model.CpSolver(); s.parameters.num_search_workers = 4; s.parameters.max_presolve_iterations = 1
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = WORKERS; s.parameters.max_presolve_iterations = 1
     opt = geom = knaps = 0
     while True:
         if s.Solve(mo) not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
