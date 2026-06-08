@@ -426,9 +426,15 @@ struct Solver<'a> {
     // number of uncommitted columns is small. Opt in with KNAP=1 (validated); KNAPCOLS sets the column cap.
     use_knap: bool,
     knap_maxcols: usize,        // run the joint-knapsack UB only when #uncommitted columns <= this
-    // scratch (alloc-free): per uncommitted column, the consistent (gross, delta-usage) candidate words.
-    knap_words: Vec<Vec<(i64, Vec<(u8, i64)>)>>,   // reused buffers, cleared each call
+    // scratch (reused across calls to avoid per-call allocation in the hot path): per uncommitted column,
+    // the consistent (gross, delta-usage) candidate words; plus the budget snapshot, suffix bounds, the
+    // running per-code extra-usage vector, and the uncommitted-column index list.
+    // Each candidate word is (gross, delta-usage = (letter,count) pairs at the column's free stub positions).
+    knap_words: Vec<Vec<(i64, Vec<(u8, i64)>)>>,   // reused outer buffers (cleared each call)
     knap_budget: Vec<i64>,      // remaining per-code budget snapshot (counts - used)
+    knap_extra: Vec<i64>,       // running per-code extra usage during the knapsack DFS (reset each call)
+    knap_suffix: Vec<i64>,      // suffix best-gross sums for the DFS bound
+    knap_unc: Vec<usize>,       // uncommitted scoring-column indices
     knap_calls: u64, knap_prunes: u64,             // diagnostics
 }
 
@@ -490,12 +496,13 @@ impl<'a> Solver<'a> {
     // an under-count of the true blank penalty (it charges nothing for the blanks themselves), so the
     // bound never rejects a feasible higher-scoring board. Hence pruning on it can never discard the optimum.
     fn knap_ub(&mut self) -> Option<i64> {
-        // collect uncommitted scoring columns
+        // collect uncommitted scoring columns (reuse the scratch field to avoid a per-call allocation).
         let ncols = self.inst.scoring_cols.len();
-        let mut unc: Vec<usize> = Vec::new();
+        let mut unc = std::mem::take(&mut self.knap_unc);
+        unc.clear();
         for si in 0..ncols { if !self.col_committed[si] { unc.push(si); } }
-        if unc.len() > self.knap_maxcols { return None; }
-        if unc.is_empty() { return Some(self.committed_gross); }
+        if unc.len() > self.knap_maxcols { self.knap_unc = unc; return None; }
+        if unc.is_empty() { self.knap_unc = unc; return Some(self.committed_gross); }
         self.knap_calls += 1;
         // Order the uncommitted columns by ASCENDING candidate-word count so the knapsack DFS branches the
         // small, constraining domains FIRST and reaches the big isolated column (e.g. col10, ~315 words)
@@ -527,7 +534,7 @@ impl<'a> Solver<'a> {
                 }
                 buf.push((self.inst.scoring_gross[si][wi], delta));
             }
-            if buf.is_empty() { return Some(i64::MIN); }   // a column with no consistent word: dead node
+            if buf.is_empty() { self.knap_unc = unc; return Some(i64::MIN); }  // no consistent word: dead node
             // sort by gross descending so the knapsack DFS finds a strong incumbent / bounds fast.
             buf.sort_by(|a, b| b.0.cmp(&a.0));
         }
@@ -535,9 +542,10 @@ impl<'a> Solver<'a> {
         let a = self.inst.alpha;
         for c in 0..=a { self.knap_budget[c] = 0; }
         for c in 1..=a { self.knap_budget[c] = self.inst.counts[c] - self.used[c]; }
-        // suffix best-gross sums for the knapsack DFS UB
+        // suffix best-gross sums for the knapsack DFS UB (reuse the scratch field).
         let m = unc.len();
-        let mut suffix = vec![0i64; m + 1];
+        let mut suffix = std::mem::take(&mut self.knap_suffix);
+        suffix.clear(); suffix.resize(m + 1, 0);
         for k in (0..m).rev() {
             let cb = self.knap_words[k].iter().map(|e| e.0).max().unwrap_or(0);
             suffix[k] = suffix[k + 1] + cb;
@@ -550,8 +558,9 @@ impl<'a> Solver<'a> {
         // does a feasible word-combo with total additional gross > thresh exist? Stop at the first one.
         // thresh = best - committed_gross. (penalty>=0, so additional > thresh is necessary to beat best.)
         let thresh = self.best - self.committed_gross;
-        // branch over uncommitted columns; track extra per-code usage in a scratch vector.
-        let mut extra = vec![0i64; a + 1];
+        // branch over uncommitted columns; track extra per-code usage (reuse scratch; reset to 0).
+        let mut extra = std::mem::take(&mut self.knap_extra);
+        extra.clear(); extra.resize(a + 1, 0);
         let blanks = self.inst.blanks;
         // Returns true as soon as a feasible combo with cur_g + (rest) > thresh is found (improver exists).
         // `cur_over` = current overflow beyond counts given base used + extra so far.
@@ -584,6 +593,8 @@ impl<'a> Solver<'a> {
         }
         let improver = rec(0, m, 0, base_over, thresh, &self.knap_words, &self.knap_budget,
                            &mut extra, &suffix, blanks);
+        // return the scratch buffers to their fields for reuse next call.
+        self.knap_unc = unc; self.knap_suffix = suffix; self.knap_extra = extra;
         // improver=true  -> some uncommitted-column word-combo beats best -> UB > best (no prune).
         // improver=false -> no feasible combo beats best -> sound UB <= best -> prune.
         if improver { Some(self.best + 1) } else { Some(self.best) }
@@ -1211,6 +1222,7 @@ fn main() {
         use_knap: maxscore && std::env::var("NOKNAP").is_err(),
         knap_maxcols: std::env::var("KNAPCOLS").ok().and_then(|s| s.parse().ok()).unwrap_or(ncols.max(1)),
         knap_words: Vec::new(), knap_budget: vec![0i64; inst.alpha + 1],
+        knap_extra: Vec::new(), knap_suffix: Vec::new(), knap_unc: Vec::new(),
         knap_calls: 0, knap_prunes: 0 };
     let t = std::time::Instant::now();
     let sat = solver.run();
