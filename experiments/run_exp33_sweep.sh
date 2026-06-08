@@ -26,11 +26,15 @@ esac
 # Per-inner-call cap (VCAP) kept modest so one hard length-vector can't stall a main word; per-main-word
 # overall cap (VMAXSEC) bounds the vertical search per word.  The unresolved residual contributes to the
 # sound UPPER bracket (main_score + vertical_upper), which stays valid.
-nohup python -u experiments/33_full_turn_bracket.py "$N" --scale-tiles --blanks \
-      $SEED --vcap 90 --vmaxsec 1800 --gvub-cap 120 \
+# setsid -> a fresh session fully detached from this shell (immune to SIGHUP when the launching shell
+# exits).  CORES kept modest (8) so multiple board sweeps + any concurrent track coexist on the box
+# without oversubscribing; persistence after every main word makes a kill harmless (just re-run to resume).
+CORES="${CORES:-8}"
+setsid python -u experiments/33_full_turn_bracket.py "$N" --scale-tiles --blanks \
+      $SEED --vcap 90 --vmaxsec 1800 --gvub-cap 120 --cores "$CORES" \
       --xfill experiments/xfill_rs/target/release/xfill_frozen \
-      --out "$OUT" >> "$LOG" 2>&1 &
-echo "launched exp33 N=$N  PID $!"
+      --out "$OUT" >> "$LOG" 2>&1 < /dev/null &
+echo "launched exp33 N=$N  PID $!  (cores=$CORES, setsid-detached)"
 echo "  progress : $OUT"
 echo "  log      : $LOG"
 echo "  check    : tail -f $LOG    |    python -c \"import json;d=json.load(open('$OUT'));print(d['proven_lower'],d.get('sound_upper'),len(d['evaluated']))\""
