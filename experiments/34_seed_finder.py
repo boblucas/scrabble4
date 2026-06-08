@@ -102,6 +102,11 @@ ORACLE = RustOracle(W, H)
 OUT = arg('--out', os.path.join(ROOT, f'experiments/results/turns/N{W}_seed.json'))
 BESTTXT = os.path.join(ROOT, f'experiments/results/turns/N{W}_seed_BEST.txt')
 xtest.write_dict(board)
+# Build the <=HMAX position-independent row/col automaton ONCE (it is identical for every (word,mask),
+# and the dawg cache keys on id(list) so a per-call `[w for w ...]` would rebuild it every solve -- the
+# dominant model-build cost).  A stable module-level list -> one build, reused by every holistic.
+_HW = [w for w in rules.words if len(w) <= HMAX]
+ROW_AUT = position_independent_row_automaton(_HW)
 
 print(f"=== exp34 seed finder  board {W}x{H}  scale={SCALE} blanks={BASE_BLANKS} "
       f"bag={sum(BASE_COUNTS.values())}+{BASE_BLANKS}  hand={hand} ===", flush=True)
@@ -171,50 +176,46 @@ LETTER_VRICH = _letter_vrichness()
 
 
 def candidate_masks(tup, nmasks):
-    """Generate masks (exactly `hand` placed) ranked by (main_score desc, then a feasibility heuristic:
-    fewer adjacent scoring pairs + scoring columns on vertical-RICH letters).  The mult cells drive
-    main_score; plain placed cells are score-free, so we vary them to spread the scoring columns out
-    (adjacent scoring cols force long horizontal cross-words) and to land scoring on common letters
-    (rare-letter columns q/x/y have almost no legal verticals -> infeasible)."""
-    cand = {}   # mask-tuple -> (main_score, feas_penalty, adj)
-
+    """Generate a DIVERSE set of placed-masks (exactly `hand` placed): the top main_score is achieved by
+    masks that CLUSTER the multiplier cells (adjacent scoring cols -> long horizontal cross-words; rare
+    letters q/x/y -> no legal verticals), which are usually INFEASIBLE.  So we enumerate ALL C(W,hand)
+    masks, score each by (main_score, feasibility-penalty), and return a BLEND:
+      * the few highest-main-score masks (best-case score if they happen to be feasible),
+      * the few lowest-feasibility-penalty masks (most likely to admit a legal connected board),
+      * balanced masks maximizing (main_score - K*penalty).
+    main_score depends only on which multiplier cells are placed, so trading a little main_score for a
+    feasible spread is exactly the lever that gets a high TOTAL = main + verticals."""
     def feas_pen(cols):
         adj = sum(1 for i in range(len(cols) - 1) if cols[i + 1] - cols[i] == 1)
-        # vertical-poverty penalty: a scoring col whose letter has < 30 verticals is risky
-        poor = sum(1 for c in cols if LETTER_VRICH[tup[c]] < 30)
-        # spread bonus: penalize if all scoring cols clustered in one half
-        return adj * 2 + poor * 5, adj
+        poor = sum(1 for c in cols if LETTER_VRICH[tup[c]] < 30)   # rare-letter scoring columns
+        return adj * 3 + poor * 8, adj
 
-    # the achievable main_score per choice of placed mult cells; plain placed cells are score-free, so we
-    # enumerate plain placements that minimize adjacency.
-    for r in range(0, min(len(MULT_COLS), hand) + 1):
-        for mp in itertools.combinations(MULT_COLS, r):
-            need = hand - len(mp)
-            if need < 0 or need > len(PLAIN_COLS):
-                continue
-            # base score uses any plain choice; compute it once with the first `need` plain cols
-            mask0 = [False] * W
-            for i in mp:
-                mask0[i] = True
-            for i in PLAIN_COLS[:need]:
-                mask0[i] = True
-            base_sc = main_score(tup, mask0)
-            # try several plain selections to reduce adjacency among scoring columns
-            from random import Random
-            rng = Random(12345 + r * 31 + sum(mp))
-            plain_options = [PLAIN_COLS[:need]]
-            for _ in range(40):
-                pick = rng.sample(PLAIN_COLS, need) if need <= len(PLAIN_COLS) else PLAIN_COLS
-                plain_options.append(sorted(pick))
-            for plain in plain_options:
-                cols = sorted(list(mp) + list(plain))
-                mask = tuple(x in cols for x in range(W))
-                pen, adj = feas_pen(cols)
-                if mask not in cand or (base_sc, -pen) > (cand[mask][0], -cand[mask][1]):
-                    cand[mask] = (base_sc, pen, adj)
-    # rank: highest main_score first, then lowest feasibility penalty
-    ranked = sorted(cand.items(), key=lambda kv: (-kv[1][0], kv[1][1]))
-    return [(list(m), sc, adj) for m, (sc, pen, adj) in ranked[:nmasks]]
+    scored = []   # (main_score, penalty, adj, mask_tuple)
+    for cols in itertools.combinations(range(W), hand):
+        mask = tuple(x in cols for x in range(W))
+        sc = main_score(tup, mask)
+        pen, adj = feas_pen(list(cols))
+        scored.append((sc, pen, adj, mask))
+    if not scored:
+        return []
+    top_main = sorted(scored, key=lambda t: (-t[0], t[1]))
+    top_feas = sorted(scored, key=lambda t: (t[1], -t[0]))
+    smax = top_main[0][0]
+    balanced = sorted(scored, key=lambda t: (-(t[0] - 12 * t[1]), t[1]))
+    chosen = []
+    seen = set()
+    # interleave: best-main, best-feas, balanced -- round robin so the set spans the tradeoff
+    pools = [top_main, top_feas, balanced]
+    idx = [0, 0, 0]
+    while len(chosen) < nmasks and any(idx[p] < len(pools[p]) for p in range(3)):
+        for p in range(3):
+            while idx[p] < len(pools[p]):
+                cand = pools[p][idx[p]]; idx[p] += 1
+                if cand[3] not in seen:
+                    seen.add(cand[3]); chosen.append(cand); break
+            if len(chosen) >= nmasks:
+                break
+    return [(list(mask), sc, adj) for (sc, pen, adj, mask) in chosen]
 
 
 # ----------------------------------------------------------------------------------------------------
@@ -227,15 +228,32 @@ def per_word_bag(tup):
     return counts, BASE_BLANKS
 
 
+VCAP_CANDS = arg('--vcap-cands', 60, int)   # cap candidate verticals per scoring column (model size)
+MAXVLEN = arg('--maxvlen', H, int)          # cap vertical length (short verticals -> tiny model, easy
+                                            # connectivity; main_score dominates so a small vertical loss
+                                            # is worth the feasibility/speed -- this is what makes N>=13
+                                            # witnessing TRACTABLE: long verticals make the holistic stall)
+
+
 def candidates_for(tup, x, counts):
     L = tup[x]; out = []
     for w in rules.words:
-        if not w or w[0] != L or len(w) > H:
+        if not w or w[0] != L or len(w) > min(H, MAXVLEN):
             continue
         if len(w) > 1 and w[1:] not in rules.words_lookup:
             continue
         sc, _ = get_word_score(rules, w, x, 0, 0, [i == 0 for i in range(len(w))])
         out.append((w, int(sc), Counter(w[1:])))
+    if VCAP_CANDS and len(out) > VCAP_CANDS:
+        # keep a DIVERSE set so a legal board still exists: ALL short words (len<=4, the cheap connectors
+        # / bridge-friendly stubs) PLUS the top-gross longer words (the high-value spines).  Capping is
+        # SOUND for a lower bound -- it can only make a (word,mask) under-witness, never over-claim, and the
+        # board is independently re-checked.  (Short words are kept because the connectable verticals are
+        # often low-gross -- e.g. bouwfysicus's ooh/ut/yen.)
+        short = [t for t in out if len(t[0]) <= 4]
+        longer = sorted([t for t in out if len(t[0]) > 4], key=lambda t: -t[1])
+        keep = short + longer
+        out = keep[:max(VCAP_CANDS, len(short))]
     return out
 
 
@@ -246,8 +264,8 @@ def build_holistic(tup, mask, counts, blanks):
     if any(not cands[c] for c in scoring):
         return None
     m = cp_model.CpModel(); m.prefix = 'h'
-    hw = [w for w in rules.words if len(w) <= HMAX]
-    row_aut = position_independent_row_automaton(hw)
+    row_aut = ROW_AUT          # built ONCE at module load (cached) -- rebuilding it per solve was the
+                               # dominant model-build cost (the <=8 automaton over ~150k words)
     rows = [row_aut] * H
     cols = [row_aut if x not in scoring else None for x in range(W)]
     cells = create_board(m, rows, cols, alphabet_size=ABC)
