@@ -612,6 +612,23 @@ def main():
     best_total = SEED_LOWER
     best = None
     evaluated = []
+    # RESUME: load prior progress so a restart skips already-evaluated words (the finder re-enumerates the
+    # main-word ranking in the same order, so we just remember which words are done + the best so far).
+    done_words = set()
+    if os.path.exists(OUT):
+        try:
+            with open(OUT) as fp:
+                prev = json.load(fp)
+            if prev.get('board') == W and bool(prev.get('scale')) == SCALE:
+                evaluated = prev.get('evaluated', []) or []
+                done_words = {e['word'] for e in evaluated if isinstance(e, dict) and 'word' in e}
+                if prev.get('best_total', -1) is not None and prev['best_total'] > best_total:
+                    best_total = prev['best_total']
+                if prev.get('best'):
+                    best = prev['best']
+                print(f"RESUME: {len(done_words)} words already evaluated, best_total={best_total}", flush=True)
+        except Exception as e:
+            print(f"(could not resume from {OUT}: {e})", flush=True)
 
     if ONLY:
         wstr, turn = ONLY.split(':')
@@ -635,6 +652,8 @@ def main():
             print(f"STOP at rank {rank}: best-main {msc_best} + GVUB {GVUB} = {msc_best + GVUB} "
                   f"<= best_total {best_total}", flush=True)
             break
+        if wstr in done_words:          # resume: already evaluated in a prior run -> skip
+            continue
         masks = candidate_masks(tup, NMASKS)
         word_best = None
         for mi, (mask, msc, adj) in enumerate(masks):
