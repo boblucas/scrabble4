@@ -42,6 +42,16 @@ search; the global sound upper is the max over those of (main_score + vertical_u
 which bouwfysicus pins at 892.  The exact optimum stays UNPROVEN (the hard-tail
 verticals cannot be LE-closed below 266 -- the documented inner wall).
 
+IN-RUN vs VALIDATED UPPER (timing caveat -- honest):  the self-contained sweep caps
+the per-main-word vertical search at VMAXSEC=1800s.  Under that cap (and heavy concurrent
+load on the box from a parallel track), bouwfysicus's per-word search did NOT reach
+knapsack-closure -- it broke at the optimistic remainder UB 317, so the in-run record is
+vert vup=317 -> turn [850, 943] (still SOUND, just looser).  The TIGHT 892 = 626+266 is
+the validated ceiling, confirmed by (a) exp32 `--ceiling-only --seed-best 224` which runs
+the vertical sweep TO CLOSURE -> CEILING 266 @ (11,11,3,7,3,5,10), and (b) exp33's own
+VerticalBracket(bouwfysicus, floor0=224) without a per-word time cap -> vup=266.  To get
+the tight 892 in a single sweep, raise --vmaxsec for bouwfysicus (or run unloaded).
+
 --------------------------------------------------------------------------------
 PIPELINE VALIDATION
 --------------------------------------------------------------------------------
