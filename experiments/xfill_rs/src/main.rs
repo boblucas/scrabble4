@@ -272,6 +272,15 @@ struct Solver<'a> {
     seen_buf: Vec<u32>,         // reusable BFS visited buffer for sealed_ok (gen-stamped, alloc-free)
     seen_gen: u32,
     bfs_stack: Vec<usize>,      // reusable BFS stack for sealed_ok
+    // DYNAMIC per-(scoring-col, stub-position) live letter mask: union of letter (q) over the column's
+    // candidate words STILL CONSISTENT with the cells already fixed in that column. Starts at the static
+    // union (cell_mask); narrows as stub cells get fixed above. Used by place_ok's right-extension so the
+    // horizontal cross-check sees the cell's TRUE current domain (not the loose all-words union) -- this
+    // sharply prunes the adjacent-scoring-block explosion. SOUND: a narrower mask is still a relaxation of
+    // the real per-cell constraint (any real completion has that cell's letter in its live domain), just
+    // tighter than the static union, so no legal board is ever rejected.
+    col_live_mask: Vec<Vec<u32>>,   // [si][pos] live letter mask (pos = row-1, 0..len-1)
+    use_live: bool,                  // false (NOLIVE=1) -> static union mask in cross-check (A/B toggle)
 }
 
 impl<'a> Solver<'a> {
@@ -364,6 +373,9 @@ impl<'a> Solver<'a> {
                 if !self.place_ok(x, y, l) { continue; }
                 if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
                 self.grid[id] = l as i16;
+                // fixing this stub cell narrows the column's live word-domain -> refresh its live masks
+                // (used by place_ok's horizontal cross-check on the cells BELOW in this column).
+                self.recompute_live_mask(si, col);
                 // tighten this column's UB to the best gross consistent with the now-extended prefix.
                 let new_ub = self.col_best_consistent(si, col);
                 self.remaining_best += new_ub - prev_ub;
@@ -374,6 +386,7 @@ impl<'a> Solver<'a> {
                 self.remaining_best += prev_ub - self.col_ub[si];
                 self.col_ub[si] = prev_ub;
                 self.grid[id] = -1;
+                self.recompute_live_mask(si, col);   // restore (cell now -1 again)
                 self.rm_letter(l as usize);
                 if hit { return true; }
             }
@@ -433,6 +446,23 @@ impl<'a> Solver<'a> {
             if py + 1 < h { visit!(p + w); }
         }
         false                                       // root unreachable even optimistically -> doomed
+    }
+
+    // Recompute column si's live letter masks: for each stub position q, the union of wd[q] over the
+    // column's candidate words still consistent with the cells already FIXED (>0) in this column. Called
+    // after a stub cell of the column is placed/removed. SOUND (see col_live_mask doc): tighter relaxation.
+    fn recompute_live_mask(&mut self, si: usize, col: usize) {
+        if !self.use_live { return; }
+        let w = self.inst.w;
+        let len = self.inst.scoring_len[si];
+        for q in 0..len - 1 { self.col_live_mask[si][q] = 0; }
+        'words: for wd in &self.inst.scoring_words[si] {
+            for r in 1..len {
+                let g = self.grid[idx(col, r, w)];
+                if g > 0 && (wd[r - 1] as i16) != g { continue 'words; }
+            }
+            for q in 0..len - 1 { self.col_live_mask[si][q] |= bit(wd[q]); }
+        }
     }
 
     // Best gross over candidate words of column si consistent with its current partial stub (>0 cells).
@@ -535,10 +565,12 @@ impl<'a> Solver<'a> {
             for &l in &word { if !self.add_letter(l as usize) { bok = false; break; } }
             if !bok { for &l in &word { self.rm_letter(l as usize); } continue; }
             for (k, &l) in word.iter().enumerate() { self.grid[idx(col, k + 1, self.inst.w)] = l as i16; }
+            self.recompute_live_mask(si, col);
             let mut ok = true;
             for k in 0..word.len() { if !self.place_ok(col, k + 1, word[k]) { ok = false; break; } }
             if ok && self.dfs_iso(j + 1) { return true; }
             for k in 1..len { self.grid[idx(col, k, self.inst.w)] = -1; }
+            self.recompute_live_mask(si, col);
             for &l in &word { self.rm_letter(l as usize); }
         }
         false
@@ -599,8 +631,10 @@ impl<'a> Solver<'a> {
                 if !self.place_ok(x, y, l) { continue; }
                 if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
                 self.grid[id] = l as i16;
+                self.recompute_live_mask(si, col);   // narrow this column's live masks for cells below
                 if self.dfs(id + 1) { return true; }
                 self.grid[id] = -1;
+                self.recompute_live_mask(si, col);   // restore
                 self.rm_letter(l as usize);
             }
             false
@@ -639,10 +673,12 @@ impl<'a> Solver<'a> {
             for &l in &word { if !self.add_letter(l as usize) { bok = false; break; } }
             if !bok { for &l in &word { self.rm_letter(l as usize); } continue; }
             for (k, &l) in word.iter().enumerate() { self.grid[idx(col, k + 1, self.inst.w)] = l as i16; }
+            self.recompute_live_mask(si, col);
             let mut ok = true;
             for k in 0..word.len() { if !self.place_ok(col, k + 1, word[k]) { ok = false; break; } }
             if ok && self.dfs_free(j + 1) { return true; }
             for k in 1..len { self.grid[idx(col, k, self.inst.w)] = -1; }
+            self.recompute_live_mask(si, col);
             for &l in &word { self.rm_letter(l as usize); }
         }
         false
@@ -673,7 +709,13 @@ impl<'a> Solver<'a> {
             let g = self.grid[cid];
             if g > 0 { if mlen >= 8 { bad = true; break; } masks[mlen] = bit(g as u8); mlen += 1; ex += 1; }
             else if g == -1 && self.inst.kind[cid] == 1 {            // unplaced active scoring-stub cell
-                if mlen >= 8 { bad = true; break; } masks[mlen] = self.inst.cell_mask[cid]; mlen += 1; ex += 1;
+                // use the DYNAMIC live mask (narrowed by this column's already-fixed stub cells), not the
+                // static all-words union -- this is the lever that prunes the adjacent-block explosion.
+                if mlen >= 8 { bad = true; break; }
+                masks[mlen] = if self.use_live {
+                    let si2 = self.inst.scol_of[cid] as usize; self.col_live_mask[si2][y - 1]
+                } else { self.inst.cell_mask[cid] };
+                mlen += 1; ex += 1;
             } else { break; }                                        // stopper: can-be-empty cell or edge
         }
         if bad { return false; }   // forced run already exceeds hmax -> illegal
@@ -855,6 +897,13 @@ fn main() {
     let ncols = inst.scoring_cols.len();
     let remaining_best: i64 = inst.scoring_best.iter().sum();
     let col_ub = inst.scoring_best.clone();
+    // initial live masks = static union over all candidate words at each stub position (no cell fixed yet).
+    let col_live_mask: Vec<Vec<u32>> = (0..ncols).map(|si| {
+        let len = inst.scoring_len[si];
+        let mut v = vec![0u32; len.saturating_sub(1)];
+        for wd in &inst.scoring_words[si] { for q in 0..len - 1 { v[q] |= bit(wd[q]); } }
+        v
+    }).collect();
     let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, deferred, free_cols, used,
         overflow, nodes: 0, rowhist: vec![0u64; inst.h], always_conn: std::env::var("ACONN").is_ok(),
         iso_cols, eager_iso,
@@ -862,7 +911,13 @@ fn main() {
         node_cap: std::env::var("MAXNODES").ok().and_then(|s| s.parse().ok()).unwrap_or(0),
         no_ub: std::env::var("NOUB").is_ok(),
         best_grid: vec![0i16; inst.w * inst.h],
-        seen_buf: vec![0u32; inst.w * inst.h], seen_gen: 0, bfs_stack: Vec::with_capacity(inst.w * inst.h) };
+        seen_buf: vec![0u32; inst.w * inst.h], seen_gen: 0, bfs_stack: Vec::with_capacity(inst.w * inst.h),
+        // DYNAMIC live-mask cross-check is OFF by default: it is SOUND and cuts nodes on small full-bag
+        // cases, but on the N=11 hard tail it does NOT reduce node count (the adjacent-block explosion is
+        // in same-row cells whose static union mask is already tight) while DOUBLING per-node cost
+        // (recompute_live_mask is O(words) per stub placement) -> a net 2x slowdown on exactly the vectors
+        // that matter. Opt in with LIVE=1 for the small/full-bag regime. (See maxturn memo.)
+        col_live_mask, use_live: std::env::var("LIVE").is_ok() };
     let t = std::time::Instant::now();
     let sat = solver.run();
     let dt = t.elapsed().as_secs_f64();

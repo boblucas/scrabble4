@@ -58,6 +58,8 @@ BLANKS = '--blanks' in sys.argv
 MAXCAND = arg('--maxcand', 600, int)
 CAP = arg('--cap', 90.0, float)            # per-inner-call wall cap (seconds)
 MAXSEC = arg('--maxsec', 7200.0, float)    # overall wall cap
+KNAP_CAP = arg('--knap-cap', 20.0, float)  # per-vector tile-aware knapsack UB solve cap (LEVER 1)
+NO_KNAP = '--no-knap' in sys.argv          # disable LEVER 1 (for A/B comparison)
 main_word = arg('--main', 'bouwfysicus')
 turn_str = arg('--turn', 'BOUWfYsiCuS')
 BOOTSTRAP = arg('--bootstrap', '')         # ";"-separated explicit length-vectors to seed `best` first
@@ -94,6 +96,8 @@ xtest.write_dict(board)   # experiments/xtests/dict_<board>.txt (shared <=HMAX w
 
 
 # ---- candidate verticals, grouped by length (reuses exp31's optimistic-UB machinery) -----------
+# Each candidate carries (word, gross-score, letter-requirement-Counter of w[1:]) -- the requirement is
+# the tiles the stub consumes BELOW row 0, used by LEVER 1's tile-aware knapsack upper bound.
 def candidates_for(x):
     L = main_tup[x]; out = []
     for w in rules.words:
@@ -102,7 +106,7 @@ def candidates_for(x):
         if len(w) > 1 and w[1:] not in rules.words_lookup:
             continue
         sc, _ = get_word_score(rules, w, x, 0, 0, [i == 0 for i in range(len(w))])
-        out.append((w, int(sc)))
+        out.append((w, int(sc), Counter(w[1:])))
     return out
 
 
@@ -111,23 +115,95 @@ def candidates_for(x):
 # below the cutoff, which excludes valid length-vectors from the outer model.  Per-length grouping keeps
 # every available length and its TRUE best score, so best_at / the optimistic UB stay sound.  The inner
 # always rebuilds the full word-domain from build_instance, so this only affects the outer enumeration.)
-by_len = {c: defaultdict(list) for c in scoring_cols}
+# NOTE: the per-(col,length) tile-aware knapsack (knap_ub) is fed the FULL candidate list (KNAP_CAND, big)
+# per length so its bound is sound; the outer model still uses the top-MAXCAND for length enumeration.
+KNAP_CAND = arg('--knap-cand', 4000, int)
+by_len = {c: defaultdict(list) for c in scoring_cols}        # outer model words: top-MAXCAND per (col,len)
+knap_by_len = {c: defaultdict(list) for c in scoring_cols}   # knapsack words: top-KNAP_CAND per (col,len)
 best_at = {c: {} for c in scoring_cols}
 for c in scoring_cols:
-    for w, sc in candidates_for(c):
-        by_len[c][len(w)].append((w, sc))
-    for l in list(by_len[c]):
-        by_len[c][l].sort(key=lambda t: -t[1])
-        best_at[c][l] = int(by_len[c][l][0][1])
-        by_len[c][l] = by_len[c][l][:MAXCAND]
+    allc = defaultdict(list)
+    for w, sc, rq in candidates_for(c):
+        allc[len(w)].append((w, sc, rq))
+    for l in list(allc):
+        allc[l].sort(key=lambda t: -t[1])
+        best_at[c][l] = int(allc[l][0][1])
+        by_len[c][l] = [(w, sc) for w, sc, rq in allc[l][:MAXCAND]]
+        knap_by_len[c][l] = allc[l][:KNAP_CAND]
 lengths = {c: sorted(by_len[c]) for c in scoring_cols}
 print(f"lengths per col = { {c: lengths[c] for c in scoring_cols} }")
 MINB_GLOBAL = len(_components({(x, 0) for x in preplaced}, W, H))
+NEWLY = Counter(main_tup[c] for c in scoring_cols)           # main tiles placed at scoring cols (row 0)
+AVAIL = {code: rules.counts[code] - NEWLY[code] for code in rules.counts}   # SETUP-cell tile budget
 
 
 def bridge_budget_lengths(Lvec):
     stub = sum(l - 1 for l in Lvec.values())
     return TOTAL_PHYSICAL - len(main_tup) - stub
+
+
+# ==================== LEVER 1: tile-aware knapsack per-vector UPPER BOUND ======================
+# The outer length model's objective is the TILE-BLIND optimistic UB (sum of per-(col,length) best gross,
+# ignoring that the verticals SHARE the bag).  That bound is far too loose (bouwfysicus N=11: ~320 vs the
+# achievable ~224) because the top-gross word of every column can't be JOINTLY supplied by 58 tiles.  This
+# tightens it: a multiple-choice multidimensional knapsack -- pick exactly one candidate word per scoring
+# column of the vector's assigned length, maximise total gross MINUS the blank penalty, subject to the
+# shared per-letter tile budget (with the blank relaxation: up to `blank_count` tiles may exceed their
+# count, penalised at face value).  This is EXACTLY exp29's barepack_ub, computed PER length-vector.
+#
+# SOUNDNESS (it is a valid UPPER bound on the inner's true vertical max for the vector):
+#   * one word per column of the right length -- same choice the inner makes;
+#   * the budget counts ONLY stub letters (w[1:]); the inner's bridges consume MORE tiles, so omitting
+#     them only LOOSENS the budget -> never rejects a feasible word-set -> UB >= inner max;
+#   * the blank penalty here is the MIN over stub-overflow only; the inner may also need blanks for bridge
+#     overflow, forcing >= this many stub blanks -> inner penalty >= knapsack penalty -> inner score <= UB;
+#   * connectivity and cross-word legality only ever LOWER the vertical score, never raise it.
+# So min(optimistic_UB, knap_UB) is a sound per-vector UB; pruning a vector whose knap_UB <= best is safe.
+import functools
+KNAP_CACHE = {}
+
+
+@functools.lru_cache(maxsize=None)
+def _knap_ub_cached(key):
+    Lvec = {c: key[i] for i, c in enumerate(scoring_cols)}
+    items = {c: knap_by_len[c].get(Lvec[c], []) for c in scoring_cols}
+    if any(not items[c] for c in scoring_cols):
+        return None
+    m = cp_model.CpModel(); m.prefix = 'K'
+    xv = {}
+    for c in scoring_cols:
+        vs = [m.new_bool_var(f'x{c}_{i}') for i in range(len(items[c]))]
+        for i, v in enumerate(vs):
+            xv[(c, i)] = v
+        m.add(sum(vs) == 1)
+    over = {code: m.new_int_var(0, rules.blank_count, f'o{code}') for code in rules.counts} \
+        if rules.blank_count else {}
+    if over:
+        m.add(sum(over.values()) <= rules.blank_count)
+    pen = 0
+    for code in rules.counts:
+        cap = AVAIL[code]
+        usage = [xv[(c, i)] * rq[code]
+                 for c in scoring_cols for i, (w, sc, rq) in enumerate(items[c]) if rq[code]]
+        if usage:
+            m.add(sum(usage) - over.get(code, 0) <= cap)
+        if code in over:
+            pen = pen + over[code] * rules.scores[code]
+    m.maximize(sum(xv[(c, i)] * sc for c in scoring_cols for i, (w, sc, rq) in enumerate(items[c])) - pen)
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = 4
+    s.parameters.max_time_in_seconds = KNAP_CAP
+    s.Solve(m)
+    # best_objective_bound is a SOUND upper bound on the (integer) optimum even on timeout.  The objective
+    # is integer (all gross scores and face-value penalties are ints), so the tightest sound integer UB is
+    # floor(bound).  +1e-6 guards a bound like 251.0000001 from flooring to 250.
+    import math
+    return int(math.floor(s.best_objective_bound + 1e-6))
+
+
+def knap_ub(Lvec):
+    """Tile-aware knapsack UB for this length-vector (cached). Returns None if some column has no word of
+    its assigned length (the optimistic UB would too), else a sound integer upper bound on the inner max."""
+    return _knap_ub_cached(tuple(Lvec[c] for c in scoring_cols))
 
 
 # ==================== OUTER: length model (optimistic UB, descending) =========================
@@ -220,7 +296,7 @@ def inner_maxscore(Lvec, floor, cap):
 def main():
     t0 = time.time()
     best, best_lvec = -1, None
-    processed = pruned_geom = pruned_nocand = n_le = n_max = 0
+    processed = pruned_geom = pruned_nocand = pruned_knap = n_le = n_max = 0
     unresolved = []          # list of (UB, Lvec)
     max_unres = -1
 
@@ -296,6 +372,22 @@ def main():
             print(f"STOP: next outer UB {UB} <= best {best} -> sweep complete ({time.time()-t0:.0f}s)")
             break
         it += 1
+        # LEVER 1: tile-aware knapsack UB.  The outer model's UB is the tile-BLIND optimistic max; tighten
+        # it per-vector with the shared-tile knapsack.  effUB = min(optimistic UB, knapsack UB) is the
+        # sound per-vector upper bound; if it <= best the vector cannot beat the incumbent -> prune here
+        # (no geom, no inner call).  This is what pushes the bracket ceiling 320 -> ~258.
+        kUB = None
+        if not NO_KNAP:
+            kUB = knap_ub(Lvec)
+        effUB = UB if kUB is None else min(UB, kUB)
+        if effUB <= best:
+            pruned_knap += 1
+            if it <= 10 or it % 200 == 0:
+                print(f"#{it} UB={UB} KNAP-cut effUB={effUB} {lvec_key(Lvec)} [{time.time()-t0:.0f}s]",
+                      flush=True)
+            if time.time() - t0 > MAXSEC:
+                print("(maxsec)"); break
+            continue
         # geometric prune (letter-independent, sound)
         fx = setup_fixed_cells(W, H, turn_str, main_tup, {c: tuple([0] * Lvec[c]) for c in scoring_cols})
         if not ORACLE.can_connect(fx, bridge_budget_lengths(Lvec)):
@@ -320,10 +412,12 @@ def main():
             if rose or it <= 20 or it % 50 == 0 or tt > 1.0:
                 print(f"#{it} UB={UB} -> LE {val}  {lvec_key(Lvec)} incumbent={inc} "
                       f"({tt:.2f}s) best={best} [{time.time()-t0:.0f}s]", flush=True)
-        else:   # TO -- max not pinned; this vector limits the proof bracket
-            unresolved.append((UB, dict(Lvec))); max_unres = max(max_unres, UB)
-            print(f"#{it} UB={UB} -> UNRESOLVED (cap {CAP}s) incumbent={inc}{'  <-- best' if rose else ''}  "
-                  f"{lvec_key(Lvec)} best={best} [{time.time()-t0:.0f}s]", flush=True)
+        else:   # TO -- max not pinned; this vector limits the proof bracket.  Record the TIGHTER effUB
+                # (knapsack-tightened) as the bracket ceiling, not the loose optimistic UB.
+            unresolved.append((effUB, dict(Lvec))); max_unres = max(max_unres, effUB)
+            print(f"#{it} UB={UB} effUB={effUB} -> UNRESOLVED (cap {CAP}s) incumbent={inc}"
+                  f"{'  <-- best' if rose else ''}  {lvec_key(Lvec)} best={best} [{time.time()-t0:.0f}s]",
+                  flush=True)
         if time.time() - t0 > MAXSEC:
             print(f"(maxsec at it={it})"); break
 
@@ -337,8 +431,8 @@ def main():
         mu = max(ub for ub, _ in live_unres)
         verdict = f"BRACKET [{best}, {mu}]  ({len(live_unres)} unresolved with UB>best)"
     print(f"\n==== {main_word} N={W} (scaled={SCALE}): {verdict} ====")
-    print(f"     processed={processed} (MAX={n_max}, LE={n_le}), geom-cut={pruned_geom}, "
-          f"no-cand={pruned_nocand}, unresolved={len(unresolved)}, time={dt:.0f}s")
+    print(f"     processed={processed} (MAX={n_max}, LE={n_le}), knap-cut={pruned_knap}, "
+          f"geom-cut={pruned_geom}, no-cand={pruned_nocand}, unresolved={len(unresolved)}, time={dt:.0f}s")
     if best_lvec:
         print(f"     winning length-vector: { {c: best_lvec[c] for c in scoring_cols} }")
     if live_unres:
