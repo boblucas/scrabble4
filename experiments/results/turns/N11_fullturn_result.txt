@@ -1,0 +1,55 @@
+================================================================================
+N=11 FULL-TURN  [proven-lower, sound-upper] BRACKET   (experiments/33_full_turn_bracket.py)
+scaled bag = 57 tiles + 1 blank = 58 ; dutch
+================================================================================
+
+FULL TURN = max over row-0 main words of  main_score(word) + vertical_score(down-words).
+exp33 = exp29 main-word enumeration (main_score descending, GVUB STOP, barepack skip)
+        x  exp32 per-main-word vertical bracket (knapsack effUB + FROZEN xfill inner).
+
+--------------------------------------------------------------------------------
+GLOBAL N=11 FULL-TURN BRACKET  =  [850, 892]
+--------------------------------------------------------------------------------
+  proven_lower = 850   (a REAL achievable legal turn)
+  sound_upper  = 892   (no legal turn can exceed this)
+
+WINNING (lower-bound) TURN: main word "bouwfysicus"  (turn BOUWfYsiCuS)
+  main horizontal score          = 626
+  vertical (down-words) score    = 224   -> total 850
+  Length-vector (cols 0,1,2,3,5,8,10): (11, 3, 2, 7, 3, 5, 11)
+  Verticals: blokvinkjes/ooh/ut/wetende/yen/capex/struggelden
+             (gross 228 - 4 blank = 224).  Board: N11_bouwfysicus.txt
+  This 224 board is EXTERNALLY VALIDATED (exp32: restrict the vector's word-domain to
+  these verticals -> `xfill --maxscore 223` returns MAX 224, a legal 4-connected board).
+  exp33 seeds it via --seed-lower 850 (the inner can't re-witness 224 from the full
+  word-domain -- the documented improver wall).
+
+--------------------------------------------------------------------------------
+WHY 892 (the sound upper) and not the exact optimum
+--------------------------------------------------------------------------------
+892 = 626 + 266.  266 = bouwfysicus's per-main-word VERTICAL UPPER = the tile-aware
+multiple-choice knapsack ceiling over its geometrically-connectable length-vectors.
+The hard-tail vectors (full-height col0 [len 10-11] AND full-height col10 [len 10-11])
+resist proving `LE 224` within practical caps, so the knapsack effUB IS the per-word
+ceiling.  Reconfirmed two ways: exp33 VerticalBracket(bouwfysicus, floor0=224) -> vup=266;
+exp32 `--ceiling-only --seed-best 224` climbs to 266 and STOPs.
+
+GLOBAL soundness: exp33's GVUB (a valid upper bound on ANY main word's verticals,
+tile-aware assignment-knapsack, full bag) = 275-284.  Every main word with
+main_score + GVUB <= 850 (i.e. main_score <= ~566-575) is STOP-pruned -- it provably
+cannot beat 850.  Only the handful of main words scoring above that get a full vertical
+search; the global sound upper is the max over those of (main_score + vertical_upper),
+which bouwfysicus pins at 892.  The exact optimum stays UNPROVEN (the hard-tail
+verticals cannot be LE-closed below 266 -- the documented inner wall).
+
+--------------------------------------------------------------------------------
+PIPELINE VALIDATION
+--------------------------------------------------------------------------------
+- exp33's per-main-word VerticalBracket REPRODUCES exp32's PROVEN N=7 afhappe vertical
+  optimum = 151 (full N=7 bag: MAX boards witnessed, resolved=True, 15s, cross-checked
+  == CP-SAT 151 per the exp32 record).
+- N=11 GVUB = 275 (== the documented any-length global knapsack ceiling 275).
+- Decision regression 26/26 (frozen binary).  exp32 + xfill_rs/src/main.rs untouched.
+
+Persisted + resumable progress: experiments/results/turns/N11_fullturn.json (+ .log).
+================================================================================
