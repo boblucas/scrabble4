@@ -494,8 +494,9 @@ def save_progress(prog):
 
 
 def emit_best_board(main_word, turn_str, vb, vlvec, vlow):
-    """Re-run the inner with --emit on the winning length-vector to render+persist the board."""
-    Lvec = {c: vlvec[i] for i, c in enumerate(vb.scoring)}
+    """Re-run the inner with --emit on the winning length-vector to render+persist the board.
+    `vlvec` is the {col: length} dict returned by VerticalBracket.search (already keyed by scoring col)."""
+    Lvec = dict(vlvec)
     path = vb._dump_for(Lvec)
     grid = None
     if path is not None:
