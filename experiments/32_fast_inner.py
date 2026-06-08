@@ -160,13 +160,35 @@ def bridge_budget_lengths(Lvec):
 #   * connectivity and cross-word legality only ever LOWER the vertical score, never raise it.
 # So min(optimistic_UB, knap_UB) is a sound per-vector UB; pruning a vector whose knap_UB <= best is safe.
 import functools
-KNAP_CACHE = {}
+
+
+def _prune_dominated(cands):
+    """Keep only Pareto-optimal (gross, requirement) items: drop word w if some w' has gross' >= gross AND
+    requirement' <= requirement componentwise.  A dominated word is NEVER chosen in the knapsack optimum
+    (swapping in w' raises/keeps gross and frees tiles), so dropping it keeps the UB EXACT while shrinking
+    the CP-SAT model -> much faster per-vector solves.  O(n^2) but n is small per (col,length)."""
+    items = sorted(cands, key=lambda t: (-t[1], sum(t[2].values())))   # high gross, then light, first
+    kept = []
+    for w, sc, rq in items:
+        dominated = False
+        for w2, sc2, rq2 in kept:                       # kept all have gross >= sc
+            # w' dominates w iff gross' >= gross AND req' <= req over the UNION of letters (a letter in
+            # rq2 but not rq means rq2 uses MORE of it -> not <=, so NOT dominating).
+            if sc2 >= sc and all(rq2[c] <= rq.get(c, 0) for c in rq2):
+                dominated = True; break
+        if not dominated:
+            kept.append((w, sc, rq))
+    return kept
+
+
+# precompute the dominance-pruned per-(col,length) candidate lists once (used by every knapsack solve).
+knap_pruned = {c: {l: _prune_dominated(knap_by_len[c][l]) for l in knap_by_len[c]} for c in scoring_cols}
 
 
 @functools.lru_cache(maxsize=None)
 def _knap_ub_cached(key):
     Lvec = {c: key[i] for i, c in enumerate(scoring_cols)}
-    items = {c: knap_by_len[c].get(Lvec[c], []) for c in scoring_cols}
+    items = {c: knap_pruned[c].get(Lvec[c], []) for c in scoring_cols}
     if any(not items[c] for c in scoring_cols):
         return None
     m = cp_model.CpModel(); m.prefix = 'K'
@@ -372,10 +394,20 @@ def main():
             print(f"STOP: next outer UB {UB} <= best {best} -> sweep complete ({time.time()-t0:.0f}s)")
             break
         it += 1
+        # geometric prune FIRST (letter-independent, ~1ms, sound) -- cheaper than the knapsack solve, so
+        # run it before LEVER 1 to avoid a ~0.5s knapsack on tile-starved/unconnectable vectors.
+        fx = setup_fixed_cells(W, H, turn_str, main_tup, {c: tuple([0] * Lvec[c]) for c in scoring_cols})
+        if not ORACLE.can_connect(fx, bridge_budget_lengths(Lvec)):
+            pruned_geom += 1
+            if it <= 10 or it % 200 == 0:
+                print(f"#{it} UB={UB} GEOM-cut {lvec_key(Lvec)} [{time.time()-t0:.0f}s]", flush=True)
+            if time.time() - t0 > MAXSEC:
+                print("(maxsec)"); break
+            continue
         # LEVER 1: tile-aware knapsack UB.  The outer model's UB is the tile-BLIND optimistic max; tighten
         # it per-vector with the shared-tile knapsack.  effUB = min(optimistic UB, knapsack UB) is the
         # sound per-vector upper bound; if it <= best the vector cannot beat the incumbent -> prune here
-        # (no geom, no inner call).  This is what pushes the bracket ceiling 320 -> ~258.
+        # (no inner call).  This is what pushes the bracket ceiling 320 -> ~258.
         kUB = None
         if not NO_KNAP:
             kUB = knap_ub(Lvec)
@@ -385,15 +417,6 @@ def main():
             if it <= 10 or it % 200 == 0:
                 print(f"#{it} UB={UB} KNAP-cut effUB={effUB} {lvec_key(Lvec)} [{time.time()-t0:.0f}s]",
                       flush=True)
-            if time.time() - t0 > MAXSEC:
-                print("(maxsec)"); break
-            continue
-        # geometric prune (letter-independent, sound)
-        fx = setup_fixed_cells(W, H, turn_str, main_tup, {c: tuple([0] * Lvec[c]) for c in scoring_cols})
-        if not ORACLE.can_connect(fx, bridge_budget_lengths(Lvec)):
-            pruned_geom += 1
-            if it <= 10 or it % 200 == 0:
-                print(f"#{it} UB={UB} GEOM-cut {lvec_key(Lvec)} [{time.time()-t0:.0f}s]", flush=True)
             if time.time() - t0 > MAXSEC:
                 print("(maxsec)"); break
             continue
