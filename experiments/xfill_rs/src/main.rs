@@ -268,6 +268,7 @@ struct Solver<'a> {
                                 // get fixed. For committed columns this is its chosen gross.
     node_cap: u64,              // diagnostic: abort the search after this many nodes (0 = no cap)
     no_ub: bool,                // diagnostic: disable the gross-floor UB prune (soundness cross-check)
+    best_grid: Vec<i16>,        // snapshot of the grid at the current `best` board (for --emit)
     seen_buf: Vec<u32>,         // reusable BFS visited buffer for sealed_ok (gen-stamped, alloc-free)
     seen_gen: u32,
     bfs_stack: Vec<usize>,      // reusable BFS stack for sealed_ok
@@ -481,7 +482,7 @@ impl<'a> Solver<'a> {
         if !self.leaf_ok() { return false; }
         let penalty = self.min_blank_penalty();
         let score = self.committed_gross - penalty;
-        if score > self.best { self.best = score; return true; }
+        if score > self.best { self.best = score; self.best_grid.copy_from_slice(&self.grid); return true; }
         false
     }
 
@@ -860,6 +861,7 @@ fn main() {
         maxscore, best: floor, col_committed: vec![false; ncols], committed_gross: 0, remaining_best, col_ub,
         node_cap: std::env::var("MAXNODES").ok().and_then(|s| s.parse().ok()).unwrap_or(0),
         no_ub: std::env::var("NOUB").is_ok(),
+        best_grid: vec![0i16; inst.w * inst.h],
         seen_buf: vec![0u32; inst.w * inst.h], seen_gen: 0, bfs_stack: Vec::with_capacity(inst.w * inst.h) };
     let t = std::time::Instant::now();
     let sat = solver.run();
@@ -872,6 +874,13 @@ fn main() {
             println!("MAX {} nodes={} time={:.3}s", solver.best, solver.nodes, dt);
         } else {
             println!("LE {} nodes={} time={:.3}s", floor, solver.nodes, dt);
+        }
+        // --emit: print the best witnessed board (row-major letter codes, 0=empty) for the caller to
+        // render/persist.  Only meaningful when a board scoring > floor was found (best_grid populated).
+        if args.iter().any(|a| a == "--emit") && solver.best > floor {
+            print!("BOARD");
+            for &g in &solver.best_grid { print!(" {}", if g > 0 { g } else { 0 }); }
+            println!();
         }
     } else {
         println!("{} nodes={} time={:.3}s", if sat { "SAT" } else { "UNSAT" }, solver.nodes, dt);
