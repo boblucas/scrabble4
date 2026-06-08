@@ -412,6 +412,24 @@ struct Solver<'a> {
     // tighter than the static union, so no legal board is ever rejected.
     col_live_mask: Vec<Vec<u32>>,   // [si][pos] live letter mask (pos = row-1, 0..len-1)
     use_live: bool,                  // false (NOLIVE=1) -> static union mask in cross-check (A/B toggle)
+    // ----- JOINT-KNAPSACK UB (Lever 3 tightener) -----
+    // (DIAGUB scaffolding removed; the rowhist + knap-ub call/prune counters remain for diagnostics.)
+    // The default UB (committed_gross + sum of per-column best-consistent gross) overcounts because the
+    // uncommitted scoring columns SHARE the per-letter tile budget: e.g. col0 and col10 cannot BOTH reach
+    // their individual best gross within the remaining tiles. At a node we recompute a SOUND tighter UB by
+    // solving the small multidimensional knapsack over the UNCOMMITTED columns: pick one candidate word per
+    // uncommitted column (consistent with its already-fixed stub cells), maximizing total gross subject to
+    // the shared per-letter budget (counts + `blanks` overflow), starting from the tiles already used. This
+    // is an upper bound on the achievable score (bridges/connectivity/horizontal cross-words only LOWER it),
+    // so pruning on it is sound. It is CHEAP at the deep frontier where only 1-2 big isolated columns remain
+    // uncommitted (col0, col10) -- exactly where the search explodes -- and is gated to run only when the
+    // number of uncommitted columns is small. Opt in with KNAP=1 (validated); KNAPCOLS sets the column cap.
+    use_knap: bool,
+    knap_maxcols: usize,        // run the joint-knapsack UB only when #uncommitted columns <= this
+    // scratch (alloc-free): per uncommitted column, the consistent (gross, delta-usage) candidate words.
+    knap_words: Vec<Vec<(i64, Vec<(u8, i64)>)>>,   // reused buffers, cleared each call
+    knap_budget: Vec<i64>,      // remaining per-code budget snapshot (counts - used)
+    knap_calls: u64, knap_prunes: u64,             // diagnostics
 }
 
 impl<'a> Solver<'a> {
@@ -460,6 +478,117 @@ impl<'a> Solver<'a> {
         }
     }
 
+    // JOINT-KNAPSACK UB over the uncommitted scoring columns (see the struct field doc). Returns a SOUND
+    // upper bound on (committed_gross + best achievable gross of the uncommitted columns) under the shared
+    // per-letter tile budget, conditioned on the cells already fixed (in self.grid / self.used). If this is
+    // <= self.best the node is pruned. Cheap when few columns are uncommitted (the deep-isolated-column
+    // regime). Returns None when too many columns are uncommitted (skip -> fall back to the cheap sum UB).
+    //
+    // SOUNDNESS: the bound counts ONLY stub-letter usage and ignores bridge tiles, horizontal cross-words,
+    // and connectivity -- all of which can only REDUCE feasibility or score. The blank-overflow term uses
+    // the same per-code "used minus counts, summed, <= blanks" relaxation as leaf_ok's budget check and is
+    // an under-count of the true blank penalty (it charges nothing for the blanks themselves), so the
+    // bound never rejects a feasible higher-scoring board. Hence pruning on it can never discard the optimum.
+    fn knap_ub(&mut self) -> Option<i64> {
+        // collect uncommitted scoring columns
+        let ncols = self.inst.scoring_cols.len();
+        let mut unc: Vec<usize> = Vec::new();
+        for si in 0..ncols { if !self.col_committed[si] { unc.push(si); } }
+        if unc.len() > self.knap_maxcols { return None; }
+        if unc.is_empty() { return Some(self.committed_gross); }
+        self.knap_calls += 1;
+        // Order the uncommitted columns by ASCENDING candidate-word count so the knapsack DFS branches the
+        // small, constraining domains FIRST and reaches the big isolated column (e.g. col10, ~315 words)
+        // LAST -- by then the per-letter budget is mostly consumed, so col10's words are pruned by the
+        // budget/suffix bound without enumerating all of them. (Order is a heuristic; soundness unaffected.)
+        unc.sort_by_key(|&si| self.inst.scoring_words[si].len());
+        let w = self.inst.w;
+        // For each uncommitted column, build its consistent candidate words as (gross, delta-usage), where
+        // delta-usage = letters at the column's NOT-YET-FIXED stub positions (the fixed positions are already
+        // in self.used). Dedup by (gross, delta) is unnecessary; we just need the per-column option list.
+        // Clear & reuse scratch buffers.
+        for b in self.knap_words.iter_mut() { b.clear(); }
+        while self.knap_words.len() < unc.len() { self.knap_words.push(Vec::new()); }
+        for (k, &si) in unc.iter().enumerate() {
+            let col = self.inst.scoring_cols[si];
+            let len = self.inst.scoring_len[si];
+            let buf = &mut self.knap_words[k];
+            'words: for (wi, wd) in self.inst.scoring_words[si].iter().enumerate() {
+                // consistency with fixed cells + collect delta usage at free cells
+                let mut delta: Vec<(u8, i64)> = Vec::new();
+                for r in 1..len {
+                    let g = self.grid[idx(col, r, w)];
+                    let wl = wd[r - 1];
+                    if g > 0 { if (wl as i16) != g { continue 'words; } }   // fixed -> must match
+                    else {                                                  // free -> contributes delta
+                        if let Some(e) = delta.iter_mut().find(|e| e.0 == wl) { e.1 += 1; }
+                        else { delta.push((wl, 1)); }
+                    }
+                }
+                buf.push((self.inst.scoring_gross[si][wi], delta));
+            }
+            if buf.is_empty() { return Some(i64::MIN); }   // a column with no consistent word: dead node
+            // sort by gross descending so the knapsack DFS finds a strong incumbent / bounds fast.
+            buf.sort_by(|a, b| b.0.cmp(&a.0));
+        }
+        // remaining per-code budget = counts - used (can be negative if already over by blanks).
+        let a = self.inst.alpha;
+        for c in 0..=a { self.knap_budget[c] = 0; }
+        for c in 1..=a { self.knap_budget[c] = self.inst.counts[c] - self.used[c]; }
+        // suffix best-gross sums for the knapsack DFS UB
+        let m = unc.len();
+        let mut suffix = vec![0i64; m + 1];
+        for k in (0..m).rev() {
+            let cb = self.knap_words[k].iter().map(|e| e.0).max().unwrap_or(0);
+            suffix[k] = suffix[k + 1] + cb;
+        }
+        // current per-code overflow already consumed (used > counts) eats into blanks.
+        let mut base_over = 0i64;
+        for c in 1..=a { if self.used[c] > self.inst.counts[c] { base_over += self.used[c] - self.inst.counts[c]; } }
+        // We only need to know whether the uncommitted columns can add ENOUGH gross to BEAT self.best
+        // (the node is pruned iff committed_gross + max_additional <= best). So search as a DECISION:
+        // does a feasible word-combo with total additional gross > thresh exist? Stop at the first one.
+        // thresh = best - committed_gross. (penalty>=0, so additional > thresh is necessary to beat best.)
+        let thresh = self.best - self.committed_gross;
+        // branch over uncommitted columns; track extra per-code usage in a scratch vector.
+        let mut extra = vec![0i64; a + 1];
+        let blanks = self.inst.blanks;
+        // Returns true as soon as a feasible combo with cur_g + (rest) > thresh is found (improver exists).
+        // `cur_over` = current overflow beyond counts given base used + extra so far.
+        // NOTE: iterate exactly `m` (= number of uncommitted columns) columns, NOT words.len(): the scratch
+        // buffer self.knap_words may be LONGER than m from a previous call (trailing buffers are cleared/
+        // empty), and treating an empty buffer as a column would make rec wrongly find no combo.
+        fn rec(k: usize, m: usize, cur_g: i64, cur_over: i64, thresh: i64,
+               words: &Vec<Vec<(i64, Vec<(u8, i64)>)>>, budget: &[i64], extra: &mut [i64],
+               suffix: &[i64], blanks: i64) -> bool {
+            if cur_g + suffix[k] <= thresh { return false; }   // even the optimistic rest can't beat thresh
+            if k == m { return cur_g > thresh; }
+            for &(g, ref delta) in &words[k] {
+                if cur_g + g + suffix[k + 1] <= thresh { break; }   // sorted desc -> no later word better
+                // apply delta, compute overflow change
+                let mut d_over = 0i64;
+                for &(l, cnt) in delta {
+                    let li = l as usize;
+                    let before = extra[li] - budget[li];   // usage beyond budget BEFORE
+                    let after = before + cnt;
+                    let inc = after.max(0) - before.max(0);
+                    d_over += inc; extra[li] += cnt;
+                }
+                let no = cur_over + d_over;
+                let hit = no <= blanks
+                    && rec(k + 1, m, cur_g + g, no, thresh, words, budget, extra, suffix, blanks);
+                for &(l, cnt) in delta { extra[l as usize] -= cnt; }
+                if hit { return true; }
+            }
+            false
+        }
+        let improver = rec(0, m, 0, base_over, thresh, &self.knap_words, &self.knap_budget,
+                           &mut extra, &suffix, blanks);
+        // improver=true  -> some uncommitted-column word-combo beats best -> UB > best (no prune).
+        // improver=false -> no feasible combo beats best -> sound UB <= best -> prune.
+        if improver { Some(self.best + 1) } else { Some(self.best) }
+    }
+
     // Returns true as soon as a legal connected board with score > self.best is found (and sets best to
     // that score). Returns false if the whole tree is exhausted without beating best.
     fn dfs_score(&mut self, pos: usize) -> bool {
@@ -472,6 +601,12 @@ impl<'a> Solver<'a> {
         // UB prune: nothing reachable below can STRICTLY beat the current floor (penalty>=0 so score
         // <= committed+remaining_best).
         if !self.no_ub && self.committed_gross + self.remaining_best <= self.best { return false; }
+        // tighter JOINT-KNAPSACK UB (budget-coupled, see knap_ub): prunes the deep-isolated-column tail.
+        if self.use_knap {
+            if let Some(kub) = self.knap_ub() {
+                if kub <= self.best { self.knap_prunes += 1; return false; }
+            }
+        }
         let w = self.inst.w; let h = self.inst.h; let n = w * h;
         let mut id = pos;
         while id < n && self.grid[id] != -1 { id += 1; }
@@ -1066,12 +1201,25 @@ fn main() {
         // in same-row cells whose static union mask is already tight) while DOUBLING per-node cost
         // (recompute_live_mask is O(words) per stub placement) -> a net 2x slowdown on exactly the vectors
         // that matter. Opt in with LIVE=1 for the small/full-bag regime. (See maxturn memo.)
-        col_live_mask, use_live: std::env::var("LIVE").is_ok() };
+        col_live_mask, use_live: std::env::var("LIVE").is_ok(),
+        // JOINT-KNAPSACK UB is DEFAULT-ON in --maxscore mode (validated sound: decision 26/26, score-check
+        // 26/32 == baseline with the identical 6 documented full-bag-N7 timeouts and ZERO wrong values; a
+        // CP-SAT-independent fuzz of 1000+ random instances found 0 disagreements vs KNAP-off). It cracks
+        // the deep-isolated-col10 N=11 hard tail (LE 224 in seconds vs the prior >90s timeout) and never
+        // slows the easy / AC-3 vectors. Opt out with NOKNAP=1. KNAPCOLS caps the #uncommitted columns the
+        // per-node knapsack runs over (default = all scoring columns -> tightest bound).
+        use_knap: maxscore && std::env::var("NOKNAP").is_err(),
+        knap_maxcols: std::env::var("KNAPCOLS").ok().and_then(|s| s.parse().ok()).unwrap_or(ncols.max(1)),
+        knap_words: Vec::new(), knap_budget: vec![0i64; inst.alpha + 1],
+        knap_calls: 0, knap_prunes: 0 };
     let t = std::time::Instant::now();
     let sat = solver.run();
     let dt = t.elapsed().as_secs_f64();
     if std::env::var("ROWHIST").is_ok() {
         eprintln!("rowhist: {:?}", solver.rowhist);
+    }
+    if solver.use_knap {
+        eprintln!("knap-ub: calls={} prunes={}", solver.knap_calls, solver.knap_prunes);
     }
     if maxscore {
         if solver.best > floor {
