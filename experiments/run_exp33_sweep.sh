@@ -16,12 +16,19 @@ LOG="experiments/results/turns/N${N}_fullturn.log"
 
 # Seed the global proven_lower with the known bouwfysicus turn lower bound for N=11 (850 = 626 main +
 # 224 verticals, an externally-validated real legal board -- see maxturn-n11-fastinner-result).  For
-# N=13/15 there is no known seed yet; start from -1 (the inner must witness boards, which is the wall --
-# the run will mostly produce sound UPPER brackets + whatever lower bounds the inner can witness).
-case "$N" in
-  11) SEED="--seed-lower 850" ;;
-  *)  SEED="" ;;
-esac
+# Seed the proven_lower with a VERIFIED legal-turn lower bound.  exp34 (the seed finder) writes the best
+# verified turn it has witnessed to experiments/results/turns/N<W>_seed.json as `best_total` (a real legal
+# 4-connected board, independently re-checked).  We read that as the seed if present; else fall back to the
+# known N=11 bouwfysicus 850.  Seeding is what lets exp33 prove `LE` fast (the inner can't witness high
+# boards from scratch -- the documented improver wall), so a good seed is essential for a tight LOWER.
+SEEDFILE="experiments/results/turns/N${N}_seed.json"
+SEED=""
+if [ -f "$SEEDFILE" ]; then
+  SVAL=$(python -c "import json;d=json.load(open('$SEEDFILE'));print(d.get('best_total',-1) or -1)" 2>/dev/null || echo -1)
+  if [ "${SVAL:-0}" -gt 0 ] 2>/dev/null; then SEED="--seed-lower $SVAL"; fi
+fi
+if [ -z "$SEED" ] && [ "$N" = "11" ]; then SEED="--seed-lower 850"; fi
+echo "seed for N=$N: ${SEED:-<none>}"
 
 # Per-inner-call cap (VCAP) kept modest so one hard length-vector can't stall a main word; per-main-word
 # overall cap (VMAXSEC) bounds the vertical search per word.  The unresolved residual contributes to the
