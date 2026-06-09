@@ -78,6 +78,11 @@ FIX = arg('--fix', '')                     # SHARD the enumeration to a subspace
                                            # "all shards PROVEN" => globally PROVEN.  Caps per-shard outer
                                            # clause-accumulation (the descending sweep's scaling bottleneck).
 WORKERS = arg('--workers', 4, int)         # CP-SAT search workers per solve (drop to 1-2 for parallel shards)
+CENTER = '--center' in sys.argv            # require the CENTER cell (W//2,H//2) occupied+connected (legal
+                                           # Scrabble position: the game starts at center).  For a SCORING
+                                           # center column this means its vertical word reaches the center
+                                           # row (length >= center_row+1); the one-component check then makes
+                                           # it connected.  SOUND restriction of the feasible set.
 
 rules = construct_rules('dutch', board)
 W, H = rules.W, rules.H
@@ -395,6 +400,17 @@ def main():
                 sys.exit(f"--fix {tok}: col {fc} not a scoring col or len {fl} unavailable")
             mo.add(lv[(fc, fl)] == 1)
         print(f"  SHARD --fix {FIX}: enumeration restricted to this subspace", flush=True)
+    if CENTER:
+        cc, cr = W // 2, H // 2
+        if cc in scoring_cols:
+            # center cell (cc,cr) is covered iff col cc's stub reaches row cr, i.e. length-1 >= cr <=> len >= cr+1.
+            ok = [l for l in lengths[cc] if l >= cr + 1]
+            if not ok:
+                sys.exit(f"--center: col {cc} has no length >= {cr+1} to reach center row {cr}")
+            mo.add(sum(lv[(cc, l)] for l in ok) == 1)
+            print(f"  --center: col{cc} (scoring) length >= {cr+1} -> center ({cc},{cr}) occupied+connected", flush=True)
+        else:
+            sys.exit(f"--center: center col {cc} is NON-scoring (bridge-covered) -- needs inner support, not implemented")
     solver = cp_model.CpSolver()
     solver.parameters.num_search_workers = WORKERS
     solver.parameters.max_presolve_iterations = 1
