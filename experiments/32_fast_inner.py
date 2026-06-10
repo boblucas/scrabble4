@@ -341,6 +341,13 @@ def main():
     processed = pruned_geom = pruned_nocand = pruned_knap = n_le = n_max = 0
     unresolved = []          # list of (UB, Lvec)
     max_unres = -1
+    frontier_ub = -1         # on a MAXSEC break: optimistic UB bounding ALL un-enumerated vectors
+                             # (descending order => next vectors have UB <= the current one).
+                             # CRITICAL: without this the maxsec path left `unresolved` empty and
+                             # the verdict printed PROVEN with millions of vectors never visited
+                             # (the v1 "PROVEN 224" hole, found 2026-06-10 by the independent
+                             # band enumeration: the UB>224 band is ~6.6M vectors; 2h shards
+                             # enumerated ~7k each).
 
     def absorb_incumbent(inc, Lvec):
         """If the inner witnessed a real legal board scoring `inc` that beats `best`, adopt it as the new
@@ -449,7 +456,7 @@ def main():
             if it <= 10 or it % 200 == 0:
                 print(f"#{it} UB={UB} GEOM-cut {lvec_key(Lvec)} [{time.time()-t0:.0f}s]", flush=True)
             if time.time() - t0 > MAXSEC:
-                print("(maxsec)"); break
+                frontier_ub = UB; print(f"(maxsec, frontier UB={UB})"); break
             continue
         # LEVER 1: tile-aware knapsack UB.  The outer model's UB is the tile-BLIND optimistic max; tighten
         # it per-vector with the shared-tile knapsack.  effUB = min(optimistic UB, knapsack UB) is the
@@ -465,7 +472,7 @@ def main():
                 print(f"#{it} UB={UB} KNAP-cut effUB={effUB} {lvec_key(Lvec)} [{time.time()-t0:.0f}s]",
                       flush=True)
             if time.time() - t0 > MAXSEC:
-                print("(maxsec)"); break
+                frontier_ub = UB; print(f"(maxsec, frontier UB={UB})"); break
             continue
         v, val, inc, tt = inner_maxscore(Lvec, best, CAP)
         if v == 'NONE':
@@ -489,10 +496,14 @@ def main():
                   f"{'  <-- best' if rose else ''}  {lvec_key(Lvec)} best={best} [{time.time()-t0:.0f}s]",
                   flush=True)
         if time.time() - t0 > MAXSEC:
-            print(f"(maxsec at it={it})"); break
+            frontier_ub = UB; print(f"(maxsec at it={it}, frontier UB={UB})"); break
 
     dt = time.time() - t0
-    # Honest verdict: only the unresolved vectors with UB > best can hide a better board.
+    # Honest verdict: only the unresolved vectors with UB > best can hide a better board --
+    # INCLUDING the un-enumerated remainder after a MAXSEC break (frontier_ub bounds it).
+    if frontier_ub > best:
+        unresolved.append((frontier_ub, {'_remainder': True}))
+        max_unres = max(max_unres, frontier_ub)
     live_unres = [(ub, lvk) for ub, lvk in unresolved if ub > best]
     proven = not live_unres
     if proven:

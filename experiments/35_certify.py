@@ -181,19 +181,41 @@ def cmd_build(a):
     print(f'band: {len(band)} vectors with UB > {a.floor}'
           f'{" (center)" if a.center else ""}; {len(V)} verdicts cached')
     t0 = time.time(); done = 0
-    for lvec in band:
+    todo = [lv for lv in band
+            if V.get('-'.join(map(str, lv)), {}).get('verdict') not in ('GEOM', 'LE', 'NOCAND')]
+    print(f'  todo: {len(todo)}')
+    # Stage 1 (sequential, pure-Python, fast): GEOM verdicts prefilter the band.
+    xfill_jobs = []
+    for lvec in todo:
         key = '-'.join(map(str, lvec))
-        if key in V and V[key].get('verdict') in ('GEOM', 'LE', 'NOCAND'):
-            continue
         g = geom_verdict(rules, mt, a.turn, scoring, lvec)
-        V[key] = g if g else xfill_verdict(a.board, a.main, a.turn, scoring, lvec,
-                                           a.floor, not a.no_scale, inst_dir, a.wall)
-        done += 1
-        if V[key]['verdict'] == 'MAX':
-            print(f'  !!! REFUTED: {key} -> {V[key]["stdout"]}')
-        if done % 10 == 0 or V[key]['verdict'] not in ('GEOM', 'LE'):
-            json.dump(led, open(lpath, 'w'), indent=1)
-            print(f'  [{done}] {key}: {V[key]["verdict"]} ({time.time()-t0:.0f}s)', flush=True)
+        if g:
+            V[key] = g; done += 1
+            if done % 200 == 0:
+                json.dump(led, open(lpath, 'w'), indent=1)
+                print(f'  [geom {done}/{len(todo)}] ({time.time()-t0:.0f}s)', flush=True)
+        else:
+            xfill_jobs.append(lvec)
+    json.dump(led, open(lpath, 'w'), indent=1)
+    print(f'  geom-cut {done}; xfill jobs: {len(xfill_jobs)}  ({time.time()-t0:.0f}s)', flush=True)
+    # Stage 2: xfill verdicts, PARALLEL (--procs).  Each call is a subprocess (GIL-free wait),
+    # so a thread pool is the right executor; ledger writes stay in the MAIN thread only.
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    with ThreadPoolExecutor(max_workers=max(1, a.procs)) as ex:
+        futs = {ex.submit(xfill_verdict, a.board, a.main, a.turn, scoring, lvec,
+                          a.floor, not a.no_scale, inst_dir, a.wall): lvec
+                for lvec in xfill_jobs}
+        for fut in as_completed(futs):
+            lvec = futs[fut]
+            key = '-'.join(map(str, lvec))
+            V[key] = fut.result()
+            done += 1
+            if V[key]['verdict'] == 'MAX':
+                print(f'  !!! REFUTED: {key} -> {V[key]["stdout"]}', flush=True)
+            if done % 10 == 0 or V[key]['verdict'] not in ('GEOM', 'LE'):
+                json.dump(led, open(lpath, 'w'), indent=1)
+                print(f'  [{done}/{len(todo)}] {key}: {V[key]["verdict"]} '
+                      f'({time.time()-t0:.0f}s)', flush=True)
     if a.witness:
         led['witness'] = json.load(open(a.witness))
     json.dump(led, open(lpath, 'w'), indent=1)
