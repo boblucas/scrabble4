@@ -9,13 +9,14 @@ cd /home/bob/programming/scrabble4
 PY=.venv/bin/python
 SEED=${SEED:-173}; SLVEC=${SLVEC:-"8,5,2,6,6,5,8"}
 MAXC=${MAXC:-3}
+CAP=${CAP:-90}; MAXSEC=${MAXSEC:-7200}
 OUT=experiments/results/turns/center_shards
 mkdir -p "$OUT"
 for K in $(seq 1 11); do
   while [ "$(jobs -rp | wc -l)" -ge "$MAXC" ]; do sleep 5; done
   echo "[launch] col0=$K (center, seed=$SEED)"
   "$PY" -u experiments/32_fast_inner.py 11 --center --scale-tiles --blanks --main bouwfysicus \
-    --seed-best "$SEED" --seed-lvec "$SLVEC" --fix "0:$K" --workers 2 --cap 90 --maxsec 7200 \
+    --seed-best "$SEED" --seed-lvec "$SLVEC" --fix "0:$K" --workers 2 --cap "$CAP" --maxsec "$MAXSEC" \
     > "$OUT/c0-$K.log" 2>&1 &
 done
 wait
