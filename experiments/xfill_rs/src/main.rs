@@ -128,14 +128,24 @@ fn parse(path: &str) -> Inst {
         }
         let _ = &dict_path;
     }
+    build_inst(w, h, alpha, blanks, counts, scores, &preplaced, &nonscoring,
+               scoring_cols, scoring_len, scoring_wm, scoring_words, scoring_gross)
+}
+
+// Shared instance assembly (grid kinds, per-cell domain masks, per-col bests) -- used by both the
+// per-vector instance-file path (parse) and the base-file path (inst_from_base).
+#[allow(clippy::too_many_arguments)]
+fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, counts: Vec<i64>, scores: Vec<i64>,
+              preplaced: &[(usize, usize, i16)], nonscoring: &[usize],
+              scoring_cols: Vec<usize>, scoring_len: Vec<usize>, scoring_wm: Vec<i64>,
+              scoring_words: Vec<Vec<Vec<u8>>>, scoring_gross: Vec<Vec<i64>>) -> Inst {
     // build grid
     let mut grid0 = vec![0i16; w * h];   // default empty
     let mut kind = vec![0u8; w * h];
     let mut scol_of = vec![-1i32; w * h];
     // preplaced (row 0, non-scoring): mandatory active
-    for (x, y, c) in &preplaced { grid0[idx(*x, *y, w)] = *c; kind[idx(*x, *y, w)] = 0; }
+    for (x, y, c) in preplaced { grid0[idx(*x, *y, w)] = *c; kind[idx(*x, *y, w)] = 0; }
     // scoring columns: stub cells unassigned (kind 1), below-stub & row0 forced empty (kind 0, val 0)
-    let scoring_set: HashSet<usize> = scoring_cols.iter().cloned().collect();
     for (si, &col) in scoring_cols.iter().enumerate() {
         let len = scoring_len[si];
         for r in 1..len { let id = idx(col, r, w); grid0[id] = -1; kind[id] = 1; scol_of[id] = si as i32; }
@@ -148,10 +158,9 @@ fn parse(path: &str) -> Inst {
     // that deeper row). Emptying such a deep cell shortens the vertical run into an INVALID word, so it
     // is not free. We therefore keep the full bridge range and tame the deep-bridge explosion in the
     // search itself (connectivity-aware pruning) rather than by truncating the board.
-    for &col in &nonscoring {
+    for &col in nonscoring {
         for r in 1..h { let id = idx(col, r, w); grid0[id] = -1; kind[id] = 2; }
     }
-    let _ = scoring_set;
     // static per-cell domain info
     let all_mask: u32 = if alpha >= 26 { 0x03ff_ffff } else { (1u32 << alpha) - 1 };
     let mut cell_mask = vec![0u32; w * h];
@@ -164,11 +173,11 @@ fn parse(path: &str) -> Inst {
                 else { cell_mask[id] = 0; can_empty[id] = true; }   // forced-empty
             }
             1 => {                                                  // scoring-stub: union over candidate words
-                let si = scol_of[id] as usize; let col = scoring_cols[si];
+                let si = scol_of[id] as usize;
                 let r = id / w; let posn = r - 1;
                 let mut m = 0u32;
                 for wd in &scoring_words[si] { m |= bit(wd[posn]); }
-                cell_mask[id] = m; can_active[id] = true; let _ = col;
+                cell_mask[id] = m; can_active[id] = true;
             }
             _ => { cell_mask[id] = all_mask; can_active[id] = true; can_empty[id] = true; } // bridge
         }
@@ -178,7 +187,100 @@ fn parse(path: &str) -> Inst {
     Inst { w, h, alpha, blanks, counts, scores, grid0, kind, scol_of, scoring_cols, scoring_len,
            scoring_words, scoring_gross, scoring_best, scoring_wm,
            cell_mask, can_active, can_empty }
-    .with_dict(&dict_path)
+}
+
+// ---- BASE FILE: per-main-word data shared by ALL length-vectors (the --batchvec scale path) ----
+// One base file replaces millions of per-vector instance files: it carries the candidate stub
+// words per (scoring column, length) plus the fixed bag/scores/preplaced data; each batch line
+// then only names a length-vector and the instance is assembled IN MEMORY (inst_from_base).
+struct Base {
+    w: usize, h: usize, hmax: usize, alpha: usize, blanks: i64,
+    counts: Vec<i64>, scores: Vec<i64>,
+    preplaced: Vec<(usize, usize, i16)>,
+    nonscoring: Vec<usize>,
+    dict_path: String,
+    bcols: Vec<usize>,                                   // scoring columns, vector order
+    bwm: Vec<i64>,                                       // per scoring col: row-0 word multiplier
+    bylen: Vec<std::collections::HashMap<usize, (Vec<Vec<u8>>, Vec<i64>)>>,  // per col: len -> (stub words, gross)
+}
+
+fn parse_base(path: &str) -> Base {
+    let mut s = String::new();
+    fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
+    let (mut w, mut h, mut hmax, mut alpha) = (0usize, 0usize, 8usize, 0usize);
+    let mut blanks = 0i64;
+    let mut counts: Vec<i64> = Vec::new();
+    let mut scores: Vec<i64> = Vec::new();
+    let mut preplaced: Vec<(usize, usize, i16)> = Vec::new();
+    let mut nonscoring: Vec<usize> = Vec::new();
+    let mut dict_path = String::new();
+    let mut bcols: Vec<usize> = Vec::new();
+    let mut bwm: Vec<i64> = Vec::new();
+    let mut bylen: Vec<std::collections::HashMap<usize, (Vec<Vec<u8>>, Vec<i64>)>> = Vec::new();
+    let mut cur_len = 0usize;
+    for line in s.lines() {
+        let mut it = line.split_whitespace();
+        match it.next() {
+            Some("DIMS") => {
+                w = it.next().unwrap().parse().unwrap();
+                h = it.next().unwrap().parse().unwrap();
+                hmax = it.next().unwrap().parse().unwrap();
+                alpha = it.next().unwrap().parse().unwrap();
+                blanks = it.next().unwrap().parse().unwrap();
+                counts = vec![0; alpha + 1]; scores = vec![0; alpha + 1];
+            }
+            Some("COUNTS") => for tok in it {
+                let mut p = tok.split(':');
+                let c: usize = p.next().unwrap().parse().unwrap();
+                let n: i64 = p.next().unwrap().parse().unwrap();
+                if c < counts.len() { counts[c] = n; }
+            },
+            Some("SCORES") => for tok in it {
+                let mut p = tok.split(':');
+                let c: usize = p.next().unwrap().parse().unwrap();
+                let n: i64 = p.next().unwrap().parse().unwrap();
+                if c < scores.len() { scores[c] = n; }
+            },
+            Some("PREPLACED") => for tok in it {
+                let p: Vec<&str> = tok.split(',').collect();
+                preplaced.push((p[0].parse().unwrap(), p[1].parse().unwrap(), p[2].parse().unwrap()));
+            },
+            Some("NONSCORING") => for tok in it { nonscoring.push(tok.parse().unwrap()); },
+            Some("DICT") => dict_path = it.next().unwrap().to_string(),
+            Some("BCOL") => {
+                let col: usize = it.next().unwrap().parse().unwrap();
+                let wm: i64 = it.next().unwrap().parse().unwrap();
+                bcols.push(col); bwm.push(wm);
+                bylen.push(std::collections::HashMap::new());
+            }
+            Some("BLEN") => { cur_len = it.next().unwrap().parse().unwrap();
+                              bylen.last_mut().unwrap().insert(cur_len, (Vec::new(), Vec::new())); }
+            Some("WORDV") => {
+                let g: i64 = it.next().unwrap().parse().unwrap();
+                let v: Vec<u8> = it.map(|t| t.parse().unwrap()).collect();
+                let e = bylen.last_mut().unwrap().get_mut(&cur_len).unwrap();
+                e.0.push(v); e.1.push(g);
+            }
+            _ => {}
+        }
+    }
+    Base { w, h, hmax, alpha, blanks, counts, scores, preplaced, nonscoring, dict_path,
+           bcols, bwm, bylen }
+}
+
+// Assemble the per-vector instance from the base.  None if a column has no candidate of its length.
+fn inst_from_base(b: &Base, lvec: &[usize]) -> Option<Inst> {
+    let mut words: Vec<Vec<Vec<u8>>> = Vec::with_capacity(b.bcols.len());
+    let mut gross: Vec<Vec<i64>> = Vec::with_capacity(b.bcols.len());
+    for (ci, &l) in lvec.iter().enumerate() {
+        match b.bylen[ci].get(&l) {
+            Some((ws, gs)) if !ws.is_empty() => { words.push(ws.clone()); gross.push(gs.clone()); }
+            _ => return None,
+        }
+    }
+    Some(build_inst(b.w, b.h, b.alpha, b.blanks, b.counts.clone(), b.scores.clone(),
+                    &b.preplaced, &b.nonscoring,
+                    b.bcols.clone(), lvec.to_vec(), b.bwm.clone(), words, gross))
 }
 
 impl Inst {
@@ -406,6 +508,9 @@ struct Solver<'a> {
                                 // stub so far (= scoring_best when untouched); tightens the UB as prefixes
                                 // get fixed. For committed columns this is its chosen gross.
     node_cap: u64,              // diagnostic: abort the search after this many nodes (0 = no cap)
+    deadline: Option<std::time::Instant>,  // sound wall-clock abort (batch mode per-instance wall)
+    aborted: bool,              // search ended by node_cap/deadline, NOT exhaustion -> the caller MUST
+                                // report TO/TIMEOUT, never LE/UNSAT (an aborted search proves nothing).
     no_ub: bool,                // diagnostic: disable the gross-floor UB prune (soundness cross-check)
     best_grid: Vec<i16>,        // snapshot of the grid at the current `best` board (for --emit)
     seen_buf: Vec<u32>,         // reusable BFS visited buffer for sealed_ok (gen-stamped, alloc-free)
@@ -609,14 +714,28 @@ impl<'a> Solver<'a> {
     }
 
     // Returns true as soon as a legal connected board with score > self.best is found (and sets best to
-    // that score). Returns false if the whole tree is exhausted without beating best.
-    fn dfs_score(&mut self, pos: usize) -> bool {
+    // One bookkeeping step per search node: count it and check the abort conditions (node cap /
+    // wall deadline).  Returns true if the search must ABORT (caller returns false immediately;
+    // `aborted` is set so the result is reported TO, never LE/UNSAT -- an abort proves nothing).
+    #[inline]
+    fn tick(&mut self) -> bool {
         self.nodes += 1;
         if self.nodes % 20_000_000 == 0 {
             eprintln!("  nodes={}M best={} committed={} rem_best={} rowhist={:?}",
                 self.nodes / 1_000_000, self.best, self.committed_gross, self.remaining_best, self.rowhist);
         }
-        if self.node_cap > 0 && self.nodes >= self.node_cap { return false; }   // diagnostic abort
+        if self.node_cap > 0 && self.nodes >= self.node_cap { self.aborted = true; return true; }
+        if self.nodes & 0xFFF == 0 {
+            if let Some(d) = self.deadline {
+                if std::time::Instant::now() >= d { self.aborted = true; return true; }
+            }
+        }
+        false
+    }
+
+    // that score). Returns false if the whole tree is exhausted without beating best.
+    fn dfs_score(&mut self, pos: usize) -> bool {
+        if self.tick() { return false; }
         // UB prune: nothing reachable below can STRICTLY beat the current floor (penalty>=0 so score
         // <= committed+remaining_best).
         if !self.no_ub && self.committed_gross + self.remaining_best <= self.best { return false; }
@@ -854,7 +973,7 @@ impl<'a> Solver<'a> {
     // top-level branch instead of re-multiplying them under every partial bridge assignment.
     fn dfs_iso(&mut self, j: usize) -> bool {
         if j == self.iso_cols.len() { return self.dfs(0); }
-        self.nodes += 1;
+        if self.tick() { return false; }
         let si = self.iso_cols[j];
         let col = self.inst.scoring_cols[si];
         let len = self.inst.scoring_len[si];
@@ -897,8 +1016,7 @@ impl<'a> Solver<'a> {
     }
 
     fn dfs(&mut self, pos: usize) -> bool {
-        self.nodes += 1;
-        if self.nodes % 20_000_000 == 0 { eprintln!("  nodes={}M rowhist={:?}", self.nodes / 1_000_000, self.rowhist); }
+        if self.tick() { return false; }
         let w = self.inst.w; let h = self.inst.h; let n = w * h;
         // find next unassigned cell in row-major from `pos`
         let mut id = pos;
@@ -961,7 +1079,7 @@ impl<'a> Solver<'a> {
     // vertical is the pre-validated stub. place_ok gives left-anchored prefix/closure pruning;
     // leaf_ok is the final full check.
     fn dfs_free(&mut self, j: usize) -> bool {
-        self.nodes += 1;
+        if self.tick() { return false; }
         if j == self.free_cols.len() { return self.leaf_ok(); }
         let si = self.free_cols[j];
         let col = self.inst.scoring_cols[si];
@@ -1138,6 +1256,61 @@ impl<'a> Solver<'a> {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    // ---- BATCH MODE: `xfill --batch LISTFILE` ----------------------------------------------------
+    // LISTFILE lines: `<key> <instance_path> <floor>`.  Runs each instance in --maxscore mode with a
+    // PER-INSTANCE wall (env BATCHWALL seconds, default 300; a sound abort -> "TO", never LE).  The
+    // dictionary is loaded ONCE per dict path and shared -- this amortizes the ~0.1s spawn+dict cost
+    // that dominates root-pruned vectors, enabling ~ms/vector over multi-million-vector bands.
+    // Output: one line per item, `RES <key> <result-line>`, flushed as produced (resumable caller).
+    if let Some(bi) = args.iter().position(|a| a == "--batch") {
+        let listfile = &args[bi + 1];
+        let wall: f64 = std::env::var("BATCHWALL").ok().and_then(|s| s.parse().ok()).unwrap_or(300.0);
+        let mut dicts: std::collections::HashMap<String, Dict> = std::collections::HashMap::new();
+        let data = fs::read_to_string(listfile).unwrap();
+        use std::io::Write as _;
+        for line in data.lines() {
+            let mut it = line.split_whitespace();
+            let (key, p, fl) = (it.next(), it.next(), it.next());
+            if key.is_none() || p.is_none() { continue; }
+            let floor: i64 = fl.and_then(|s| s.parse().ok()).unwrap_or(-1);
+            let (res, _board) = solve_one(p.unwrap(), true, floor, Some(wall), &mut dicts);
+            println!("RES {} {}", key.unwrap(), res);
+            std::io::stdout().flush().ok();
+        }
+        return;
+    }
+    // ---- BATCHVEC MODE: `xfill --batchvec BASEFILE LISTFILE` -------------------------------------
+    // The SCALE path: one BASE file (per-main-word candidate domains, see parse_base) + a list of
+    // length-vectors.  LISTFILE lines: `<key> <l0> <l1> ... <l_{ncols-1}> <floor>`.  Instances are
+    // assembled IN MEMORY (no per-vector files), the dict is loaded once, each item gets a sound
+    // per-instance wall (BATCHWALL, default 300s; abort -> TO).  Output: `RES <key> <line>`.
+    if let Some(bi) = args.iter().position(|a| a == "--batchvec") {
+        let base = parse_base(&args[bi + 1]);
+        let listfile = &args[bi + 2];
+        let wall: f64 = std::env::var("BATCHWALL").ok().and_then(|s| s.parse().ok()).unwrap_or(300.0);
+        let td = std::time::Instant::now();
+        let dict = load_dict(&base.dict_path, base.hmax);
+        eprintln!("dict loaded: {} words, {} prefixes, {:.2}s",
+                  dict.words.len(), dict.prefixes.len(), td.elapsed().as_secs_f64());
+        let ncols = base.bcols.len();
+        let data = fs::read_to_string(listfile).unwrap();
+        use std::io::Write as _;
+        for line in data.lines() {
+            let toks: Vec<&str> = line.split_whitespace().collect();
+            if toks.len() != ncols + 2 { continue; }
+            let key = toks[0];
+            let lvec: Vec<usize> = toks[1..=ncols].iter().map(|t| t.parse().unwrap()).collect();
+            let floor: i64 = toks[ncols + 1].parse().unwrap();
+            let res = match inst_from_base(&base, &lvec) {
+                None => "NOCAND".to_string(),
+                Some(mut inst) => solve_inst(&mut inst, &dict, true, floor, Some(wall)).0,
+            };
+            println!("RES {} {}", key, res);
+            std::io::stdout().flush().ok();
+        }
+        return;
+    }
+    // ---- SINGLE MODE (legacy stdout contract preserved) ------------------------------------------
     let path = &args[1];
     // --maxscore [floor]: score-maximization mode. Returns the MAX legal vertical score, or "LE floor"
     // if nothing beats `floor`. floor defaults to -1 (so any legal board reports its score). The floor
@@ -1147,6 +1320,25 @@ fn main() {
         args.iter().position(|a| a == "--maxscore")
             .and_then(|i| args.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(-1)
     } else { -1 };
+    let wall: Option<f64> = std::env::var("WALL").ok().and_then(|s| s.parse().ok());
+    let mut dicts: std::collections::HashMap<String, Dict> = std::collections::HashMap::new();
+    let (line, board) = solve_one(path, maxscore, floor, wall, &mut dicts);
+    println!("{}", line);
+    // --emit: print the best witnessed board (row-major letter codes, 0=empty).
+    if args.iter().any(|a| a == "--emit") {
+        if let Some(bg) = board {
+            print!("BOARD");
+            for &g in &bg { print!(" {}", if g > 0 { g } else { 0 }); }
+            println!();
+        }
+    }
+}
+
+// Solve one instance file.  Returns (result line, best board if a witness > floor was found).
+// `wall` = sound per-instance wall-clock cap: on expiry the search ABORTS and the line is
+// "TO ..." (maxscore) / "TIMEOUT ..." (decision) -- never LE/UNSAT (an abort proves nothing).
+fn solve_one(path: &str, maxscore: bool, floor: i64, wall: Option<f64>,
+             dicts: &mut std::collections::HashMap<String, Dict>) -> (String, Option<Vec<i16>>) {
     let mut inst = parse(path);
     // re-read dict path from file (parse dropped it); read DICT line
     let mut s = String::new(); fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
@@ -1159,25 +1351,33 @@ fn main() {
             _ => {}
         }
     }
-    let td = std::time::Instant::now();
-    let dict = load_dict(&dict_path, hmax);
-    eprintln!("dict loaded: {} words, {} prefixes, {:.2}s", dict.words.len(), dict.prefixes.len(), td.elapsed().as_secs_f64());
+    if !dicts.contains_key(&dict_path) {
+        let td = std::time::Instant::now();
+        let d = load_dict(&dict_path, hmax);
+        eprintln!("dict loaded: {} words, {} prefixes, {:.2}s",
+                  d.words.len(), d.prefixes.len(), td.elapsed().as_secs_f64());
+        dicts.insert(dict_path.clone(), d);
+    }
+    let dict = &dicts[&dict_path];
+    solve_inst(&mut inst, dict, maxscore, floor, wall)
+}
+
+// The solve core shared by the instance-file path (solve_one) and the base path (--batchvec):
+// AC presolve, search, sound TO-on-abort result line.
+fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
+              wall: Option<f64>) -> (String, Option<Vec<i16>>) {
     // ARC-CONSISTENCY presolve over adjacent scoring-column word-domains (the forced-2-letter-word join).
     // Sound, global; collapses the full-height adjacent-block hard tail. Opt out with NOAC=1 for A/B.
     if std::env::var("NOAC").is_err() {
         let tac = std::time::Instant::now();
-        let unsat = inst.arc_consistency(&dict);
+        let unsat = inst.arc_consistency(dict);
         eprintln!("arc-consistency: {} surviving words/col, {:.3}s{}",
             inst.scoring_words.iter().map(|v| v.len()).collect::<Vec<_>>().iter().sum::<usize>(),
             tac.elapsed().as_secs_f64(), if unsat { " -> UNSAT (empty domain)" } else { "" });
         if unsat {
-            // No legal board exists for this length-vector. Report UNSAT / LE floor with 0 search nodes.
-            if maxscore {
-                println!("LE {} nodes=0 time=0.000s", floor);
-            } else {
-                println!("UNSAT nodes=0 time=0.000s");
-            }
-            return;
+            // No legal board exists for this length-vector (AC proof -- sound, NOT an abort).
+            return (if maxscore { format!("LE {} nodes=0 time=0.000s", floor) }
+                    else { "UNSAT nodes=0 time=0.000s".to_string() }, None);
         }
     }
     let grid = inst.grid0.clone();
@@ -1226,11 +1426,13 @@ fn main() {
         for wd in &inst.scoring_words[si] { for q in 0..len - 1 { v[q] |= bit(wd[q]); } }
         v
     }).collect();
-    let mut solver = Solver { inst: &inst, dict: &dict, grid, mandatory, deferred, free_cols, used,
+    let mut solver = Solver { inst: &*inst, dict, grid, mandatory, deferred, free_cols, used,
         overflow, nodes: 0, rowhist: vec![0u64; inst.h], always_conn: std::env::var("ACONN").is_ok(),
         iso_cols, eager_iso,
         maxscore, best: floor, col_committed: vec![false; ncols], committed_gross: 0, remaining_best, col_ub,
         node_cap: std::env::var("MAXNODES").ok().and_then(|s| s.parse().ok()).unwrap_or(0),
+        deadline: wall.map(|s| std::time::Instant::now() + std::time::Duration::from_secs_f64(s)),
+        aborted: false,
         no_ub: std::env::var("NOUB").is_ok(),
         best_grid: vec![0i16; inst.w * inst.h],
         seen_buf: vec![0u32; inst.w * inst.h], seen_gen: 0, bfs_stack: Vec::with_capacity(inst.w * inst.h),
@@ -1260,20 +1462,17 @@ fn main() {
     if solver.use_knap {
         eprintln!("knap-ub: calls={} prunes={}", solver.knap_calls, solver.knap_prunes);
     }
-    if maxscore {
-        if solver.best > floor {
-            println!("MAX {} nodes={} time={:.3}s", solver.best, solver.nodes, dt);
-        } else {
-            println!("LE {} nodes={} time={:.3}s", floor, solver.nodes, dt);
-        }
-        // --emit: print the best witnessed board (row-major letter codes, 0=empty) for the caller to
-        // render/persist.  Only meaningful when a board scoring > floor was found (best_grid populated).
-        if args.iter().any(|a| a == "--emit") && solver.best > floor {
-            print!("BOARD");
-            for &g in &solver.best_grid { print!(" {}", if g > 0 { g } else { 0 }); }
-            println!();
-        }
+    let board = if maxscore && solver.best > floor { Some(solver.best_grid.clone()) } else { None };
+    // An ABORTED search (node cap / wall deadline) proves nothing: report TO/TIMEOUT, never LE/UNSAT.
+    // (This also fixes the old MAXNODES footgun where a capped run printed a fake "LE".)
+    let line = if solver.aborted {
+        if maxscore { format!("TO {} nodes={} time={:.3}s best={}", floor, solver.nodes, dt, solver.best) }
+        else { format!("TIMEOUT nodes={} time={:.3}s", solver.nodes, dt) }
+    } else if maxscore {
+        if solver.best > floor { format!("MAX {} nodes={} time={:.3}s", solver.best, solver.nodes, dt) }
+        else { format!("LE {} nodes={} time={:.3}s", floor, solver.nodes, dt) }
     } else {
-        println!("{} nodes={} time={:.3}s", if sat { "SAT" } else { "UNSAT" }, solver.nodes, dt);
-    }
+        format!("{} nodes={} time={:.3}s", if sat { "SAT" } else { "UNSAT" }, solver.nodes, dt)
+    };
+    (line, board)
 }

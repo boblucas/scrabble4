@@ -225,6 +225,66 @@ def dump_simple(inst, truth, path):
         fp.write('\n'.join(L) + '\n')
 
 
+def build_base(board, main, turn, scale=True):
+    """BASE data for `xfill --batchvec`: candidate stub words per (scoring col, EVERY length),
+    plus the fixed bag/scores/preplaced.  One base file replaces millions of per-vector instance
+    files (instances are assembled in-memory in Rust).  Same candidate semantics as build_instance
+    (stub w[1:] must be a dict word for len>=2; len==1 = bare tile, gross 0 -- the l=1 fix)."""
+    rules = construct_rules('dutch', board)
+    W, H = rules.W, rules.H
+    mt = rules.alphabet.to_tup(main)
+    assert len(main) == W == len(turn)
+    counts = Counter(rules.counts); blanks = rules.blank_count
+    if scale:
+        f = (W * W) / (15 * 15); mc = Counter(mt)
+        counts = Counter({c: max(round(n * f), mc[c], 1) for c, n in rules.counts.items()})
+        blanks = round(rules.blank_count * f)
+    scoring = [x for x in range(W) if turn[x].isupper()]
+    pre = [x for x in range(W) if not turn[x].isupper()]
+    cols = []
+    for c in scoring:
+        L = mt[c]; bylen = {}
+        seen = set()
+        for w in rules.words:
+            if w and w[0] == L and len(w) <= H and (len(w) == 1 or w[1:] in rules.words_lookup):
+                stub = tuple(w[1:])
+                if (len(w), stub) in seen:
+                    continue
+                seen.add((len(w), stub))
+                sc = 0 if len(w) == 1 else int(get_word_score(rules, w, c, 0, 0,
+                                                              [i == 0 for i in range(len(w))])[0])
+                bylen.setdefault(len(w), []).append((stub, sc))
+        cols.append({'col': c, 'wm': int(rules.word_multiplier[0][c]), 'bylen': bylen})
+    return {
+        'W': W, 'H': H, 'hmax': HMAX, 'alphabet_size': len(rules.abc), 'blanks': blanks,
+        'counts': {str(code): counts[code] - Counter(mt[c] for c in scoring)[code] for code in counts},
+        'scores': {str(code): rules.scores[code] for code in rules.scores},
+        'preplaced': [[x, 0, mt[x]] for x in pre],
+        'nonscoring_cols': pre,
+        'dict_path': f'experiments/xtests/dict_{board}.txt',
+        'cols': cols,
+    }
+
+
+def dump_base(base, path):
+    """Write the base in the line format `xfill --batchvec` parses (see Rust parse_base)."""
+    L = [f"DIMS {base['W']} {base['H']} {base['hmax']} {base['alphabet_size']} {base['blanks']}"]
+    L.append("COUNTS " + ' '.join(f"{k}:{v}" for k, v in base['counts'].items()))
+    L.append("SCORES " + ' '.join(f"{k}:{v}" for k, v in base['scores'].items()))
+    L.append("PREPLACED " + ' '.join(f"{x},{y},{c}" for x, y, c in base['preplaced']))
+    L.append("NONSCORING " + ' '.join(map(str, base['nonscoring_cols'])))
+    L.append(f"DICT {base['dict_path']}")
+    for col in base['cols']:
+        L.append(f"BCOL {col['col']} {col['wm']} {len(col['bylen'])}")
+        for ln in sorted(col['bylen']):
+            ws = col['bylen'][ln]
+            L.append(f"BLEN {ln} {len(ws)}")
+            for stub, g in ws:
+                L.append(f"WORDV {g} " + ' '.join(map(str, stub)))
+    with open(path, 'w') as fp:
+        fp.write('\n'.join(L) + '\n')
+
+
 def write_dict(board):
     rules = construct_rules('dutch', board)
     path = os.path.join(TESTDIR, f'dict_{board}.txt')

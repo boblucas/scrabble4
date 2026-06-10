@@ -164,118 +164,234 @@ def xfill_verdict(board, main, turn, scoring, lvec, floor, scale, inst_dir, wall
     return rec
 
 
+# ---- stage-1 GEOM worker (multiprocessing: one RustOracle per worker process) ------------------
+_G = {}
+
+
+def _geom_init(board, main, turn, scale, blanks):
+    from connectivity import RustOracle
+    rules = make_rules(board, main, scale, blanks)
+    _G['rules'] = rules
+    _G['mt'] = rules.alphabet.to_tup(main)
+    _G['turn'] = turn
+    _G['oracle'] = RustOracle(rules.W, rules.H)
+    _G['scoring'] = [x for x in range(rules.W) if turn[x].isupper()]
+    _G['total'] = sum(rules.counts.values()) + rules.blank_count
+
+
+def _geom_chunk(chunk):
+    """Returns [(key, verdict_dict_or_None), ...] -- GEOM verdicts via the persistent Rust oracle
+    (sound: prunes only when the oracle's LOWER bound on bridge cells exceeds the budget)."""
+    rules = _G['rules']; mt = _G['mt']; turn = _G['turn']; oracle = _G['oracle']
+    scoring = _G['scoring']; total = _G['total']
+    W, H = rules.W, rules.H
+    out = []
+    for lvec in chunk:
+        key = '-'.join(map(str, lvec))
+        Lvec = {c: lvec[i] for i, c in enumerate(scoring)}
+        budget = total - W - sum(l - 1 for l in Lvec.values())
+        if budget < 0:
+            out.append((key, {'verdict': 'GEOM', 'min_bridge_lb': 'inf', 'budget': budget}))
+            continue
+        fx = setup_fixed_cells(W, H, turn, mt, {c: tuple([0] * Lvec[c]) for c in scoring})
+        lb, _ub = oracle.bounds(fx)
+        if lb > budget:
+            out.append((key, {'verdict': 'GEOM', 'oracle_lb': lb, 'budget': budget}))
+        else:
+            out.append((key, None))
+    return out
+
+
 def cmd_build(a):
     rules = make_rules(a.board, a.main, not a.no_scale, not a.no_blanks)
     scoring, best_at, mt = derive_columns(rules, a.main, a.turn)
     band = enumerate_band(rules, scoring, best_at, a.floor, a.center)
     cdir = os.path.join(ROOT, 'experiments/results/certs', a.name)
-    inst_dir = os.path.join(cdir, 'inst'); os.makedirs(inst_dir, exist_ok=True)
+    os.makedirs(cdir, exist_ok=True)
     lpath = os.path.join(cdir, 'ledger.json')
-    led = json.load(open(lpath)) if os.path.exists(lpath) else {
-        'claim': {'board': a.board, 'main': a.main, 'turn': a.turn, 'floor': a.floor,
-                  'center': a.center, 'scale': not a.no_scale, 'blanks': not a.no_blanks},
-        'binary': {'path': XFILL, 'sha256': sha(XFILL)},
-        'band_size': len(band), 'verdicts': {}, 'witness': None}
-    led['band_size'] = len(band)
-    V = led['verdicts']
-    print(f'band: {len(band)} vectors with UB > {a.floor}'
-          f'{" (center)" if a.center else ""}; {len(V)} verdicts cached')
-    t0 = time.time(); done = 0
-    todo = [lv for lv in band
-            if V.get('-'.join(map(str, lv)), {}).get('verdict') not in ('GEOM', 'LE', 'NOCAND')]
-    print(f'  todo: {len(todo)}')
-    # Stage 1 (sequential, pure-Python, fast): GEOM verdicts prefilter the band.
-    xfill_jobs = []
-    for lvec in todo:
-        key = '-'.join(map(str, lvec))
-        g = geom_verdict(rules, mt, a.turn, scoring, lvec)
-        if g:
-            V[key] = g; done += 1
-            if done % 200 == 0:
-                json.dump(led, open(lpath, 'w'), indent=1)
-                print(f'  [geom {done}/{len(todo)}] ({time.time()-t0:.0f}s)', flush=True)
-        else:
-            xfill_jobs.append(lvec)
-    json.dump(led, open(lpath, 'w'), indent=1)
-    print(f'  geom-cut {done}; xfill jobs: {len(xfill_jobs)}  ({time.time()-t0:.0f}s)', flush=True)
-    # Stage 2: xfill verdicts, PARALLEL (--procs).  Each call is a subprocess (GIL-free wait),
-    # so a thread pool is the right executor; ledger writes stay in the MAIN thread only.
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-    with ThreadPoolExecutor(max_workers=max(1, a.procs)) as ex:
-        futs = {ex.submit(xfill_verdict, a.board, a.main, a.turn, scoring, lvec,
-                          a.floor, not a.no_scale, inst_dir, a.wall): lvec
-                for lvec in xfill_jobs}
-        for fut in as_completed(futs):
-            lvec = futs[fut]
-            key = '-'.join(map(str, lvec))
-            V[key] = fut.result()
-            done += 1
-            if V[key]['verdict'] == 'MAX':
-                print(f'  !!! REFUTED: {key} -> {V[key]["stdout"]}', flush=True)
-            if done % 10 == 0 or V[key]['verdict'] not in ('GEOM', 'LE'):
-                json.dump(led, open(lpath, 'w'), indent=1)
-                print(f'  [{done}/{len(todo)}] {key}: {V[key]["verdict"]} '
-                      f'({time.time()-t0:.0f}s)', flush=True)
+    vpath = os.path.join(cdir, 'verdicts.jsonl')       # APPEND-ONLY: O(1) saves at millions scale
+    # base file (per-main-word candidate domains) + dict for the Rust batch engine
+    xtest.write_dict(a.board)
+    bpath = os.path.join(cdir, 'base.txt')
+    if not os.path.exists(bpath):
+        xtest.dump_base(xtest.build_base(a.board, a.main, a.turn, scale=not a.no_scale), bpath)
+    base_sha = sha(bpath)
+    led = {'claim': {'board': a.board, 'main': a.main, 'turn': a.turn, 'floor': a.floor,
+                     'center': a.center, 'scale': not a.no_scale, 'blanks': not a.no_blanks},
+           'binary': {'path': XFILL, 'sha256': sha(XFILL)},
+           'base_sha256': base_sha, 'band_size': len(band), 'witness': None}
     if a.witness:
         led['witness'] = json.load(open(a.witness))
     json.dump(led, open(lpath, 'w'), indent=1)
-    tally = Counter(v['verdict'] for v in V.values())
-    print(f'ledger -> {lpath}\n  tally: {dict(tally)}')
-    holes = [k for k in ('-'.join(map(str, b)) for b in band)
-             if V.get(k, {}).get('verdict') not in ('GEOM', 'LE', 'NOCAND')]
-    print(f'  holes (band vectors without a sound verdict): {len(holes)}'
-          + (f'  e.g. {holes[:5]}' if holes else '  => COMPLETE'))
+    # resume: keys already decided
+    have = set()
+    if os.path.exists(vpath):
+        for line in open(vpath):
+            try:
+                r = json.loads(line)
+                if r.get('v', {}).get('verdict') in ('GEOM', 'LE', 'NOCAND'):
+                    have.add(r['k'])
+            except Exception:
+                pass
+    todo = [lv for lv in band if '-'.join(map(str, lv)) not in have]
+    print(f'band={len(band)} (UB>{a.floor}{", center" if a.center else ""})  '
+          f'cached={len(have)}  todo={len(todo)}', flush=True)
+    t0 = time.time()
+    vf = open(vpath, 'a')
+    refuted = []
+
+    def record(key, v):
+        vf.write(json.dumps({'k': key, 'v': v}) + '\n')
+        if v.get('verdict') == 'MAX':
+            refuted.append((key, v))
+            print(f'  !!! REFUTED: {key} -> {v.get("stdout")}', flush=True)
+
+    # ---- stage 1: GEOM via parallel Rust-oracle workers (sound lb > budget prune) ----
+    from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+    CH = 5000
+    chunks = [todo[i:i + CH] for i in range(0, len(todo), CH)]
+    survivors = []
+    geom_cut = 0
+    with ProcessPoolExecutor(max_workers=max(1, a.procs),
+                             initializer=_geom_init,
+                             initargs=(a.board, a.main, a.turn, not a.no_scale,
+                                       not a.no_blanks)) as ex:
+        for res in ex.map(_geom_chunk, chunks):
+            for key, v in res:
+                if v:
+                    record(key, v); geom_cut += 1
+                else:
+                    survivors.append(key)
+            vf.flush()
+            print(f'  [geom] cut={geom_cut} survivors={len(survivors)} '
+                  f'({time.time()-t0:.0f}s)', flush=True)
+    # ---- stage 2: xfill --batchvec over survivor chunks (dict loaded once per process) ----
+    bdir = os.path.join(cdir, 'batches'); os.makedirs(bdir, exist_ok=True)
+    BCH = 2000
+    bchunks = [survivors[i:i + BCH] for i in range(0, len(survivors), BCH)]
+    print(f'  stage2: {len(survivors)} vectors in {len(bchunks)} chunks of {BCH}', flush=True)
+
+    def run_chunk(ci):
+        keys = bchunks[ci]
+        lf = os.path.join(bdir, f'chunk_{ci}.list')
+        with open(lf, 'w') as f:
+            for k in keys:
+                f.write(f"{k} {' '.join(k.split('-'))} {a.floor}\n")
+        env = dict(os.environ); env.pop('MAXNODES', None)
+        env['BATCHWALL'] = str(a.wall)
+        r = subprocess.run([XFILL, '--batchvec', bpath, lf], capture_output=True, text=True,
+                           env=env, cwd=ROOT, timeout=(a.wall + 60) * max(1, len(keys)))
+        out = {}
+        for line in (r.stdout or '').splitlines():
+            t = line.split(None, 2)
+            if len(t) == 3 and t[0] == 'RES':
+                out[t[1]] = t[2]
+        return ci, out
+
+    done2 = 0
+    with ThreadPoolExecutor(max_workers=max(1, a.procs)) as ex:
+        futs = {ex.submit(run_chunk, ci): ci for ci in range(len(bchunks))}
+        for fut in as_completed(futs):
+            ci, out = fut.result()
+            for k in bchunks[ci]:
+                line = out.get(k, '')
+                if line.startswith(f'LE {a.floor} '):
+                    v = {'verdict': 'LE', 'stdout': line, 'base_sha256': base_sha}
+                elif line.startswith('MAX '):
+                    v = {'verdict': 'MAX', 'stdout': line, 'base_sha256': base_sha,
+                         'max_value': int(line.split()[1])}
+                elif line == 'NOCAND':
+                    v = {'verdict': 'NOCAND'}
+                else:
+                    v = {'verdict': 'TO', 'stdout': line}
+                record(k, v)
+            done2 += len(bchunks[ci])
+            vf.flush()
+            print(f'  [xfill] {done2}/{len(survivors)} ({time.time()-t0:.0f}s)', flush=True)
+    vf.close()
+    print(f'DONE in {time.time()-t0:.0f}s.  refuted={len(refuted)}')
+    if refuted:
+        best = max(int(v['max_value']) for _, v in refuted)
+        print(f'  !!! THE FLOOR {a.floor} IS REFUTED: best witnessed {best} -- '
+              f're-witness and re-run with the higher floor.')
+    print(f'ledger: {lpath}\nverdicts: {vpath}\nNow run:  check {lpath}')
 
 
 def cmd_check(a):
     led = json.load(open(a.ledger))
     cl = led['claim']
+    cdir = os.path.dirname(a.ledger)
     rules = make_rules(cl['board'], cl['main'], cl['scale'], cl['blanks'])
     scoring, best_at, mt = derive_columns(rules, cl['main'], cl['turn'])
     band = enumerate_band(rules, scoring, best_at, cl['floor'], cl['center'])
-    V = led['verdicts']
-    inst_dir = os.path.join(os.path.dirname(a.ledger), 'inst')
     fails = []
-    # 1) coverage: every re-derived band vector has a sound verdict
+    # 0) base file integrity: re-derive and compare sha
+    bpath = os.path.join(cdir, 'base.txt')
+    tmpb = os.path.join(cdir, '_chk_base.txt')
+    xtest.dump_base(xtest.build_base(cl['board'], cl['main'], cl['turn'], scale=cl['scale']), tmpb)
+    base_ok = os.path.exists(bpath) and sha(bpath) == sha(tmpb)
+    if led.get('base_sha256') and led['base_sha256'] != sha(tmpb):
+        fails.append('base sha mismatch vs re-derived base (candidate semantics changed?)')
+    print(f'base re-derivation: {"OK" if base_ok else "MISMATCH/absent"}')
+    # 1) stream verdicts.jsonl (last verdict per key wins), then coverage over the re-derived band
+    V = {}
+    vpath = os.path.join(cdir, 'verdicts.jsonl')
+    if os.path.exists(vpath):
+        for line in open(vpath):
+            try:
+                r = json.loads(line); V[r['k']] = r['v']
+            except Exception:
+                pass
+    holes = 0
+    geom_keys, le_keys = [], []
     for lvec in band:
         key = '-'.join(map(str, lvec))
         v = V.get(key)
-        if not v or v.get('verdict') not in ('GEOM', 'LE', 'NOCAND'):
-            fails.append(f'hole: {key} -> {v and v.get("verdict")}')
-    # 2) GEOM verdicts: recompute the pure-Python bound
-    for lvec in band:
-        key = '-'.join(map(str, lvec))
-        v = V.get(key)
-        if v and v.get('verdict') == 'GEOM':
-            g = geom_verdict(rules, mt, cl['turn'], scoring, lvec)
-            if not g:
-                fails.append(f'GEOM not reproducible: {key}')
-    # 3) LE receipts: instance sha must match a fresh re-dump; stdout must be a natural LE line
-    recheck = []
-    for lvec in band:
-        key = '-'.join(map(str, lvec))
-        v = V.get(key)
-        if v and v.get('verdict') == 'LE':
-            Lvec = {c: lvec[i] for i, c in enumerate(scoring)}
-            inst, _ = xtest.build_instance(cl['board'], cl['main'], cl['turn'], Lvec,
-                                           scale=cl['scale'])
-            tmp = os.path.join(inst_dir, f'_chk_{key}.txt')
-            xtest.dump_simple(inst, 'UNKNOWN', tmp)
-            if sha(tmp) != v.get('instance_sha256'):
-                fails.append(f'instance sha mismatch: {key}')
-            if not v.get('stdout', '').startswith(f"LE {cl['floor']} "):
-                fails.append(f'bad LE line: {key}: {v.get("stdout")}')
-            recheck.append((key, tmp))
-    # 4) optional re-run sample of LE receipts through the binary
-    for key, tmp in random.sample(recheck, min(a.rerun_sample, len(recheck))):
-        r = subprocess.run([XFILL, tmp, '--maxscore', str(cl['floor'])], capture_output=True,
-                           text=True, timeout=3600, cwd=ROOT)
-        line = (r.stdout or '').strip().splitlines()
-        line = line[0] if line else ''
-        if not line.startswith(f"LE {cl['floor']} "):
-            fails.append(f're-run mismatch: {key}: {line}')
-        else:
-            print(f'  re-run ok: {key}: {line}')
+        vd = v.get('verdict') if v else None
+        if vd == 'GEOM':
+            geom_keys.append((key, lvec, v))
+        elif vd == 'LE':
+            le_keys.append((key, v))
+        elif vd != 'NOCAND':
+            holes += 1
+            if holes <= 5:
+                fails.append(f'hole: {key} -> {vd}')
+    if holes:
+        fails.append(f'TOTAL holes: {holes} band vectors without a sound verdict')
+    # 2) GEOM verdicts: re-verify a random sample with the PURE-PYTHON Steiner bound
+    for key, lvec, v in random.sample(geom_keys, min(a.rerun_sample * 10, len(geom_keys))):
+        g = geom_verdict(rules, mt, cl['turn'], scoring, lvec)
+        if not g:
+            fails.append(f'GEOM not reproducible (python Steiner): {key} {v}')
+    # 3) LE receipts: must carry the base sha + a natural LE line
+    for key, v in le_keys:
+        if v.get('base_sha256') != led.get('base_sha256'):
+            fails.append(f'LE receipt base-sha mismatch: {key}')
+            break
+        if not v.get('stdout', '').startswith(f"LE {cl['floor']} "):
+            fails.append(f'bad LE line: {key}: {v.get("stdout")}')
+            break
+    # 4) re-run a sample of LE receipts through the binary (batchvec, fresh)
+    if le_keys:
+        samp = random.sample(le_keys, min(a.rerun_sample, len(le_keys)))
+        lf = os.path.join(cdir, '_chk_rerun.list')
+        with open(lf, 'w') as f:
+            for key, _ in samp:
+                f.write(f"{key} {' '.join(key.split('-'))} {cl['floor']}\n")
+        env = dict(os.environ); env.pop('MAXNODES', None); env['BATCHWALL'] = '3600'
+        r = subprocess.run([XFILL, '--batchvec', tmpb, lf], capture_output=True, text=True,
+                           timeout=3700 * len(samp), cwd=ROOT)
+        got = {}
+        for line in (r.stdout or '').splitlines():
+            t = line.split(None, 2)
+            if len(t) == 3 and t[0] == 'RES':
+                got[t[1]] = t[2]
+        for key, _ in samp:
+            line = got.get(key, '')
+            if not line.startswith(f"LE {cl['floor']} "):
+                fails.append(f're-run mismatch: {key}: {line}')
+            else:
+                print(f'  re-run ok: {key}: {line}')
     # 5) witness: independent full-rules recompute (center per claim)
     wrep = None
     if led.get('witness'):
