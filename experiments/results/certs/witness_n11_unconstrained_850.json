@@ -1,0 +1,23 @@
+{
+  "comment": "UNCONSTRAINED N=11 bouwfysicus witness, TRUE value: main 626 + verticals 216 = turn 842. (The model originally claimed 224/850: its blank penalty charged face value 4 for blanking the struggelden 'u' stub, but col10's x3 word multiplier makes the true loss 12 -> 228-12=216. Found by witness_check 2026-06-10; penalty fixed end-to-end; fixed solver confirms MAX 216 on the restricted domain.) Verticals: col0 blokvinkjes, col1 ooh, col2 ut, col3 wetende, col5 yen, col8 capex, col10 struggelden; 1 forced blank (u: 3 used, bag 2). Sound upper for the vertical stays 224 (model over-scores) -> bouwfysicus turn in [842, 850]. Center NOT required for this (pre-center-constraint) claim.",
+  "board": "11",
+  "main_word": "bouwfysicus",
+  "turn_str": "BOUWfYsiCuS",
+  "scale": true,
+  "blanks": true,
+  "require_center": false,
+  "claimed_total": 842,
+  "rows": [
+    "BOUWfYsiCuS",
+    "lotere.aart",
+    "oh.tand.per",
+    "k..e..ene.u",
+    "v..n....x.g",
+    "i..d......g",
+    "n..e......e",
+    "k.........l",
+    "j.........d",
+    "e.........e",
+    "s.........n"
+  ]
+}
