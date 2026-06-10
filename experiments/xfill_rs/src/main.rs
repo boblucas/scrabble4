@@ -977,8 +977,12 @@ impl<'a> Solver<'a> {
         let mut masks: [u32; 8] = [0; 8];
         let mut mlen = 0usize;
         let mut bad = false;
-        for cx in sx..x { masks[mlen] = bit(self.grid[idx(cx, y, w)] as u8); mlen += 1; }
-        masks[mlen] = bit(l); mlen += 1;
+        // left forced span: a placed run of >= hmax(8) cells already exceeds any legal word length, so
+        // the maximal forced run through (x,y) is illegal -> prune.  (Bound-check mlen like the right
+        // extension does; without this the [u32;8] masks array overflows and panics, e.g. col0=1 +
+        // center col5>=6 instances with a long forced horizontal span.)
+        for cx in sx..x { if mlen >= 8 { bad = true; break; } masks[mlen] = bit(self.grid[idx(cx, y, w)] as u8); mlen += 1; }
+        if mlen >= 8 { bad = true; } else { masks[mlen] = bit(l); mlen += 1; }
         // extend right through forced-active cells
         let mut ex = x + 1;
         while ex < w {
