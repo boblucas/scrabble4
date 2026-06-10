@@ -51,15 +51,24 @@ def build_instance(board, main, turn, Lvec, scale=True):
                 if stub in seen:
                     continue
                 seen.add(stub)
-                sc, _ = get_word_score(rules, w, c, 0, 0, [i == 0 for i in range(len(w))])
-                out.append((stub, int(sc)))
+                # SCORING FIX: a length-1 "word" is the bare placed tile (construct_rules injects all
+                # single letters into rules.words).  It forms NO vertical word and its value already
+                # counts in the MAIN word; get_word_score on it would double-count value*lm*wm.  This
+                # gross feeds the Rust inner's MAX values, so a phantom here INFLATES witnessed lower
+                # bounds for any vector using an l=1 column.  l=1 stays available, contributing 0.
+                sc = 0 if len(w) == 1 else int(get_word_score(rules, w, c, 0, 0,
+                                                              [i == 0 for i in range(len(w))])[0])
+                out.append((stub, sc))
         doms[c] = out
         if not out:
             return None, None                          # no candidate of this length -> skip
     inst = {
         'W': W, 'H': H, 'hmax': HMAX,
         'preplaced': [[x, 0, mt[x]] for x in pre],
-        'scoring': [{'col': c, 'len': Lvec[c],
+        # 'wm' = the column's row-0 WORD multiplier: the vertical word's multiplier (it comes from
+        # the newly placed row-0 tile) applies to ALL its cells, so blanking a stub cell costs
+        # value*wm, not bare value.  The solver needs wm for a sound blank penalty.
+        'scoring': [{'col': c, 'len': Lvec[c], 'wm': int(rules.word_multiplier[0][c]),
                      'words': [list(s) for s, _ in doms[c]],
                      'gross': [g for _, g in doms[c]]} for c in scoring],
         'nonscoring_cols': pre,
@@ -142,8 +151,11 @@ def cpsat_maxscore(meta, cap=180.0):
             seen.add(stub); uniq.append(w)
         its = []
         for w in uniq:
-            sc, _ = get_word_score(rules, w, c, 0, 0, [i == 0 for i in range(len(w))])
-            its.append((tuple(w[1:]), int(sc)))
+            # SCORING FIX (same as build_instance): a length-1 "word" is the bare placed tile --
+            # no vertical word exists, value already counted in the main word -> gross 0.
+            sc = 0 if len(w) == 1 else int(get_word_score(rules, w, c, 0, 0,
+                                                          [i == 0 for i in range(len(w))])[0])
+            its.append((tuple(w[1:]), sc))
         items[c] = its
         vs = []
         for i, (stub, sc) in enumerate(its):
@@ -158,16 +170,19 @@ def cpsat_maxscore(meta, cap=180.0):
     penalty = 0
     if blanks:
         m.add(sum(cell.blank for cell in cells.values()) <= blanks)
+        # PENALTY FIX: the vertical word's WORD multiplier (from its newly placed row-0 tile)
+        # applies to every cell of the word, so blanking a stub cell at (c,r) loses
+        # value * word_multiplier[0][c] from the turn -- not bare value.  (The old face-value
+        # penalty UNDERSTATED the loss in wm>1 columns: the bouwfysicus "224" board really
+        # scores 216 -- blanking the struggelden 'u' under col10's x3 costs 12, not 4.)
         for code in counts:
-            terms = []
             for c in scoring:
+                wm = int(rules.word_multiplier[0][c])
                 for r in range(1, H):
                     cell = cells[(c, r)]
                     b = m.new_bool_var(f'blk_{c}_{r}_{code}')
                     m.add(b <= cell.blank); m.add(b <= cell.letter[code]); m.add(b >= cell.blank + cell.letter[code] - 1)
-                    terms.append(b)
-            o = m.new_int_var(0, blanks, f'o_{code}'); m.add(o == sum(terms))
-            penalty = penalty + o * rules.scores[code]
+                    penalty = penalty + b * (rules.scores[code] * wm)
     else:
         m.add(sum(cell.blank for cell in cells.values()) <= 0)
     if pre:
@@ -197,7 +212,9 @@ def dump_simple(inst, truth, path):
     L.append(f"DICT {inst['dict_path']}")
     L.append(f"NSCORING {len(inst['scoring'])}")
     for blk in inst['scoring']:
-        L.append(f"SCOL {blk['col']} {blk['len']} {len(blk['words'])}")
+        # 4th SCOL token = the column's row-0 word multiplier (blank-penalty weight).  The Rust
+        # parser defaults it to 1 when absent, so legacy instance files keep their old semantics.
+        L.append(f"SCOL {blk['col']} {blk['len']} {len(blk['words'])} {blk.get('wm', 1)}")
         gross = blk.get('gross', [0] * len(blk['words']))
         for w, g in zip(blk['words'], gross):
             # WORDV carries the vertical score as the first token (for --maxscore); the Rust solver

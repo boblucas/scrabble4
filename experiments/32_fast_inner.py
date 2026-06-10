@@ -120,8 +120,13 @@ def candidates_for(x):
             continue
         if len(w) > 1 and w[1:] not in rules.words_lookup:
             continue
-        sc, _ = get_word_score(rules, w, x, 0, 0, [i == 0 for i in range(len(w))])
-        out.append((w, int(sc), Counter(w[1:])))
+        # SCORING FIX: a length-1 "word" is the bare placed tile (construct_rules injects all single
+        # letters into rules.words).  It forms NO vertical word, and its value is already counted in
+        # the MAIN word -- get_word_score on it would double-count value*lm*wm (phantom gross).
+        # l=1 stays available as the legitimate "no vertical here" choice, contributing 0.
+        sc = 0 if len(w) == 1 else int(get_word_score(rules, w, x, 0, 0,
+                                                      [i == 0 for i in range(len(w))])[0])
+        out.append((w, sc, Counter(w[1:])))
     return out
 
 
@@ -416,9 +421,18 @@ def main():
     solver.parameters.max_presolve_iterations = 1
     it = 0
     while True:
-        if solver.Solve(mo) not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        st = solver.Solve(mo)
+        if st == cp_model.INFEASIBLE:
             print("outer enumeration exhausted (all length-vectors considered)")
             break
+        # SOUNDNESS: the descending-UB STOP rule ("next UB <= best -> done") requires the yielded
+        # objective to be the TRUE remaining maximum.  A FEASIBLE (suboptimal) solve could report a
+        # lower objective and stop the sweep while a higher-UB vector is still unenumerated -> the
+        # proof would silently skip vectors.  No time limit is set, so OPTIMAL is expected; anything
+        # else is fatal rather than quietly accepted.
+        if st != cp_model.OPTIMAL:
+            sys.exit(f"FATAL: outer Solve returned {solver.status_name(st)} (not OPTIMAL) -- "
+                     f"descending-UB enumeration soundness requires OPTIMAL; aborting")
         UB = int(solver.objective_value)
         Lvec = {c: next(l for l in lengths[c] if solver.Value(lv[(c, l)])) for c in scoring_cols}
         # resolve this length-vector so the next Solve yields the next-best UB

@@ -30,6 +30,10 @@ struct Inst {
     scoring_words: Vec<Vec<Vec<u8>>>, // per scoring col: candidate stub words (len = len-1)
     scoring_gross: Vec<Vec<i64>>,    // per scoring col: vertical score per candidate word (parallel)
     scoring_best: Vec<i64>,          // per scoring col: max gross over its candidates (UB term)
+    scoring_wm: Vec<i64>,            // per scoring col: row-0 WORD multiplier (4th SCOL token,
+                                     // default 1 for legacy files).  The vertical word's multiplier
+                                     // applies to ALL its cells, so blanking a stub cell costs
+                                     // value * wm -- the blank penalty must be wm-weighted.
     // static per-cell info (computed once after parse):
     cell_mask: Vec<u32>,       // bit (letter-1) set = letter possible at this cell (preplaced/forced=exact)
     can_active: Vec<bool>,     // cell is or can become active (hold a tile)
@@ -53,6 +57,7 @@ fn parse(path: &str) -> Inst {
     let mut scoring_len: Vec<usize> = Vec::new();
     let mut scoring_words: Vec<Vec<Vec<u8>>> = Vec::new();
     let mut scoring_gross: Vec<Vec<i64>> = Vec::new();
+    let mut scoring_wm: Vec<i64> = Vec::new();
     let mut dict_path = String::new();
     let mut cur_col: i64 = -1;
     let lines: Vec<&str> = s.lines().collect();
@@ -100,7 +105,10 @@ fn parse(path: &str) -> Inst {
                 let col: usize = it.next().unwrap().parse().unwrap();
                 let len: usize = it.next().unwrap().parse().unwrap();
                 let _nw: usize = it.next().unwrap().parse().unwrap();
-                scoring_cols.push(col); scoring_len.push(len);
+                // optional 4th token: the column's row-0 word multiplier (blank-penalty weight);
+                // legacy files omit it -> 1 (old face-value semantics preserved on old inputs).
+                let wm: i64 = it.next().and_then(|t| t.parse().ok()).unwrap_or(1);
+                scoring_cols.push(col); scoring_len.push(len); scoring_wm.push(wm);
                 scoring_words.push(Vec::new()); scoring_gross.push(Vec::new());
                 cur_col = (scoring_cols.len() - 1) as i64;
             }
@@ -168,7 +176,7 @@ fn parse(path: &str) -> Inst {
     let scoring_best: Vec<i64> = scoring_gross.iter()
         .map(|gs| gs.iter().cloned().max().unwrap_or(0)).collect();
     Inst { w, h, alpha, blanks, counts, scores, grid0, kind, scol_of, scoring_cols, scoring_len,
-           scoring_words, scoring_gross, scoring_best,
+           scoring_words, scoring_gross, scoring_best, scoring_wm,
            cell_mask, can_active, can_empty }
     .with_dict(&dict_path)
 }
@@ -794,29 +802,44 @@ impl<'a> Solver<'a> {
     }
 
     // Minimum blank penalty for the CURRENT full board. For each over-used letter code we MUST blank
-    // (used-count) cells of that code; blanking a bridge cell is free, a scoring-stub cell costs its
-    // face value. So per code: penalty += face[code] * max(0, overflow[code] - bridge_cells[code]).
-    // Codes are independent (a blank for code X sits on a cell holding X) -> this greedy is optimal and
+    // (used-count) cells of that code; blanking a bridge cell is free; blanking a scoring-STUB cell
+    // loses value * wm(col) from the turn -- the vertical word's WORD multiplier (it comes from the
+    // newly placed row-0 tile) applies to every cell of the word, stubs included.  (The old
+    // face-value-only penalty UNDERSTATED the loss in wm>1 columns: the bouwfysicus "224" board
+    // really scores 216 -- blanking the struggelden 'u' under col10's x3 costs 12, not 4.)
+    // Per code: blank bridges first (free), then the CHEAPEST stub cells (smallest value*wm).
+    // Codes are independent (a blank for code X sits on a cell holding X) -> greedy is optimal and
     // matches CP-SAT's penalty minimization. (leaf_ok already verified total overflow <= blanks.)
     fn min_blank_penalty(&self) -> i64 {
-        let w = self.inst.w;
         let a = self.inst.alpha;
         let mut used = vec![0i64; a + 1];
         let mut bridge = vec![0i64; a + 1];    // bridge cells holding each code (free to blank)
+        let mut stub_costs: Vec<Vec<i64>> = vec![Vec::new(); a + 1];   // per code: stub-cell costs
         for id in 0..self.grid.len() {
             let g = self.grid[id];
             if g > 0 {
                 used[g as usize] += 1;
-                if self.inst.kind[id] == 2 { bridge[g as usize] += 1; }
+                match self.inst.kind[id] {
+                    2 => bridge[g as usize] += 1,
+                    1 => {
+                        let si = self.inst.scol_of[id] as usize;
+                        stub_costs[g as usize]
+                            .push(self.inst.scores[g as usize] * self.inst.scoring_wm[si]);
+                    }
+                    _ => {}
+                }
             }
         }
-        let _ = w;
         let mut penalty = 0i64;
         for c in 1..=a {
             let overflow = used[c] - self.inst.counts[c];
             if overflow > 0 {
                 let on_stub = overflow - bridge[c];     // must blank this many STUB cells of code c
-                if on_stub > 0 { penalty += on_stub * self.inst.scores[c]; }
+                if on_stub > 0 {
+                    let costs = &mut stub_costs[c];
+                    costs.sort_unstable();
+                    penalty += costs[..on_stub as usize].iter().sum::<i64>();
+                }
             }
         }
         penalty

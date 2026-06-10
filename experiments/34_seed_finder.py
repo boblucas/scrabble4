@@ -473,9 +473,12 @@ def extract_and_check(tup, mask, sol):
         vert += sc
     pen = 0
     for c in scoring:
+        # PENALTY FIX: the vertical's WORD multiplier (from its placed row-0 tile) applies to all
+        # its cells, so a blanked stub cell loses value * wm(col), not bare value.
+        wm = int(rules.word_multiplier[0][c])
         for r in range(1, len(chosen[c][0])):
             if blank[r][c]:
-                pen += rules.scores[grid[r][c]]
+                pen += rules.scores[grid[r][c]] * wm
     vert_recompute = vert - pen
     return True, vert_recompute, grid, chosen, None
 

@@ -157,6 +157,9 @@ def global_vertical_ub(top_k=200):
     for w in rules.words:
         if not w or (len(w) > 1 and w[1:] not in rules.words_lookup):
             continue
+        if len(w) == 1:
+            continue        # SCORING FIX: a bare tile forms no vertical word (and contributing 0
+                            # never helps a <=-knapsack); rules.words injects all single letters.
         words.append((sum(rules.scores[c] for c in w), rules.scores[w[0]], Counter(w[1:])))
     cols = {}
     for x in range(W):
@@ -193,8 +196,12 @@ def candidates_for(main_tup, x):
             continue
         if len(w) > 1 and w[1:] not in rules.words_lookup:
             continue
-        sc, _ = get_word_score(rules, w, x, 0, 0, [i == 0 for i in range(len(w))])
-        out.append((w, int(sc), Counter(w[1:])))
+        # SCORING FIX: length-1 = the bare placed tile (construct_rules injects single letters into
+        # rules.words).  No vertical word exists; its value is already in the MAIN word.  Scoring it
+        # via get_word_score double-counts value*lm*wm (phantom gross).  Keep l=1 with gross 0.
+        sc = 0 if len(w) == 1 else int(get_word_score(rules, w, x, 0, 0,
+                                                      [i == 0 for i in range(len(w))])[0])
+        out.append((w, sc, Counter(w[1:])))
     return out
 
 
@@ -411,9 +418,16 @@ class VerticalBracket:
         solver.parameters.max_presolve_iterations = 1
         it = 0
         while True:
-            if solver.Solve(mo) not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            st = solver.Solve(mo)
+            if st == cp_model.INFEASIBLE:
                 exhausted = True
                 break
+            # SOUNDNESS: the STOP rule and remainder_ub both treat the yielded objective as the TRUE
+            # remaining maximum.  A FEASIBLE (suboptimal) solve could under-report it and silently
+            # skip higher-UB vectors.  No time limit is set, so OPTIMAL is expected; fail loudly.
+            if st != cp_model.OPTIMAL:
+                sys.exit(f"FATAL: outer Solve returned {solver.status_name(st)} (not OPTIMAL) -- "
+                         f"descending-UB enumeration soundness requires OPTIMAL; aborting")
             UB = int(solver.objective_value)
             Lvec = {c: next(l for l in self.lengths[c] if solver.Value(lv[(c, l)])) for c in self.scoring}
             mo.add_bool_or([lv[(c, Lvec[c])].Not() for c in self.scoring])
