@@ -682,7 +682,14 @@ impl<'a> Solver<'a> {
         // empty), and treating an empty buffer as a column would make rec wrongly find no combo.
         fn rec(k: usize, m: usize, cur_g: i64, cur_over: i64, thresh: i64,
                words: &Vec<Vec<(i64, Vec<(u8, i64)>)>>, budget: &[i64], extra: &mut [i64],
-               suffix: &[i64], blanks: i64) -> bool {
+               suffix: &[i64], blanks: i64, steps: &mut i64) -> bool {
+            // ITERATION BUDGET: the root-level knapsack (all columns uncommitted, full domains) can
+            // blow up combinatorially and run for SECONDS-TO-MINUTES before the search's first tick
+            // (measured: a 5s WALL aborting only at 44s -- the deadline lives in tick(), which never
+            // runs while the knapsack recurses).  On exhaustion return true ("an improver may
+            // exist") -> the caller skips the PRUNE -- always sound; only the bound gets weaker.
+            *steps -= 1;
+            if *steps < 0 { return true; }
             if cur_g + suffix[k] <= thresh { return false; }   // even the optimistic rest can't beat thresh
             if k == m { return cur_g > thresh; }
             for &(g, ref delta) in &words[k] {
@@ -698,14 +705,16 @@ impl<'a> Solver<'a> {
                 }
                 let no = cur_over + d_over;
                 let hit = no <= blanks
-                    && rec(k + 1, m, cur_g + g, no, thresh, words, budget, extra, suffix, blanks);
+                    && rec(k + 1, m, cur_g + g, no, thresh, words, budget, extra, suffix, blanks, steps);
                 for &(l, cnt) in delta { extra[l as usize] -= cnt; }
                 if hit { return true; }
             }
             false
         }
+        let mut steps: i64 = std::env::var("KNAPSTEPS").ok().and_then(|s| s.parse().ok())
+            .unwrap_or(500_000);
         let improver = rec(0, m, 0, base_over, thresh, &self.knap_words, &self.knap_budget,
-                           &mut extra, &suffix, blanks);
+                           &mut extra, &suffix, blanks, &mut steps);
         // return the scratch buffers to their fields for reuse next call.
         self.knap_unc = unc; self.knap_suffix = suffix; self.knap_extra = extra;
         // improver=true  -> some uncommitted-column word-combo beats best -> UB > best (no prune).
@@ -719,6 +728,9 @@ impl<'a> Solver<'a> {
     // `aborted` is set so the result is reported TO, never LE/UNSAT -- an abort proves nothing).
     #[inline]
     fn tick(&mut self) -> bool {
+        if self.aborted { return true; }    // once aborted, EVERY node bails -> instant unwind
+                                            // (without this only 1-in-4096 nodes noticed the flag
+                                            // and the search ran to natural completion anyway)
         self.nodes += 1;
         if self.nodes % 20_000_000 == 0 {
             eprintln!("  nodes={}M best={} committed={} rem_best={} rowhist={:?}",
@@ -727,7 +739,12 @@ impl<'a> Solver<'a> {
         if self.node_cap > 0 && self.nodes >= self.node_cap { self.aborted = true; return true; }
         if self.nodes & 0xFFF == 0 {
             if let Some(d) = self.deadline {
-                if std::time::Instant::now() >= d { self.aborted = true; return true; }
+                if std::time::Instant::now() >= d {
+                    if !self.aborted {
+                        eprintln!("DEADLINE fired at nodes={}", self.nodes);
+                    }
+                    self.aborted = true; return true;
+                }
             }
         }
         false
