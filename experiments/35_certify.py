@@ -223,19 +223,25 @@ def cmd_build(a):
     if a.witness:
         led['witness'] = json.load(open(a.witness))
     json.dump(led, open(lpath, 'w'), indent=1)
-    # resume: keys already decided
-    have = set()
+    # resume: keys already decided; keys recorded TO in an earlier pass have ALREADY survived the
+    # geometric stage (geom verdicts are persisted, TO means it reached xfill) -> skip stage 1 for
+    # them and send them straight back to stage 2.
+    have = set(); geom_ok = set()
     if os.path.exists(vpath):
         for line in open(vpath):
             try:
                 r = json.loads(line)
-                if r.get('v', {}).get('verdict') in ('GEOM', 'LE', 'NOCAND'):
-                    have.add(r['k'])
+                vd = r.get('v', {}).get('verdict')
+                if vd in ('GEOM', 'LE', 'NOCAND'):
+                    have.add(r['k']); geom_ok.discard(r['k'])
+                elif vd == 'TO':
+                    geom_ok.add(r['k'])
             except Exception:
                 pass
+    geom_ok -= have
     todo = [lv for lv in band if '-'.join(map(str, lv)) not in have]
     print(f'band={len(band)} (UB>{a.floor}{", center" if a.center else ""})  '
-          f'cached={len(have)}  todo={len(todo)}', flush=True)
+          f'cached={len(have)}  todo={len(todo)}  geom-already-passed={len(geom_ok)}', flush=True)
     t0 = time.time()
     vf = open(vpath, 'a')
     refuted = []
@@ -247,29 +253,37 @@ def cmd_build(a):
             print(f'  !!! REFUTED: {key} -> {v.get("stdout")}', flush=True)
 
     # ---- stage 1: GEOM via parallel Rust-oracle workers (sound lb > budget prune) ----
+    # Keys that already passed geom in an earlier pass (recorded TO) skip straight to stage 2.
     from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+    stage1_in = [lv for lv in todo if '-'.join(map(str, lv)) not in geom_ok]
+    survivors = [k for k in ('-'.join(map(str, lv)) for lv in todo) if k in geom_ok]
     CH = 5000
-    chunks = [todo[i:i + CH] for i in range(0, len(todo), CH)]
-    survivors = []
+    chunks = [stage1_in[i:i + CH] for i in range(0, len(stage1_in), CH)]
     geom_cut = 0
-    with ProcessPoolExecutor(max_workers=max(1, a.procs),
-                             initializer=_geom_init,
-                             initargs=(a.board, a.main, a.turn, not a.no_scale,
-                                       not a.no_blanks)) as ex:
-        for res in ex.map(_geom_chunk, chunks):
-            for key, v in res:
-                if v:
-                    record(key, v); geom_cut += 1
-                else:
-                    survivors.append(key)
-            vf.flush()
-            print(f'  [geom] cut={geom_cut} survivors={len(survivors)} '
-                  f'({time.time()-t0:.0f}s)', flush=True)
+    if chunks:
+        with ProcessPoolExecutor(max_workers=max(1, a.procs),
+                                 initializer=_geom_init,
+                                 initargs=(a.board, a.main, a.turn, not a.no_scale,
+                                           not a.no_blanks)) as ex:
+            for res in ex.map(_geom_chunk, chunks):
+                for key, v in res:
+                    if v:
+                        record(key, v); geom_cut += 1
+                    else:
+                        survivors.append(key)
+                vf.flush()
+                print(f'  [geom] cut={geom_cut} survivors={len(survivors)} '
+                      f'({time.time()-t0:.0f}s)', flush=True)
     # ---- stage 2: xfill --batchvec over survivor chunks (dict loaded once per process) ----
     bdir = os.path.join(cdir, 'batches'); os.makedirs(bdir, exist_ok=True)
-    BCH = 2000
+    # SHUFFLE the work deterministically: the band is enumerated lexicographically, so hard
+    # regions cluster into consecutive chunks and serialize behind stragglers (measured: the
+    # band middle dropped throughput from ~590/s to ~11/s).  Spreading them across chunks
+    # load-balances the pool; smaller chunks bound each straggler's blast radius.
+    random.Random(0).shuffle(survivors)
+    BCH = 500
     bchunks = [survivors[i:i + BCH] for i in range(0, len(survivors), BCH)]
-    print(f'  stage2: {len(survivors)} vectors in {len(bchunks)} chunks of {BCH}', flush=True)
+    print(f'  stage2: {len(survivors)} vectors in {len(bchunks)} chunks of {BCH} (shuffled)', flush=True)
 
     def run_chunk(ci):
         keys = bchunks[ci]
