@@ -119,6 +119,80 @@ def enumerate_band(rules, scoring, best_at, floor, center):
     return out
 
 
+def derive_knap_lists(rules, main, turn):
+    """Per-(col,len) Pareto-pruned candidate lists [(gross, stub-letter-usage dict)] for the
+    tile-aware knapsack bound, + AVAIL (bag minus newly-placed main tiles).  Same candidate
+    semantics as derive_columns; dominance pruning keeps lists small (a word is dominated if
+    another scores >= with component-wise <= letter usage) -- ported from exp32/exp33."""
+    W, H = rules.W, rules.H
+    mt = rules.alphabet.to_tup(main)
+    scoring = [x for x in range(W) if turn[x].isupper()]
+    lists = {c: {} for c in scoring}
+    for c in scoring:
+        L = mt[c]
+        byl = {}
+        for w in rules.words:
+            if not w or w[0] != L or len(w) > H:
+                continue
+            if len(w) > 1 and w[1:] not in rules.words_lookup:
+                continue
+            g = 0 if len(w) == 1 else int(get_word_score(rules, w, c, 0, 0,
+                                                         [i == 0 for i in range(len(w))])[0])
+            byl.setdefault(len(w), []).append((g, Counter(w[1:])))
+        for l, items in byl.items():
+            items.sort(key=lambda t: (-t[0], sum(t[1].values())))
+            kept = []
+            for g, rq in items:
+                if not any(g2 >= g and all(rq2[k] <= rq.get(k, 0) for k in rq2)
+                           for g2, rq2 in kept):
+                    kept.append((g, rq))
+            lists[c][l] = kept
+    newly = Counter(mt[c] for c in scoring)
+    avail = {code: rules.counts[code] - newly[code] for code in rules.counts}
+    return lists, avail
+
+
+def knap_verdict(rules, lists, avail, scoring, lvec, floor, cap=30.0):
+    """Tile-aware CP-SAT knapsack UPPER bound for the vector (sound: counts only stub letters;
+    blank overflow penalized at face value <= true value*wm; connectivity/legality only lower
+    the score).  Returns a KNAP receipt when bound <= floor, else None.  Ported from exp32
+    _knap_ub_cached (validated there: 0 violations vs CP-SAT true maxima)."""
+    from ortools.sat.python import cp_model
+    import math
+    items = {c: lists[c].get(l, []) for c, l in zip(scoring, lvec)}
+    if any(not items[c] for c in scoring):
+        return {'verdict': 'NOCAND'}
+    m = cp_model.CpModel()
+    xv = {}
+    for c in scoring:
+        vs = [m.new_bool_var(f'x{c}_{i}') for i in range(len(items[c]))]
+        for i, v in enumerate(vs):
+            xv[(c, i)] = v
+        m.add(sum(vs) == 1)
+    over = {code: m.new_int_var(0, rules.blank_count, f'o{code}') for code in rules.counts} \
+        if rules.blank_count else {}
+    if over:
+        m.add(sum(over.values()) <= rules.blank_count)
+    pen = 0
+    for code in rules.counts:
+        usage = [xv[(c, i)] * rq[code]
+                 for c in scoring for i, (g, rq) in enumerate(items[c]) if rq[code]]
+        if usage:
+            m.add(sum(usage) - over.get(code, 0) <= avail[code])
+        if code in over:
+            pen = pen + over[code] * rules.scores[code]
+    m.maximize(sum(xv[(c, i)] * g for c in scoring
+                   for i, (g, rq) in enumerate(items[c])) - pen)
+    s = cp_model.CpSolver()
+    s.parameters.num_search_workers = 1
+    s.parameters.max_time_in_seconds = cap
+    s.Solve(m)
+    bound = int(math.floor(s.best_objective_bound + 1e-6))   # sound even on cap-hit
+    if bound <= floor:
+        return {'verdict': 'KNAP', 'bound': bound, 'floor': floor}
+    return None
+
+
 def geom_verdict(rules, mt, turn, scoring, lvec):
     """Sound geometric infeasibility: pure-Python Steiner lower bound > bridge budget."""
     W, H = rules.W, rules.H
@@ -232,7 +306,7 @@ def cmd_build(a):
             try:
                 r = json.loads(line)
                 vd = r.get('v', {}).get('verdict')
-                if vd in ('GEOM', 'LE', 'NOCAND'):
+                if vd in ('GEOM', 'LE', 'NOCAND', 'KNAP'):
                     have.add(r['k']); geom_ok.discard(r['k'])
                 elif vd == 'TO':
                     geom_ok.add(r['k'])
@@ -274,54 +348,97 @@ def cmd_build(a):
                 vf.flush()
                 print(f'  [geom] cut={geom_cut} survivors={len(survivors)} '
                       f'({time.time()-t0:.0f}s)', flush=True)
-    # ---- stage 2: xfill --batchvec over survivor chunks (dict loaded once per process) ----
+    # ---- stage 2: THREE-PASS pipeline over survivors --------------------------------------------
+    # Order by optimistic UB DESCENDING (any refutation surfaces in the first minutes -> at most
+    # one cheap restart) with deterministic shuffle within equal-UB groups (load balance; the
+    # measured straggler fix).  Then:
+    #   pass A: batchvec with a SHORT wall (--wall-a, default 2s) -- resolves the measured ~94%
+    #           cheap majority at ~ms each;
+    #   pass B: the TO survivors get the tile-aware CP-SAT knapsack bound (tighter than xfill's
+    #           internal greedy bound; receipts record the bound);
+    #   pass C: the residue runs at the LONG wall (--wall) as before.
     bdir = os.path.join(cdir, 'batches'); os.makedirs(bdir, exist_ok=True)
-    # SHUFFLE the work deterministically: the band is enumerated lexicographically, so hard
-    # regions cluster into consecutive chunks and serialize behind stragglers (measured: the
-    # band middle dropped throughput from ~590/s to ~11/s).  Spreading them across chunks
-    # load-balances the pool; smaller chunks bound each straggler's blast radius.
-    random.Random(0).shuffle(survivors)
+    rnd = random.Random(0)
+    ubk = {}
+    for k in survivors:
+        ubk[k] = sum(best_at[c][int(l)] for c, l in zip(scoring, k.split('-')))
+    survivors.sort(key=lambda k: (-ubk[k], rnd.random()))
     BCH = 500
-    bchunks = [survivors[i:i + BCH] for i in range(0, len(survivors), BCH)]
-    print(f'  stage2: {len(survivors)} vectors in {len(bchunks)} chunks of {BCH} (shuffled)', flush=True)
+    pass_state = {'done': 0, 'total': 0, 'label': ''}
 
-    def run_chunk(ci):
-        keys = bchunks[ci]
-        lf = os.path.join(bdir, f'chunk_{ci}.list')
+    def run_chunk_keys(keys, ci, wall):
+        lf = os.path.join(bdir, f'chunk_{pass_state["label"]}_{ci}.list')
         with open(lf, 'w') as f:
             for k in keys:
                 f.write(f"{k} {' '.join(k.split('-'))} {a.floor}\n")
         env = dict(os.environ); env.pop('MAXNODES', None)
-        env['BATCHWALL'] = str(a.wall)
+        env['BATCHWALL'] = str(wall)
         r = subprocess.run([XFILL, '--batchvec', bpath, lf], capture_output=True, text=True,
-                           env=env, cwd=ROOT, timeout=(a.wall + 60) * max(1, len(keys)))
+                           env=env, cwd=ROOT, timeout=(wall + 60) * max(1, len(keys)))
         out = {}
         for line in (r.stdout or '').splitlines():
             t = line.split(None, 2)
             if len(t) == 3 and t[0] == 'RES':
                 out[t[1]] = t[2]
-        return ci, out
+        return out
 
-    done2 = 0
-    with ThreadPoolExecutor(max_workers=max(1, a.procs)) as ex:
-        futs = {ex.submit(run_chunk, ci): ci for ci in range(len(bchunks))}
-        for fut in as_completed(futs):
-            ci, out = fut.result()
-            for k in bchunks[ci]:
-                line = out.get(k, '')
-                if line.startswith(f'LE {a.floor} '):
-                    v = {'verdict': 'LE', 'stdout': line, 'base_sha256': base_sha}
-                elif line.startswith('MAX '):
-                    v = {'verdict': 'MAX', 'stdout': line, 'base_sha256': base_sha,
-                         'max_value': int(line.split()[1])}
-                elif line == 'NOCAND':
-                    v = {'verdict': 'NOCAND'}
+    def batch_pass(keys, wall, label):
+        """Run keys through batchvec at `wall`; record LE/MAX/NOCAND; return the TO keys."""
+        pass_state.update(done=0, total=len(keys), label=label)
+        bchunks = [keys[i:i + BCH] for i in range(0, len(keys), BCH)]
+        tos = []
+        with ThreadPoolExecutor(max_workers=max(1, a.procs)) as ex:
+            futs = {ex.submit(run_chunk_keys, bchunks[ci], ci, wall): ci
+                    for ci in range(len(bchunks))}
+            for fut in as_completed(futs):
+                ci = futs[fut]; out = fut.result()
+                for k in bchunks[ci]:
+                    line = out.get(k, '')
+                    if line.startswith('LE ') and line.split()[1].isdigit() \
+                            and int(line.split()[1]) <= a.floor:
+                        record(k, {'verdict': 'LE', 'stdout': line, 'base_sha256': base_sha})
+                    elif line.startswith('MAX '):
+                        record(k, {'verdict': 'MAX', 'stdout': line, 'base_sha256': base_sha,
+                                   'max_value': int(line.split()[1])})
+                    elif line == 'NOCAND':
+                        record(k, {'verdict': 'NOCAND'})
+                    else:
+                        tos.append(k)
+                pass_state['done'] += len(bchunks[ci])
+                vf.flush()
+                print(f'  [{label}] {pass_state["done"]}/{pass_state["total"]} '
+                      f'tos={len(tos)} ({time.time()-t0:.0f}s)', flush=True)
+        return tos
+
+    wall_a = getattr(a, 'wall_a', 2.0)
+    if wall_a and wall_a < a.wall and len(survivors) > 5000:
+        tos_a = batch_pass(survivors, wall_a, 'passA')
+        # pass B: tile-aware knapsack receipts on the short-wall survivors
+        print(f'  [passB] knapsack bound on {len(tos_a)} survivors', flush=True)
+        klists, avail = derive_knap_lists(rules, a.main, a.turn)
+        residue = []
+        kcut = 0
+        with ThreadPoolExecutor(max_workers=max(1, a.procs)) as ex:
+            futs = {ex.submit(knap_verdict, rules, klists, avail, scoring,
+                              tuple(int(x) for x in k.split('-')), a.floor): k
+                    for k in tos_a}
+            for fut in as_completed(futs):
+                k = futs[fut]; v = fut.result()
+                if v:
+                    record(k, v); kcut += 1
+                    if kcut % 200 == 0:
+                        vf.flush()
+                        print(f'  [passB] knap-cut={kcut} ({time.time()-t0:.0f}s)', flush=True)
                 else:
-                    v = {'verdict': 'TO', 'stdout': line}
-                record(k, v)
-            done2 += len(bchunks[ci])
-            vf.flush()
-            print(f'  [xfill] {done2}/{len(survivors)} ({time.time()-t0:.0f}s)', flush=True)
+                    residue.append(k)
+        vf.flush()
+        print(f'  [passB] knap-cut={kcut}, residue={len(residue)} ({time.time()-t0:.0f}s)',
+              flush=True)
+        final_tos = batch_pass(residue, a.wall, 'passC') if residue else []
+    else:
+        final_tos = batch_pass(survivors, a.wall, 'passC')
+    for k in final_tos:
+        record(k, {'verdict': 'TO', 'stdout': ''})
     vf.close()
     print(f'DONE in {time.time()-t0:.0f}s.  refuted={len(refuted)}')
     if refuted:
@@ -383,7 +500,7 @@ def cmd_check(a):
             except Exception:
                 pass
     holes = 0
-    geom_keys, le_keys = [], []
+    geom_keys, le_keys, knap_keys = [], [], []
     for lvec in band:
         key = '-'.join(map(str, lvec))
         v = V.get(key)
@@ -394,6 +511,8 @@ def cmd_check(a):
             le_keys.append((key, v))
         elif vd == 'MAX' and v.get('max_value', 10**9) <= cl['floor']:
             pass        # exhaustively proven vector max <= the claim floor: decided, sound
+        elif vd == 'KNAP' and v.get('bound', 10**9) <= cl['floor']:
+            knap_keys.append((key, lvec, v))    # sound tile-knapsack bound receipt
         elif vd != 'NOCAND':
             holes += 1
             if holes <= 5:
@@ -405,6 +524,15 @@ def cmd_check(a):
         g = geom_verdict(rules, mt, cl['turn'], scoring, lvec)
         if not g:
             fails.append(f'GEOM not reproducible (python Steiner): {key} {v}')
+    # 2b) KNAP receipts: re-solve a random sample of the tile-knapsack bounds
+    if knap_keys:
+        klists, avail = derive_knap_lists(rules, cl['main'], cl['turn'])
+        for key, lvec, v in random.sample(knap_keys, min(a.rerun_sample * 2, len(knap_keys))):
+            rv = knap_verdict(rules, klists, avail, scoring, lvec, cl['floor'], cap=120.0)
+            if not rv or rv.get('verdict') != 'KNAP':
+                fails.append(f'KNAP not reproducible: {key} (receipt bound {v.get("bound")})')
+            else:
+                print(f'  knap re-solve ok: {key}: bound {rv["bound"]} <= {cl["floor"]}')
     # 3) LE receipts: must carry the base sha + a natural "LE f" line with f <= the claim floor
     #    (an LE-f proof for smaller f is STRONGER: max <= f <= floor).
     for key, v in le_keys:
@@ -477,6 +605,7 @@ if __name__ == '__main__':
     b.add_argument('--center', action='store_true'); b.add_argument('--no-scale', action='store_true')
     b.add_argument('--no-blanks', action='store_true'); b.add_argument('--witness')
     b.add_argument('--name', required=True); b.add_argument('--wall', type=int, default=3600)
+    b.add_argument('--wall-a', type=float, default=2.0)
     b.add_argument('--procs', type=int, default=1)       # reserved; v1 is sequential+resumable
     c = sub.add_parser('check')
     c.add_argument('ledger'); c.add_argument('--rerun-sample', type=int, default=3)
