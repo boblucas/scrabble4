@@ -339,14 +339,40 @@ def cmd_check(a):
     scoring, best_at, mt = derive_columns(rules, cl['main'], cl['turn'])
     band = enumerate_band(rules, scoring, best_at, cl['floor'], cl['center'])
     fails = []
-    # 0) base file integrity: re-derive and compare sha
+    # 0) base file integrity: re-derive and compare CANONICALLY (parsed + sorted).  A byte-wise
+    #    sha comparison is wrong here: rules.words iterates a Python SET, so WORDV line order
+    #    varies per process (hash randomization) while the content is identical.  The receipts
+    #    bind to the literal base.txt sha (proving the engine saw THAT file); this step proves
+    #    THAT file is semantically equal to an independent re-derivation.
+    def canon_base(path):
+        head, cols, cur_col, cur_len = [], {}, None, None
+        for line in open(path):
+            t = line.split()
+            if not t:
+                continue
+            if t[0] in ('DIMS', 'DICT'):
+                head.append(tuple(t))
+            elif t[0] in ('COUNTS', 'SCORES', 'PREPLACED', 'NONSCORING'):
+                head.append((t[0],) + tuple(sorted(t[1:])))
+            elif t[0] == 'BCOL':
+                cur_col = (t[1], t[2]); cols[cur_col] = {}
+            elif t[0] == 'BLEN':
+                cur_len = t[1]; cols[cur_col][cur_len] = []
+            elif t[0] == 'WORDV':
+                cols[cur_col][cur_len].append(tuple(t[1:]))
+        for c in cols:
+            for l in cols[c]:
+                cols[c][l] = sorted(cols[c][l])
+        return (sorted(head), sorted((c, sorted(ls.items())) for c, ls in cols.items()))
     bpath = os.path.join(cdir, 'base.txt')
     tmpb = os.path.join(cdir, '_chk_base.txt')
     xtest.dump_base(xtest.build_base(cl['board'], cl['main'], cl['turn'], scale=cl['scale']), tmpb)
-    base_ok = os.path.exists(bpath) and sha(bpath) == sha(tmpb)
-    if led.get('base_sha256') and led['base_sha256'] != sha(tmpb):
-        fails.append('base sha mismatch vs re-derived base (candidate semantics changed?)')
-    print(f'base re-derivation: {"OK" if base_ok else "MISMATCH/absent"}')
+    base_ok = os.path.exists(bpath) and canon_base(bpath) == canon_base(tmpb)
+    if not base_ok:
+        fails.append('base CANONICAL mismatch vs re-derived base (candidate semantics changed?)')
+    if led.get('base_sha256') and (not os.path.exists(bpath) or led['base_sha256'] != sha(bpath)):
+        fails.append('ledger base_sha256 does not match the base.txt the receipts bind to')
+    print(f'base re-derivation (canonical): {"OK" if base_ok else "MISMATCH/absent"}')
     # 1) stream verdicts.jsonl (last verdict per key wins), then coverage over the re-derived band
     V = {}
     vpath = os.path.join(cdir, 'verdicts.jsonl')
@@ -366,6 +392,8 @@ def cmd_check(a):
             geom_keys.append((key, lvec, v))
         elif vd == 'LE':
             le_keys.append((key, v))
+        elif vd == 'MAX' and v.get('max_value', 10**9) <= cl['floor']:
+            pass        # exhaustively proven vector max <= the claim floor: decided, sound
         elif vd != 'NOCAND':
             holes += 1
             if holes <= 5:
@@ -377,12 +405,15 @@ def cmd_check(a):
         g = geom_verdict(rules, mt, cl['turn'], scoring, lvec)
         if not g:
             fails.append(f'GEOM not reproducible (python Steiner): {key} {v}')
-    # 3) LE receipts: must carry the base sha + a natural LE line
+    # 3) LE receipts: must carry the base sha + a natural "LE f" line with f <= the claim floor
+    #    (an LE-f proof for smaller f is STRONGER: max <= f <= floor).
     for key, v in le_keys:
         if v.get('base_sha256') != led.get('base_sha256'):
             fails.append(f'LE receipt base-sha mismatch: {key}')
             break
-        if not v.get('stdout', '').startswith(f"LE {cl['floor']} "):
+        toks = v.get('stdout', '').split()
+        if len(toks) < 2 or toks[0] != 'LE' or not toks[1].isdigit() \
+                or int(toks[1]) > cl['floor']:
             fails.append(f'bad LE line: {key}: {v.get("stdout")}')
             break
     # 4) re-run a sample of LE receipts through the binary (batchvec, fresh)

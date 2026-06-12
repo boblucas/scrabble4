@@ -254,6 +254,10 @@ def build_base(board, main, turn, scale=True):
                 sc = 0 if len(w) == 1 else int(get_word_score(rules, w, c, 0, 0,
                                                               [i == 0 for i in range(len(w))])[0])
                 bylen.setdefault(len(w), []).append((stub, sc))
+        # canonical order (rules.words iterates a SET -> per-process order varies; sorting makes
+        # the base file byte-reproducible so receipts/shas are stable across processes)
+        for ln in bylen:
+            bylen[ln].sort()
         cols.append({'col': c, 'wm': int(rules.word_multiplier[0][c]), 'bylen': bylen})
     return {
         'W': W, 'H': H, 'hmax': HMAX, 'alphabet_size': len(rules.abc), 'blanks': blanks,

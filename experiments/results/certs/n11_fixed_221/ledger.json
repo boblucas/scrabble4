@@ -1,0 +1,171 @@
+{
+ "claim": {
+  "board": "11",
+  "main": "bouwfysicus",
+  "turn": "BOUWfYsiCuS",
+  "floor": 226,
+  "center": false,
+  "scale": true,
+  "blanks": true
+ },
+ "binary": {
+  "path": "/home/bob/programming/scrabble4/experiments/xfill_rs/target/release/xfill_lev3",
+  "sha256": "d145e52f38f552f84c9099664ecdea4af60f4eb030b19dec964f34f198d4c70b"
+ },
+ "base_sha256": "25e534bce692f3064cda5c4bf9cb89601a304191ee721c6610ec46fdeaa3c76b",
+ "band_size": 7982287,
+ "witness": {
+  "board": "11",
+  "main_word": "bouwfysicus",
+  "turn_str": "BOUWfYsiCuS",
+  "scale": true,
+  "blanks": true,
+  "require_center": false,
+  "claimed_total": 852,
+  "grid": [
+   [
+    2,
+    15,
+    21,
+    23,
+    6,
+    25,
+    19,
+    9,
+    3,
+    21,
+    19
+   ],
+   [
+    15,
+    13,
+    8,
+    1,
+    12,
+    5,
+    0,
+    4,
+    1,
+    11,
+    20
+   ],
+   [
+    24,
+    0,
+    0,
+    26,
+    1,
+    14,
+    7,
+    0,
+    14,
+    0,
+    21
+   ],
+   [
+    5,
+    0,
+    0,
+    5,
+    14,
+    20,
+    0,
+    0,
+    4,
+    0,
+    12
+   ],
+   [
+    18,
+    0,
+    0,
+    14,
+    0,
+    5,
+    0,
+    0,
+    5,
+    0,
+    16
+   ],
+   [
+    20,
+    0,
+    0,
+    4,
+    0,
+    11,
+    5,
+    5,
+    18,
+    0,
+    22
+   ],
+   [
+    10,
+    0,
+    0,
+    0,
+    0,
+    5,
+    0,
+    0,
+    5,
+    0,
+    15
+   ],
+   [
+    5,
+    0,
+    0,
+    0,
+    0,
+    14,
+    0,
+    0,
+    0,
+    0,
+    18
+   ],
+   [
+    19,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    13
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    9
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    7
+   ]
+  ]
+ }
+}
