@@ -30,6 +30,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--top', type=int, default=400)
     ap.add_argument('--out', default='experiments/results/n13/rank.txt')
+    ap.add_argument('--min-vert', type=int, default=3,
+                    help='FEASIBILITY filter: require every len-2 scoring col (1..5) main letter to '
+                         'have >= this many 2-letter verticals. Vertical-starved letters drive the '
+                         'hard-infeasible (xfill TO, no board) candidates that waste the scan. 0=off.')
     a = ap.parse_args()
 
     r = construct_rules('dutch', '13')
@@ -48,6 +52,7 @@ def main():
     # one pass over the lexicon: vertical maxsum buckets (by first letter) + collect 13-letter mains
     maxsum_short = defaultdict(int)   # len 2..8
     maxsum_long = defaultdict(int)    # len 7..8 (center col)
+    cnt2 = defaultdict(int)           # # of 2-letter words per first letter (vertical availability)
     mains = []
     for w in r.words_str:
         l = len(w)
@@ -60,6 +65,8 @@ def main():
                 maxsum_short[c0] = s
             if 7 <= l <= 8 and s > maxsum_long[c0]:
                 maxsum_long[c0] = s
+            if l == 2:
+                cnt2[c0] += 1                         # # of 2-letter verticals starting with c0
     sys.stderr.write(f"lexicon scanned: {len(mains)} 13-letter mains; "
                      f"{len(maxsum_short)} short-vert letters, {len(maxsum_long)} long-vert letters\n")
     _skip_note = []
@@ -73,10 +80,19 @@ def main():
 
     ranked = []
     skipped_bag = 0
+    skipped_feas = 0
     for w in mains:
         # center feasibility: col 6 must admit a length 7-8 vertical
         c6 = w[6]
         if maxsum_long[c6] == 0:
+            continue
+        # FEASIBILITY filter: the len-2 scoring columns (1..5) each need a 2-letter vertical starting
+        # with that main letter; a vertical-STARVED letter (few/no 2-letter words) is what makes a
+        # candidate hard-infeasible (xfill explores then TOs with no board, wasting the wall). Require
+        # every len-2 column to have >= min_vert 2-letter verticals so the scan spends its time on
+        # candidates that can actually form the connector row.
+        if a.min_vert and min(cnt2[w[x]] for x in range(1, 6)) < a.min_vert:
+            skipped_feas += 1
             continue
         # BAG feasibility of the main word: its own letters must come from bag + blanks.
         # (verticals/bridges need MORE tiles, so this is a necessary-not-sufficient prefilter that
@@ -119,8 +135,9 @@ def main():
         f.write(f"# {'opt_total':>9} {'main':>6} {'vert':>6}  word\n")
         for tot, main, vert, w in ranked[:a.top]:
             f.write(f"{tot:>11} {main:>6} {vert:>6}  {w}\n")
-    print(f"wrote {a.out}: {len(ranked)} bag+center-feasible candidates "
-          f"({skipped_bag} mains skipped: letters exceed bag+{nblank} blanks), top {a.top} saved")
+    print(f"wrote {a.out}: {len(ranked)} candidates "
+          f"({skipped_bag} skipped on bag, {skipped_feas} skipped on feasibility min-vert={a.min_vert}), "
+          f"top {a.top} saved")
     for tot, main, vert, w in ranked[:25]:
         print(f"  opt={tot:>6} main={main:>5} vert={vert:>5}  {w}")
 
