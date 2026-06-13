@@ -49,6 +49,7 @@ def main():
     ap.add_argument('--one', nargs=2, metavar=('WORD', 'MASKCSV'))
     ap.add_argument('--rank', default='experiments/results/n13/rank_feas.txt')
     ap.add_argument('--top', type=int, default=80)
+    ap.add_argument('--skip', type=int, default=0, help='skip the first N ranked words (sample a deeper band)')
     ap.add_argument('--wall', type=float, default=75.0)
     ap.add_argument('--out', default='experiments/results/n13/spread_survey.log')
     a = ap.parse_args()
@@ -59,12 +60,12 @@ def main():
         return
 
     words = []
+    allw = []
     for line in open(os.path.join(ROOT, a.rank)):
         p = line.split()
         if len(p) == 4 and p[0].isdigit():
-            words.append((int(p[1]), p[3]))   # (main-proxy from rank, word)
-        if len(words) >= a.top:
-            break
+            allw.append((int(p[1]), p[3]))   # (main-proxy from rank, word)
+    words = allw[a.skip:a.skip + a.top]
 
     logf = open(os.path.join(ROOT, a.out), 'w')
     def emit(m):
