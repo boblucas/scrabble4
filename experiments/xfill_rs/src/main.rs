@@ -657,6 +657,12 @@ impl<'a> Solver<'a> {
         for c in 1..=a { self.knap_budget[c] = self.inst.counts[c] - self.used[c]; }
         // suffix best-gross sums for the knapsack DFS UB (reuse the scratch field).
         let m = unc.len();
+        // Branch the MOST-CONSTRAINED column (fewest consistent words) first: narrows the rec tree
+        // early so the expensive "no improver" proofs (~72% of calls) prune faster.  VERDICT-NEUTRAL
+        // -- rec decides whether ANY one-word-per-column combo beats thresh; column order changes
+        // only the search, not the answer (suffix is recomputed below over the new order).  rec is
+        // 88.8% of runtime (perf), so a narrower tree is the lever.
+        self.knap_words[0..m].sort_by_key(|b| b.len());
         let mut suffix = std::mem::take(&mut self.knap_suffix);
         suffix.clear(); suffix.resize(m + 1, 0);
         for k in (0..m).rev() {
