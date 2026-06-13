@@ -138,10 +138,9 @@ def cpsat_decide(meta, cap=120.0):
         m.add(cells[(x, 0)].letter[mt[x]] == 1)
     for x in scoring:
         m.add(cells[(x, 0)].active == 0)
+    bucket = _cand_bucket(rules, meta['board'])
     for c in scoring:
-        words = [tuple(w[1:]) for w in rules.words
-                 if w and w[0] == mt[c] and len(w) == Lvec[c] and (len(w) == 1 or w[1:] in rules.words_lookup)]
-        words = list(dict.fromkeys(words))
+        words = list(dict.fromkeys(tuple(w[1:]) for w in bucket.get((mt[c], Lvec[c]), ())))
         xs = []
         for i, stub in enumerate(words):
             v = m.new_bool_var(f'x_{c}_{i}'); xs.append(v)
@@ -155,7 +154,7 @@ def cpsat_decide(meta, cap=120.0):
     m.add(sum(cell.blank for cell in cells.values()) <= blanks)   # ALWAYS (blanks==0 forbids all blanks)
     if pre:
         single_component(m, cells, (pre[0], 0))
-    s = cp_model.CpSolver(); s.parameters.num_search_workers = 24; s.parameters.max_presolve_iterations = 1
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = int(os.environ.get('CPSAT_WORKERS', '24')); s.parameters.max_presolve_iterations = 1
     s.parameters.max_time_in_seconds = cap
     r = s.Solve(m)
     return {cp_model.OPTIMAL: 'SAT', cp_model.FEASIBLE: 'SAT', cp_model.INFEASIBLE: 'UNSAT'}.get(r, 'UNKNOWN')
@@ -229,7 +228,7 @@ def cpsat_maxscore(meta, cap=180.0):
         single_component(m, cells, (pre[0], 0))
     obj = sum(xv[(c, i)] * sc for c in scoring for i, (stub, sc) in enumerate(items[c])) - penalty
     m.maximize(obj)
-    s = cp_model.CpSolver(); s.parameters.num_search_workers = 24; s.parameters.max_presolve_iterations = 1
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = int(os.environ.get('CPSAT_WORKERS', '24')); s.parameters.max_presolve_iterations = 1
     s.parameters.max_time_in_seconds = cap
     r = s.Solve(m)
     if r == cp_model.OPTIMAL:
