@@ -42,6 +42,8 @@ def main():
     ap.add_argument('--out', default=None)
     ap.add_argument('--name', default=None)
     ap.add_argument('--board', default='13')
+    ap.add_argument('--reserve', type=int, default=1,
+                    help='tiles reserved for the opponent (>=1): total setup tiles <= sum(counts)+blanks-reserve')
     ap.add_argument('--no-center-check', action='store_true')
     a = ap.parse_args()
 
@@ -61,7 +63,7 @@ def main():
                      f'(must reach center row {cr})')
 
     xtest.write_dict(a.board)
-    inst, meta = xtest.build_instance(a.board, a.main, a.turn, Lvec, scale=True)
+    inst, meta = xtest.build_instance(a.board, a.main, a.turn, Lvec, scale=True, reserve=a.reserve)
     if inst is None:
         sys.exit('INFEASIBLE length-vector: a scoring column has NO candidate vertical of its length')
     # ground-truth (for the score recompute) lives in build_instance; dump for the Rust inner

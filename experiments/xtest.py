@@ -24,7 +24,7 @@ HMAX = 8
 TESTDIR = 'experiments/xtests'
 
 
-def build_instance(board, main, turn, Lvec, scale=True):
+def build_instance(board, main, turn, Lvec, scale=True, reserve=0):
     """Return (instance_dict, meta). instance_dict is JSON-serializable for the Rust solver."""
     rules = construct_rules('dutch', board)
     W, H = rules.W, rules.H
@@ -78,6 +78,9 @@ def build_instance(board, main, turn, Lvec, scale=True):
         # face value per letter code (for the blank penalty: a blanked stub tile scores 0)
         'scores': {str(code): rules.scores[code] for code in rules.scores},
         'blanks': blanks,
+        # RESERVE: tiles the opponent must hold (>=1 when we play) -> total setup tiles <=
+        # sum(counts)+blanks-reserve.  0 = off (legacy/byte-identical).  See xfill add_letter.
+        'reserve': reserve,
         'dict_path': f'experiments/xtests/dict_{board}.txt',     # shared <=HMAX word list (codes)
     }
     meta = dict(board=board, main=main, turn=turn, Lvec=Lvec, rules=rules,
@@ -209,6 +212,8 @@ def dump_simple(inst, truth, path):
     L.append("SCORES " + ' '.join(f"{k}:{v}" for k, v in inst.get('scores', {}).items()))
     L.append("PREPLACED " + ' '.join(f"{x},{y},{c}" for x, y, c in inst['preplaced']))
     L.append("NONSCORING " + ' '.join(map(str, inst['nonscoring_cols'])))
+    if inst.get('reserve', 0):
+        L.append(f"RESERVE {inst['reserve']}")
     L.append(f"DICT {inst['dict_path']}")
     L.append(f"NSCORING {len(inst['scoring'])}")
     for blk in inst['scoring']:
@@ -225,7 +230,7 @@ def dump_simple(inst, truth, path):
         fp.write('\n'.join(L) + '\n')
 
 
-def build_base(board, main, turn, scale=True):
+def build_base(board, main, turn, scale=True, reserve=0):
     """BASE data for `xfill --batchvec`: candidate stub words per (scoring col, EVERY length),
     plus the fixed bag/scores/preplaced.  One base file replaces millions of per-vector instance
     files (instances are assembled in-memory in Rust).  Same candidate semantics as build_instance
@@ -265,6 +270,7 @@ def build_base(board, main, turn, scale=True):
         'scores': {str(code): rules.scores[code] for code in rules.scores},
         'preplaced': [[x, 0, mt[x]] for x in pre],
         'nonscoring_cols': pre,
+        'reserve': reserve,
         'dict_path': f'experiments/xtests/dict_{board}.txt',
         'cols': cols,
     }
@@ -277,6 +283,8 @@ def dump_base(base, path):
     L.append("SCORES " + ' '.join(f"{k}:{v}" for k, v in base['scores'].items()))
     L.append("PREPLACED " + ' '.join(f"{x},{y},{c}" for x, y, c in base['preplaced']))
     L.append("NONSCORING " + ' '.join(map(str, base['nonscoring_cols'])))
+    if base.get('reserve', 0):
+        L.append(f"RESERVE {base['reserve']}")
     L.append(f"DICT {base['dict_path']}")
     for col in base['cols']:
         L.append(f"BCOL {col['col']} {col['wm']} {len(col['bylen'])}")

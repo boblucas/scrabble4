@@ -20,6 +20,9 @@ struct Inst {
     h: usize,
     alpha: usize,
     blanks: i64,
+    reserve: i64,               // tiles to RESERVE (opponent must hold >=1 tile when we play): total
+                                // setup tiles placed (sum used) <= sum(counts)+blanks-reserve.  Default 0
+                                // = no-op (already implied by overflow<=blanks).  Set 1 for the real rule.
     counts: Vec<i64>,            // index by code (1..=alpha); [0] unused
     scores: Vec<i64>,           // face value per code (1..=alpha); [0] unused; for blank penalty
     grid0: Vec<i16>,            // initial: -1 unassigned, 0 empty(forced), >0 letter(preplaced)
@@ -59,6 +62,7 @@ fn parse(path: &str) -> Inst {
     let mut scoring_gross: Vec<Vec<i64>> = Vec::new();
     let mut scoring_wm: Vec<i64> = Vec::new();
     let mut dict_path = String::new();
+    let mut reserve = 0i64;
     let mut cur_col: i64 = -1;
     let lines: Vec<&str> = s.lines().collect();
     let mut i = 0;
@@ -99,6 +103,7 @@ fn parse(path: &str) -> Inst {
                 }
             }
             "NONSCORING" => { for tok in it { nonscoring.push(tok.parse().unwrap()); } }
+            "RESERVE" => { reserve = it.next().and_then(|t| t.parse().ok()).unwrap_or(0); }
             "DICT" => { dict_path = it.next().unwrap().to_string(); }
             "NSCORING" => {}
             "SCOL" => {
@@ -128,14 +133,14 @@ fn parse(path: &str) -> Inst {
         }
         let _ = &dict_path;
     }
-    build_inst(w, h, alpha, blanks, counts, scores, &preplaced, &nonscoring,
+    build_inst(w, h, alpha, blanks, reserve, counts, scores, &preplaced, &nonscoring,
                scoring_cols, scoring_len, scoring_wm, scoring_words, scoring_gross)
 }
 
 // Shared instance assembly (grid kinds, per-cell domain masks, per-col bests) -- used by both the
 // per-vector instance-file path (parse) and the base-file path (inst_from_base).
 #[allow(clippy::too_many_arguments)]
-fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, counts: Vec<i64>, scores: Vec<i64>,
+fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, reserve: i64, counts: Vec<i64>, scores: Vec<i64>,
               preplaced: &[(usize, usize, i16)], nonscoring: &[usize],
               scoring_cols: Vec<usize>, scoring_len: Vec<usize>, scoring_wm: Vec<i64>,
               scoring_words: Vec<Vec<Vec<u8>>>, scoring_gross: Vec<Vec<i64>>) -> Inst {
@@ -184,7 +189,7 @@ fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, counts: Vec<i64>, s
     }
     let scoring_best: Vec<i64> = scoring_gross.iter()
         .map(|gs| gs.iter().cloned().max().unwrap_or(0)).collect();
-    Inst { w, h, alpha, blanks, counts, scores, grid0, kind, scol_of, scoring_cols, scoring_len,
+    Inst { w, h, alpha, blanks, reserve, counts, scores, grid0, kind, scol_of, scoring_cols, scoring_len,
            scoring_words, scoring_gross, scoring_best, scoring_wm,
            cell_mask, can_active, can_empty }
 }
@@ -194,7 +199,7 @@ fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, counts: Vec<i64>, s
 // words per (scoring column, length) plus the fixed bag/scores/preplaced data; each batch line
 // then only names a length-vector and the instance is assembled IN MEMORY (inst_from_base).
 struct Base {
-    w: usize, h: usize, hmax: usize, alpha: usize, blanks: i64,
+    w: usize, h: usize, hmax: usize, alpha: usize, blanks: i64, reserve: i64,
     counts: Vec<i64>, scores: Vec<i64>,
     preplaced: Vec<(usize, usize, i16)>,
     nonscoring: Vec<usize>,
@@ -214,6 +219,7 @@ fn parse_base(path: &str) -> Base {
     let mut preplaced: Vec<(usize, usize, i16)> = Vec::new();
     let mut nonscoring: Vec<usize> = Vec::new();
     let mut dict_path = String::new();
+    let mut reserve = 0i64;
     let mut bcols: Vec<usize> = Vec::new();
     let mut bwm: Vec<i64> = Vec::new();
     let mut bylen: Vec<std::collections::HashMap<usize, (Vec<Vec<u8>>, Vec<i64>)>> = Vec::new();
@@ -246,6 +252,7 @@ fn parse_base(path: &str) -> Base {
                 preplaced.push((p[0].parse().unwrap(), p[1].parse().unwrap(), p[2].parse().unwrap()));
             },
             Some("NONSCORING") => for tok in it { nonscoring.push(tok.parse().unwrap()); },
+            Some("RESERVE") => reserve = it.next().and_then(|t| t.parse().ok()).unwrap_or(0),
             Some("DICT") => dict_path = it.next().unwrap().to_string(),
             Some("BCOL") => {
                 let col: usize = it.next().unwrap().parse().unwrap();
@@ -264,7 +271,7 @@ fn parse_base(path: &str) -> Base {
             _ => {}
         }
     }
-    Base { w, h, hmax, alpha, blanks, counts, scores, preplaced, nonscoring, dict_path,
+    Base { w, h, hmax, alpha, blanks, reserve, counts, scores, preplaced, nonscoring, dict_path,
            bcols, bwm, bylen }
 }
 
@@ -278,7 +285,7 @@ fn inst_from_base(b: &Base, lvec: &[usize]) -> Option<Inst> {
             _ => return None,
         }
     }
-    Some(build_inst(b.w, b.h, b.alpha, b.blanks, b.counts.clone(), b.scores.clone(),
+    Some(build_inst(b.w, b.h, b.alpha, b.blanks, b.reserve, b.counts.clone(), b.scores.clone(),
                     &b.preplaced, &b.nonscoring,
                     b.bcols.clone(), lvec.to_vec(), b.bwm.clone(), words, gross))
 }
@@ -490,6 +497,10 @@ struct Solver<'a> {
     free_cols: Vec<usize>,      // scoring-column indices that are isolated (no adjacent scoring col)
     used: Vec<i64>,             // tiles used per code (incremental)
     overflow: i64,              // sum of per-code (used-counts) over codes where used>counts == blanks needed
+    placed: i64,                // total setup tiles placed = sum(used) (maintained in lockstep with used)
+    max_setup: i64,             // cap: placed <= sum(counts)+blanks-reserve (opponent reserves `reserve`
+                                // tiles). With reserve=0 this equals the implicit overflow<=blanks bound,
+                                // so the check is a no-op -> byte-identical to the pre-reserve engine.
     nodes: u64,
     rowhist: Vec<u64>,
     always_conn: bool,
@@ -555,13 +566,17 @@ impl<'a> Solver<'a> {
     #[inline]
     fn add_letter(&mut self, l: usize) -> bool {
         self.used[l] += 1;
+        self.placed += 1;
         if self.used[l] > self.inst.counts[l] { self.overflow += 1; }
-        self.overflow <= self.inst.blanks
+        // overflow<=blanks: per-letter shortfall covered by blanks.  placed<=max_setup: reserve the
+        // opponent's tile(s) -- total board (= placed + #newly-scoring) must leave `reserve` in the bag.
+        self.overflow <= self.inst.blanks && self.placed <= self.max_setup
     }
     #[inline]
     fn rm_letter(&mut self, l: usize) {
         if self.used[l] > self.inst.counts[l] { self.overflow -= 1; }
         self.used[l] -= 1;
+        self.placed -= 1;
     }
 }
 
@@ -1459,6 +1474,10 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
     for &g in &inst.grid0 { if g > 0 { used[g as usize] += 1; } }
     let mut overflow = 0i64;
     for c in 1..=inst.alpha { if used[c] > inst.counts[c] { overflow += used[c] - inst.counts[c]; } }
+    let placed: i64 = used.iter().sum();                 // = #preplaced setup cells (seeded above)
+    // opponent-tile cap: total setup tiles placed <= (available letter tiles) + blanks - reserve.
+    // reserve=0 -> equals the implicit overflow<=blanks bound (no-op, byte-identical).
+    let max_setup: i64 = inst.counts[1..=inst.alpha].iter().sum::<i64>() + inst.blanks - inst.reserve;
     // EAGER iso assignment is OFF by default: committing an isolated column's whole word at the TOP
     // of the search forces the entire coupled-block+bridge subtree to be (nearly) re-solved for each
     // of that column's candidate words (e.g. 562 for a len-9 col10), since connectivity/budget don't
@@ -1476,7 +1495,8 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
         v
     }).collect();
     let mut solver = Solver { inst: &*inst, dict, grid, mandatory, deferred, free_cols, used,
-        overflow, nodes: 0, rowhist: vec![0u64; inst.h], always_conn: std::env::var("ACONN").is_ok(),
+        overflow, placed, max_setup,
+        nodes: 0, rowhist: vec![0u64; inst.h], always_conn: std::env::var("ACONN").is_ok(),
         iso_cols, eager_iso,
         maxscore, best: floor, col_committed: vec![false; ncols], committed_gross: 0, remaining_best, col_ub,
         node_cap: std::env::var("MAXNODES").ok().and_then(|s| s.parse().ok()).unwrap_or(0),
