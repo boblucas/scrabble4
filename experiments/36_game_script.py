@@ -177,6 +177,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('witness'); ap.add_argument('--max-branch', type=int, default=40)
     ap.add_argument('--deadline', type=float, default=600.0)
+    ap.add_argument('--out', default=None, help='write the found script as structured JSON')
     a = ap.parse_args()
     rules, spec, grid, mask, setup = load(a.witness)
     W, H = rules.W, rules.H
@@ -194,6 +195,16 @@ def main():
             print(f'  {i}. {w!r} at {pos} start {main[0]} -- places {len(new)}: {tiles}')
         print(f'  {len(script)+1}. THE SCORING TURN (row 0, validated by witness_check)')
         print('GAME-REACHABLE')
+        if a.out:
+            out = {'witness': os.path.abspath(a.witness), 'board': spec['board'],
+                   'turn_str': spec['turn_str'], 'plays': []}
+            for (new, main) in script:
+                out['plays'].append({
+                    'new_cells': sorted([list(c) for c in new]),
+                    'word': rules.alphabet.to_str(list(word_of(grid, main))),
+                    'main_run': [list(c) for c in main]})
+            json.dump(out, open(a.out, 'w'), indent=1)
+            print(f'(wrote {a.out})')
         sys.exit(0)
     print('EXHAUSTED: no legal play sequence builds this setup (witness must be replaced)'
           if status == 'EXHAUSTED' else f'TIMEOUT after {a.deadline}s (unknown)')
