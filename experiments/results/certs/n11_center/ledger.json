@@ -1,0 +1,172 @@
+{
+ "claim": {
+  "board": "11",
+  "main": "bouwfysicus",
+  "turn": "BOUWfYsiCuS",
+  "floor": 226,
+  "center": true,
+  "scale": true,
+  "blanks": true
+ },
+ "binary": {
+  "path": "/home/bob/programming/scrabble4/experiments/xfill_rs/target/release/xfill_lev3",
+  "sha256": "d145e52f38f552f84c9099664ecdea4af60f4eb030b19dec964f34f198d4c70b"
+ },
+ "base_sha256": "4e2e6392f175fd84a2eb63312280ce2277397ed6c5e29f5376eac3eb0872e397",
+ "band_size": 4166943,
+ "witness": {
+  "board": "11",
+  "main_word": "bouwfysicus",
+  "turn_str": "BOUWfYsiCuS",
+  "scale": true,
+  "blanks": true,
+  "require_center": true,
+  "claimed_total": 852,
+  "grid": [
+   [
+    2,
+    15,
+    21,
+    23,
+    6,
+    25,
+    19,
+    9,
+    3,
+    21,
+    19
+   ],
+   [
+    15,
+    13,
+    8,
+    1,
+    12,
+    5,
+    0,
+    4,
+    1,
+    11,
+    20
+   ],
+   [
+    24,
+    0,
+    0,
+    26,
+    1,
+    14,
+    7,
+    0,
+    14,
+    0,
+    21
+   ],
+   [
+    5,
+    0,
+    0,
+    5,
+    14,
+    20,
+    0,
+    0,
+    4,
+    0,
+    12
+   ],
+   [
+    18,
+    0,
+    0,
+    14,
+    0,
+    5,
+    0,
+    0,
+    5,
+    0,
+    16
+   ],
+   [
+    20,
+    0,
+    0,
+    4,
+    0,
+    11,
+    5,
+    5,
+    18,
+    0,
+    22
+   ],
+   [
+    10,
+    0,
+    0,
+    0,
+    0,
+    5,
+    0,
+    0,
+    5,
+    0,
+    15
+   ],
+   [
+    5,
+    0,
+    0,
+    0,
+    0,
+    14,
+    0,
+    0,
+    0,
+    0,
+    18
+   ],
+   [
+    19,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    13
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    9
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    7
+   ]
+  ],
+  "comment": "The certified-852 board IS center-valid: col5 (yenteken, length 8) occupies rows 0-7 including the center (5,5).  Therefore center-constrained = unconstrained = 852: the unconstrained certificate proves NO board (center or not) exceeds 226 vertical, and this center-valid board achieves it."
+ }
+}
