@@ -1329,6 +1329,10 @@ fn main() {
     if let Some(bi) = args.iter().position(|a| a == "--batch") {
         let listfile = &args[bi + 1];
         let wall: f64 = std::env::var("BATCHWALL").ok().and_then(|s| s.parse().ok()).unwrap_or(300.0);
+        // --emit: also print a per-instance witness BOARD line (keyed) whenever best>floor (incl. on
+        // a TO abort).  OUTPUT-ONLY (the verdict line is unchanged); the board is exactly what
+        // single-mode --emit prints and what solve_one already returns, so verdicts stay byte-identical.
+        let emit = args.iter().any(|a| a == "--emit");
         let mut dicts: std::collections::HashMap<String, Dict> = std::collections::HashMap::new();
         let data = fs::read_to_string(listfile).unwrap();
         use std::io::Write as _;
@@ -1336,9 +1340,17 @@ fn main() {
             let mut it = line.split_whitespace();
             let (key, p, fl) = (it.next(), it.next(), it.next());
             if key.is_none() || p.is_none() { continue; }
+            let key = key.unwrap();
             let floor: i64 = fl.and_then(|s| s.parse().ok()).unwrap_or(-1);
-            let (res, _board) = solve_one(p.unwrap(), true, floor, Some(wall), &mut dicts);
-            println!("RES {} {}", key.unwrap(), res);
+            let (res, board) = solve_one(p.unwrap(), true, floor, Some(wall), &mut dicts);
+            println!("RES {} {}", key, res);
+            if emit {
+                if let Some(bg) = board {
+                    print!("BOARD {}", key);
+                    for &g in &bg { print!(" {}", if g > 0 { g } else { 0 }); }
+                    println!();
+                }
+            }
             std::io::stdout().flush().ok();
         }
         return;
