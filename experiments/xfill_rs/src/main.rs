@@ -698,6 +698,32 @@ impl<'a> Solver<'a> {
             if *steps < 0 { return true; }
             if cur_g + suffix[k] <= thresh { return false; }   // even the optimistic rest can't beat thresh
             if k == m { return cur_g > thresh; }
+            // LAST-COLUMN FAST PATH: when only one uncommitted column remains we do NOT recurse -- the
+            // child rec(m,..) merely returns `cur_g+g > thresh`.  Most-constrained-FIRST ordering puts the
+            // BIGGEST domain (e.g. col10, ~315 words) LAST, so this scan dominates rec's leaf work; inlining
+            // it drops a recursion frame + the entry checks per surviving word.  Semantics IDENTICAL: same
+            // gross break (suffix[m]==0), same overflow feasibility test, same "improver iff some feasible
+            // word has cur_g+g > thresh".  Verdict-neutral (knap is a bound; dfs node count unchanged).
+            if k + 1 == m {
+                for &(g, ref delta) in &words[k] {
+                    if cur_g + g <= thresh { break; }   // sorted desc; suffix[m]==0 -> nothing later beats
+                    let mut d_over = 0i64;
+                    for &(l, cnt) in delta {
+                        let li = l as usize;
+                        let before = extra[li] - budget[li];
+                        let after = before + cnt;
+                        d_over += after.max(0) - before.max(0);
+                    }
+                    if cur_over + d_over > blanks { continue; }   // infeasible budget: original skips rec
+                    // The eliminated child rec(m,..) ran ONLY after this overflow check and then
+                    // decremented steps (returning true on exhaustion).  Mirror that EXACTLY so the
+                    // iteration budget -- hence the bound under exhaustion -- is byte-identical.
+                    *steps -= 1;
+                    if *steps < 0 { return true; }
+                    return true;   // feasible & cur_g+g>thresh -> improver (child rec(m) returns true)
+                }
+                return false;
+            }
             for &(g, ref delta) in &words[k] {
                 if cur_g + g + suffix[k + 1] <= thresh { break; }   // sorted desc -> no later word better
                 // apply delta, compute overflow change
