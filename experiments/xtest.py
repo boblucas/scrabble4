@@ -31,6 +31,22 @@ TESTDIR = 'experiments/xtests'
 # are byte-identical to the rescan version.
 _CAND_BUCKET = {}
 
+# construct_rules rebuilds the whole 12M-word rules object (~3.8s: parses the lexicon, alphabet,
+# to_tup over millions of words).  build_instance/build_base were calling it EVERY time -> that
+# rebuild dominated instance-building (profiled: 18.9s of 19.0s for 5 builds).  Cache it per board.
+# SAFE because build_instance/build_base only READ rules (counts are copied via Counter(rules.counts),
+# never mutated).  Mutating callers (n13_witness's rules2, the cpsat_* helpers) keep calling
+# construct_rules directly for a fresh, mutable object -- they must NOT use this cache.
+_RULES_CACHE = {}
+
+
+def _cached_rules(board):
+    r = _RULES_CACHE.get(board)
+    if r is None:
+        r = construct_rules('dutch', board)
+        _RULES_CACHE[board] = r
+    return r
+
 
 def _cand_bucket(rules, board):
     b = _CAND_BUCKET.get(board)
@@ -46,7 +62,7 @@ def _cand_bucket(rules, board):
 
 def build_instance(board, main, turn, Lvec, scale=True, reserve=0):
     """Return (instance_dict, meta). instance_dict is JSON-serializable for the Rust solver."""
-    rules = construct_rules('dutch', board)
+    rules = _cached_rules(board)
     W, H = rules.W, rules.H
     mt = rules.alphabet.to_tup(main)
     assert len(main) == W == len(turn)
@@ -256,7 +272,7 @@ def build_base(board, main, turn, scale=True, reserve=0):
     plus the fixed bag/scores/preplaced.  One base file replaces millions of per-vector instance
     files (instances are assembled in-memory in Rust).  Same candidate semantics as build_instance
     (stub w[1:] must be a dict word for len>=2; len==1 = bare tile, gross 0 -- the l=1 fix)."""
-    rules = construct_rules('dutch', board)
+    rules = _cached_rules(board)
     W, H = rules.W, rules.H
     mt = rules.alphabet.to_tup(main)
     assert len(main) == W == len(turn)
