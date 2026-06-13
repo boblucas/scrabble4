@@ -1,0 +1,17 @@
+== global N=11 driver: 3 non-bouwfysicus threat (word,mask) pairs from experiments/results/global_n11/threats_stable.log (global lower=852) ==
+THREAT whiskyclubs WhISkYClUbS 599 269
+THREAT typosquatte TyPoSQUaTtE 599 263
+THREAT bouwfysicas BOUWfYsiCaS 599 275
+========================================================================================
+>>> [global_whiskyclubs] main=whiskyclubs turn=WhISkYClUbS main_score=599 floor=253
+<<< [global_whiskyclubs] floor=253  verdict=CERTIFIED
+>>> [global_typosquatte] main=typosquatte turn=TyPoSQUaTtE main_score=599 floor=253
+<<< [global_typosquatte] floor=253  verdict=CERTIFIED
+>>> [global_bouwfysicas] main=bouwfysicas turn=BOUWfYsiCaS main_score=599 floor=253
+<<< [global_bouwfysicas] floor=253  verdict=CERTIFIED
+========================================================================================
+== global N=11 driver SUMMARY ==
+  whiskyclubs                  floor=253  verdict=CERTIFIED       DONE in 2273s.  refuted=0
+  typosquatte                  floor=253  verdict=CERTIFIED       DONE in 642s.  refuted=0
+  bouwfysicas                  floor=253  verdict=CERTIFIED       DONE in 6708s.  refuted=0
+ALL THREAT WORDS CERTIFIED <= 852  -> global N=11 = 852 PROVEN (with bouwfysicus already certified)

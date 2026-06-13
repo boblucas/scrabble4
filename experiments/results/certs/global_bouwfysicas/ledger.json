@@ -1,0 +1,18 @@
+{
+ "claim": {
+  "board": "11",
+  "main": "bouwfysicas",
+  "turn": "BOUWfYsiCaS",
+  "floor": 253,
+  "center": false,
+  "scale": true,
+  "blanks": true
+ },
+ "binary": {
+  "path": "/home/bob/programming/scrabble4/experiments/xfill_rs/target/release/xfill_lev3",
+  "sha256": "8fc2bf26137cf3ae3aaf2388ed803efa22d2a4d8ea24705a94422991a094b33c"
+ },
+ "base_sha256": "26091b921ae9eb5f1bf829401c629ad85aba90a93f81ae89fa8074abfb449193",
+ "band_size": 3746663,
+ "witness": null
+}

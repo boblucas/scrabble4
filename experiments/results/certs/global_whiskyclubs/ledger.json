@@ -1,0 +1,18 @@
+{
+ "claim": {
+  "board": "11",
+  "main": "whiskyclubs",
+  "turn": "WhISkYClUbS",
+  "floor": 253,
+  "center": false,
+  "scale": true,
+  "blanks": true
+ },
+ "binary": {
+  "path": "/home/bob/programming/scrabble4/experiments/xfill_rs/target/release/xfill_lev3",
+  "sha256": "8fc2bf26137cf3ae3aaf2388ed803efa22d2a4d8ea24705a94422991a094b33c"
+ },
+ "base_sha256": "7a1226a76024435287aca784f60ba4333837d3ebabeeb3eb2dccc42dad9d17af",
+ "band_size": 3271732,
+ "witness": null
+}

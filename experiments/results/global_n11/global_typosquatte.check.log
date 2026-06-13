@@ -1,0 +1,7 @@
+base re-derivation (canonical): OK
+  re-run ok: 10-9-8-4-10-4-5: LE 253 nodes=1 time=0.000s
+  re-run ok: 11-3-5-3-7-4-11: LE 253 nodes=1 time=0.000s
+  re-run ok: 11-3-6-7-2-11-8: LE 253 nodes=1 time=0.000s
+  (no witness embedded -- UPPER-BOUND-ONLY claim: verticals <= floor 253, established by band coverage)
+band=1365848  verdicts=1365848  fails=0
+CERTIFIED
