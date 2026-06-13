@@ -23,6 +23,26 @@ from ortools.sat.python import cp_model
 HMAX = 8
 TESTDIR = 'experiments/xtests'
 
+# Lexicon bucketed by (first-letter, length) -> list of valid candidate-vertical words, built ONCE
+# per board.  A word w can be a vertical (its row-0 tile is the main letter, stubs below) iff w[1:]
+# is itself a word (or len(w)==1, the bare placed tile).  This replaces a full 33M-word rescan per
+# scoring column per build (the dominant cost when building thousands of instances) with an O(1)
+# lookup.  Append order = rules.words iteration order, so the candidate lists -- and the instances --
+# are byte-identical to the rescan version.
+_CAND_BUCKET = {}
+
+
+def _cand_bucket(rules, board):
+    b = _CAND_BUCKET.get(board)
+    if b is None:
+        b = {}
+        lk = rules.words_lookup
+        for w in rules.words:
+            if w and (len(w) == 1 or w[1:] in lk):
+                b.setdefault((w[0], len(w)), []).append(w)
+        _CAND_BUCKET[board] = b
+    return b
+
 
 def build_instance(board, main, turn, Lvec, scale=True, reserve=0):
     """Return (instance_dict, meta). instance_dict is JSON-serializable for the Rust solver."""
@@ -42,11 +62,12 @@ def build_instance(board, main, turn, Lvec, scale=True, reserve=0):
     # board multipliers, matching 31_length_level.inner_best_legal: placed=[i==0...]). All candidates
     # of a column share the same row-0 letter (mt[c]), so dedup by stub is safe (same stub => same word
     # => same grossV).
+    bucket = _cand_bucket(rules, board)
     doms = {}
     for c in scoring:
         L = mt[c]; seen = set(); out = []
-        for w in rules.words:
-            if w and w[0] == L and len(w) == Lvec[c] and (len(w) == 1 or w[1:] in rules.words_lookup):
+        for w in bucket.get((L, Lvec[c]), ()):       # pre-filtered: starts with L, length Lvec[c], valid stub
+            if True:
                 stub = tuple(w[1:])
                 if stub in seen:
                     continue
@@ -246,12 +267,13 @@ def build_base(board, main, turn, scale=True, reserve=0):
         blanks = round(rules.blank_count * f)
     scoring = [x for x in range(W) if turn[x].isupper()]
     pre = [x for x in range(W) if not turn[x].isupper()]
+    bucket = _cand_bucket(rules, board)
     cols = []
     for c in scoring:
         L = mt[c]; bylen = {}
         seen = set()
-        for w in rules.words:
-            if w and w[0] == L and len(w) <= H and (len(w) == 1 or w[1:] in rules.words_lookup):
+        for length in range(1, H + 1):
+            for w in bucket.get((L, length), ()):     # pre-filtered: starts with L, valid stub
                 stub = tuple(w[1:])
                 if (len(w), stub) in seen:
                     continue
