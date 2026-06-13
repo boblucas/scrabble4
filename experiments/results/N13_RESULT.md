@@ -21,12 +21,15 @@ capturing only TWO of the three ×3 columns has multiplier ×9 (same as left-blo
 caps near 586 — and left-block additionally banks the ×2-letter premium at col 3, making it the best
 of the ×9 family. So the optimum question reduces to: **does any feasible 3-×3 spread board exist?**
 
-**Empirical answer (CP-SAT feasibility survey, subprocess-walled): NO, across a broad sample.**
-~722 configs = top ~240 feasibility-filtered words × 3 representative 3-×3 masks:
-  - 634 UNSAT (proven infeasible by CP-SAT)
-  - 66 TIMEOUT (undecided — see residual)
-  - 22 NOCAND (a scoring column has no candidate vertical of its length)
+**Empirical answer (CP-SAT feasibility survey, subprocess-walled): NO, across a large sample.**
+Largest run (parallel, free 48-core box): top **1000** feasibility-filtered words × 3 representative
+3-×3 masks = **3000 configs**:
+  - 2615 UNSAT (proven infeasible by CP-SAT)  — 87%
+  - 341 TIMEOUT (undecided — see residual)     — 11%
+  - 44 NOCAND (a scoring column has no candidate vertical of its length)
   - **0 SAT (0 feasible)**
+(Consistent with the earlier 240-word runs: 634 UNSAT / 66 TIMEOUT / 0 SAT.) Across every decided
+config over the top 1000 highest-value words, NO feasible 3-×3 spread board exists.
 
 **Why spreads are infeasible (structural):** in the SETUP board the scoring columns' row-0 cells are
 EMPTY (the scored tile is placed only in the final turn), so the verticals at cols 0/6/12 FLOAT at
@@ -43,7 +46,9 @@ A *proven* optimum needs the spread family fully ruled out. Both solvers fail on
     by its solver time cap (a 200s-wall re-run timed out identically).
   - No cheap structural/tile argument disposes of them (the obstruction is connector-word legality).
 
-Residual to close: the 66 TIMEOUT configs, the full 13-letter word space (survey was 240 words), and
+Residual to close: the 341 TIMEOUT configs (a longer 200s wall TIMED OUT identically — the stall is
+model construction, not solve time, so more time/workers don't help), the full 13-letter word space
+(survey was 1000 words), and
 the ×9-END spreads (0,12 — the N=11 analog; argued ≤586 but untested). Closing these needs a better
 connectivity-aware decision procedure or a holistic word-as-variable spread search — a genuine
 research step, not a longer run.
