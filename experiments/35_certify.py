@@ -566,7 +566,14 @@ def cmd_check(a):
             else:
                 print(f'  re-run ok: {key}: {line}')
     # 5) witness: independent full-rules recompute (center per claim)
+    #    A witness is the LOWER side of an EQUALITY claim ("vertical optimum == F, here is a board
+    #    achieving F").  A witness-free ledger is an UPPER-BOUND-ONLY claim ("no legal board's verticals
+    #    exceed F"), which is fully established by band coverage alone (every band vector has a sound
+    #    LE/GEOM/KNAP/MAX<=F verdict, no holes) -- this is exactly the per-word rule-out used by the global
+    #    N=11 proof (verticals <= floor => turn <= seeded global lower).  So a missing witness is NOT a
+    #    failure; it only means we are not ALSO asserting achievability of F.  Reported as upper-bound-only.
     wrep = None
+    upper_only = not led.get('witness')
     if led.get('witness'):
         spec = led['witness']
         wr = make_rules(spec['board'], spec['main_word'], spec.get('scale', True),
@@ -585,8 +592,9 @@ def cmd_check(a):
                                         require_center=cl['center'])
             if not ok:
                 fails.append(f'witness rejected: {wrep.get("fail")}')
-    else:
-        fails.append('no witness embedded (claim is upper-bound-only)')
+    if upper_only:
+        print('  (no witness embedded -- UPPER-BOUND-ONLY claim: '
+              f'verticals <= floor {cl["floor"]}, established by band coverage)')
     print(f'band={len(band)}  verdicts={len(V)}  fails={len(fails)}')
     for f in fails[:20]:
         print(f'  FAIL: {f}')

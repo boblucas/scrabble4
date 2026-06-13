@@ -86,6 +86,7 @@ KNAP_CAND = arg('--knap-cand', 4000, int)
 CORES = arg('--cores', 12, int)
 GVUB_CAP = arg('--gvub-cap', 60.0, float)    # cap for the global-vertical-UB knapsack solve (bound is sound on timeout)
 GVUB_OVERRIDE = arg('--gvub', -1, int)       # supply a precomputed sound GVUB to skip the solve (must be a valid UB)
+ENUM_ONLY = '--enum-only' in sys.argv        # only enumerate (main word,mask) THREATS; skip VerticalBracket
 XFILL = arg('--xfill', FROZEN)
 
 rules = construct_rules('dutch', board)
@@ -568,6 +569,60 @@ def main():
     best_turn = prog.get('best_turn')
     evaluated = prog.get('evaluated', {})   # mword -> [main_score, vlow, vup, proven]
     print(f"resume: {len(evaluated)} main words already evaluated, proven_lower={proven_lower}", flush=True)
+
+    # ---- ENUM-ONLY: enumerate (main word, placement mask) THREATS and exit (no VerticalBracket) ----
+    # A "threat" is an enumerated (mword, turn_str, main_score) that survives BOTH prunes the full sweep
+    # applies: the GVUB STOP (main_score + GVUB <= proven_lower ends the sweep) and the per-word barepack_ub
+    # prune (main_score + barepack_ub <= proven_lower => verticals can't beat the incumbent => non-threat).
+    # Everything that survives could in principle still beat proven_lower via its verticals -> print THREAT.
+    if ENUM_ONLY:
+        mw_model, pre_cells, post_cells = main_word_solver(no_main_blanks=True)
+        nmain = 0
+        n_threats = 0
+        n_pruned_barepack = 0
+        n_skipped_nocand = 0
+        stopped_clean = False
+        for msolver in do_solve(mw_model, log=False, cores=CORES):
+            main_score = int(msolver.objective_value)
+            setup = ''.join(x if x else ' ' for x in read_board_state(msolver, pre_cells, rules.alphabet)[0])
+            mword = ''.join(x if x else ' ' for x in read_board_state(msolver, post_cells, rules.alphabet)[0])
+            turn_str = ''.join(c.upper() if setup[i] == ' ' else c for i, c in enumerate(mword))
+            mw_model.add_bool_or([~[v for v in list(cell.letter.values()) + [~cell.active]
+                                    if msolver.Value(v)][0] for cell in post_cells.values()])
+            nmain += 1
+            # GVUB STOP: descending main_score; once main_score+GVUB<=proven_lower no later word can beat it.
+            if main_score + GVUB <= proven_lower:
+                print(f"STOP: main #{nmain} '{mword}' score {main_score} + GVUB {GVUB} = "
+                      f"{main_score + GVUB} <= proven_lower {proven_lower}  -> enumeration complete",
+                      flush=True)
+                stopped_clean = True
+                break
+            main_tup = rules.alphabet.to_tup(mword.lower())
+            scoring = [x for x in range(W) if turn_str[x].isupper()]
+            cands = {c: candidates_for(main_tup, c) for c in scoring}
+            if any(not cands[c] for c in scoring):
+                # a scoring column with NO valid vertical word -> no legal down-word -> cannot beat anything
+                # via verticals (the holistic/inner model is infeasible).  Non-threat.
+                n_skipped_nocand += 1
+                continue
+            bp = barepack_ub(main_tup, scoring, cands)
+            if main_score + bp <= proven_lower:
+                n_pruned_barepack += 1
+                continue
+            # genuine vertical threat: main_score + barepack_ub > proven_lower
+            n_threats += 1
+            print(f"THREAT {mword.lower()} {turn_str} {main_score} {bp}", flush=True)
+        if not stopped_clean:
+            print(f"WARNING: enumeration did not STOP cleanly (do_solve exhausted before GVUB cut); "
+                  f"the (word,mask) frontier may be incomplete", flush=True)
+        print(f"\n==== exp33 N={W} ENUM-ONLY summary ====", flush=True)
+        print(f"  proven_lower (seed) = {proven_lower}   GVUB = {GVUB}", flush=True)
+        print(f"  n_enumerated = {nmain}", flush=True)
+        print(f"  n_threats    = {n_threats}", flush=True)
+        print(f"  (pruned by barepack_ub = {n_pruned_barepack}; skipped no-cand column = "
+              f"{n_skipped_nocand}; stopped_clean = {stopped_clean})", flush=True)
+        print(f"  time = {time.time()-t0:.0f}s", flush=True)
+        return
 
     mw_model, pre_cells, post_cells = main_word_solver(no_main_blanks=True)
     nmain = 0
