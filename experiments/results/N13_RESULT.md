@@ -46,9 +46,16 @@ A *proven* optimum needs the spread family fully ruled out. Both solvers fail on
     by its solver time cap (a 200s-wall re-run timed out identically).
   - No cheap structural/tile argument disposes of them (the obstruction is connector-word legality).
 
-Residual to close: the 341 TIMEOUT configs (a longer 200s wall TIMED OUT identically — the stall is
-model construction, not solve time, so more time/workers don't help), the full 13-letter word space
-(survey was 1000 words), and
+Residual to close: the 341 TIMEOUT configs — ROOT-CAUSED (2026-06-14): they are large CP-SAT MODELS,
+not a mysterious stall. cpsat_decide encodes each scoring column as one bool var PER candidate
+vertical word (+ ~7 per-cell only_enforce_if constraints). TIMEOUT words have common spread-column
+letters (r/t/v/e) -> 500–650 candidates across the three ×3 columns (vs ~200 for the fast UNSAT
+words) -> the model balloons and CP-SAT can't decide it in the wall (max_time doesn't bound it well
+at that size). FIX (actionable, not yet done): encode the scoring columns with a COLUMN-AUTOMATON
+(compact, exactly like the bridge columns already use) so model size is independent of candidate
+count -> the TIMEOUT configs become decidable. Then re-run the 341 (expected all UNSAT, consistent
+with the 0-SAT pattern). Remaining beyond that: the full 13-letter word space (survey was 1000 words)
+and
 the ×9-END spreads (0,12 — the N=11 analog; argued ≤586 but untested). Closing these needs a better
 connectivity-aware decision procedure or a holistic word-as-variable spread search — a genuine
 research step, not a longer run.
