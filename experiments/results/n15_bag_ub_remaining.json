@@ -46,5 +46,181 @@
   ],
   "all_masks_optimal": true,
   "verdict": "CERTIFIED<=floor"
+ },
+ {
+  "word": "babyglimlachjes",
+  "tight_UB": 2012,
+  "bag_UB": 1933,
+  "bag_mask": [
+   0,
+   3,
+   4,
+   7,
+   9,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ },
+ {
+  "word": "quichebuffetjes",
+  "tight_UB": 2019,
+  "bag_UB": 1940,
+  "bag_mask": [
+   0,
+   3,
+   6,
+   7,
+   9,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ },
+ {
+  "word": "craqueleachtigs",
+  "tight_UB": 2020,
+  "bag_UB": 1942,
+  "bag_mask": [
+   0,
+   3,
+   5,
+   7,
+   11,
+   13,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ },
+ {
+  "word": "chequebedragjes",
+  "tight_UB": 2025,
+  "bag_UB": 1944,
+  "bag_mask": [
+   0,
+   3,
+   5,
+   6,
+   7,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ },
+ {
+  "word": "chemsexpartytje",
+  "tight_UB": 2032,
+  "bag_UB": 1971,
+  "bag_mask": [
+   0,
+   3,
+   4,
+   7,
+   11,
+   12,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "STILL-THREAT"
+ },
+ {
+  "word": "bouwcuratrixjes",
+  "tight_UB": 2036,
+  "bag_UB": 1965,
+  "bag_mask": [
+   0,
+   1,
+   3,
+   5,
+   7,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "STILL-THREAT"
+ },
+ {
+  "word": "jacquardmachine",
+  "tight_UB": 2046,
+  "bag_UB": 1992,
+  "bag_mask": [
+   0,
+   1,
+   3,
+   5,
+   7,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "STILL-THREAT"
+ },
+ {
+  "word": "cultuurchequeje",
+  "tight_UB": 2051,
+  "bag_UB": 1958,
+  "bag_mask": [
+   0,
+   2,
+   7,
+   9,
+   11,
+   13,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "STILL-THREAT"
+ },
+ {
+  "word": "chequeformulier",
+  "tight_UB": 2064,
+  "bag_UB": 1989,
+  "bag_mask": [
+   0,
+   3,
+   5,
+   7,
+   9,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "STILL-THREAT"
+ },
+ {
+  "word": "flauwekulexcuus",
+  "tight_UB": 2123,
+  "bag_UB": 2021,
+  "bag_mask": [
+   0,
+   1,
+   3,
+   7,
+   11,
+   12,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "STILL-THREAT"
+ },
+ {
+  "word": "geschenkcheques",
+  "tight_UB": 2158,
+  "bag_UB": 2075,
+  "bag_mask": [
+   0,
+   3,
+   7,
+   9,
+   11,
+   13,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "STILL-THREAT"
  }
 ]

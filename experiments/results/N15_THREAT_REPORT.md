@@ -190,12 +190,11 @@ certify them and they remain **OPEN** (their complete certification hits the N=1
 | cultuurchequeje | 2051 | 1958 | **OPEN** |
 | chequeformulier | 2064 | 1989 | **OPEN** |
 | flauwekulexcuus | 2123 | 2021 | **OPEN** |
-| geschenkcheques | 2158 | ~2067 | **OPEN** (the floor word itself; achieves *exactly* 1952) |
+| geschenkcheques | 2158 | 2075 | **OPEN** (the floor word itself; achieves *exactly* 1952) |
 
-(All bag_UB values are sound per-word maxima over every legal mask, each ILP OPTIMAL — except
-geschenkcheques' single-mask probe value 2067, a sound lower estimate of its bag_UB, which is already
-> floor.) Note all 7 OPEN bag_UBs are within ~20–115 of 1952 — the achievable max is *tightly*
-bracketed near the floor.
+(All bag_UB values are sound per-word maxima over every legal mask, each ILP OPTIMAL. The remaining-
+14 run finished cleanly: 7 CERTIFIED, 7 STILL-THREAT, 0 UNRESOLVED.) Note all 7 OPEN bag_UBs are
+within ~20–125 of 1952 — the achievable max is *tightly* bracketed near the floor.
 
 > **Honest proof-wall note (the OPEN residual = 7 words).** For these 7 a *complete* sound
 > certification of "true max ≤ 1952" requires an **uncapped exhaustive search of the corrected
