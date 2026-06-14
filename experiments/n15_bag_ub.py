@@ -122,7 +122,13 @@ def mask_bag_opt(w, mask, cap=15):
     status True iff CP-SAT proved OPTIMAL."""
     mt = r.alphabet.to_tup(w)
     newly_ct = Counter(mt[c] for c in mask)
-    avail = {code: r.counts[code] - newly_ct.get(code, 0) for code in r.counts}
+    # Tiles available to the verticals = bag minus the main word's newly tiles, CLAMPED at 0.
+    # If the main word needs more of a letter than the bag holds (e.g. dyscalculischen's mask wants
+    # 3 'c' but the bag has 2), the surplus main tiles are BLANKS (score 0) -- a legal play -- and
+    # the verticals simply get 0 real tiles of that letter.  Clamping at 0 is SOUND (it never grants
+    # the verticals more tiles than physically exist) and avoids a spurious INFEASIBLE that would
+    # otherwise wrongly leave the word UNRESOLVED.
+    avail = {code: max(0, r.counts[code] - newly_ct.get(code, 0)) for code in r.counts}
     m = cp_model.CpModel()
     cols = []
     for c in mask:
