@@ -1,0 +1,50 @@
+[
+ {
+  "word": "playboyachtigst",
+  "tight_UB": 1959,
+  "bag_UB": 1896,
+  "bag_mask": [
+   0,
+   3,
+   7,
+   9,
+   11,
+   12,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ },
+ {
+  "word": "dyscalculischen",
+  "tight_UB": 1989,
+  "bag_UB": 1917,
+  "bag_mask": [
+   0,
+   2,
+   3,
+   6,
+   7,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ },
+ {
+  "word": "cliquetsystemen",
+  "tight_UB": 2009,
+  "bag_UB": 1931,
+  "bag_mask": [
+   0,
+   3,
+   5,
+   7,
+   9,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ }
+]

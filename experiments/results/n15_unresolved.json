@@ -1,0 +1,28 @@
+[
+ {
+  "word": "dyscalculischen",
+  "tight_UB": 1989,
+  "mask": [
+   0,
+   2,
+   3,
+   6,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "playboyachtigst",
+  "tight_UB": 1959,
+  "mask": [
+   0,
+   3,
+   7,
+   9,
+   11,
+   13,
+   14
+  ]
+ }
+]

@@ -1,0 +1,18 @@
+[
+ {
+  "word": "quicheachtigers",
+  "tight_UB": 1955,
+  "bag_UB": 1862,
+  "bag_mask": [
+   0,
+   3,
+   6,
+   7,
+   9,
+   11,
+   14
+  ],
+  "all_masks_optimal": true,
+  "verdict": "CERTIFIED<=floor"
+ }
+]

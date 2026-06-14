@@ -1,0 +1,18 @@
+[
+ {
+  "word": "dyscalculischen",
+  "tight_UB": 1989,
+  "bag_UB": 1915,
+  "bag_mask": [
+   0,
+   2,
+   3,
+   5,
+   7,
+   11,
+   14
+  ],
+  "all_masks_optimal": false,
+  "verdict": "UNRESOLVED"
+ }
+]

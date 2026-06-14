@@ -136,17 +136,19 @@ chequeformulier, cultuurchequeje, chemsexpartytje), all legal masks, cap 60s, ro
 word's best verified total was ≤ 1952** (no board > 1952 found anywhere). The floor stays **1952**.
 (`geschenkcheques` itself already *achieves* exactly 1952; the push model finds nothing above it.)
 
-### 3a result — bag-aware sound certifications (lowest-UB-first)
-The bag-aware contention bound is markedly stronger than `tight_UB`: modelling the finite shared bag
-drops each word's UB by ~60–90 points, pushing the entire lower/middle tier **below the floor**.
-Verdicts so far (run continuing on the heaviest words):
+### 3a result — bag-aware sound certifications
+The bag-aware contention bound is markedly stronger than `tight_UB`: modelling the *finite shared
+bag* (one q/x/y, two z/c/b/…, two blanks) among all the verticals drops each word's UB by ~60–110
+points, pushing the entire lower/middle tier **below the floor**. **14 of 26 threat words are
+CERTIFIED ≤ 1952** (sound: each word's bag_UB = max over ALL legal masks of `true_main + OPTIMAL
+ILP`, every mask proved OPTIMAL):
 
 | word | tight_UB | bag_UB | verdict |
 |---|---:|---:|---|
 | quicheachtigers | 1955 | 1862 | **CERTIFIED ≤ 1952** |
 | perscommuniques | 1957 | 1881 | **CERTIFIED ≤ 1952** |
 | chiquelingetjes | 1957 | 1881 | **CERTIFIED ≤ 1952** |
-| playboyachtigst | 1959 | 1896 | UNRESOLVED (bag_UB ≤ floor but a mask ILP hit the 30 s cap — needs higher cap) |
+| playboyachtigst | 1959 | 1896 | **CERTIFIED ≤ 1952** |
 | vluchtreflexjes | 1963 | 1906 | **CERTIFIED ≤ 1952** |
 | upcyclestertjes | 1964 | 1873 | **CERTIFIED ≤ 1952** |
 | yoghurtcultures | 1966 | 1883 | **CERTIFIED ≤ 1952** |
@@ -154,24 +156,79 @@ Verdicts so far (run continuing on the heaviest words):
 | aliquotvleugels | 1978 | 1915 | **CERTIFIED ≤ 1952** |
 | textielcyclusje | 1979 | 1903 | **CERTIFIED ≤ 1952** |
 | craqueleachtige | 1981 | 1910 | **CERTIFIED ≤ 1952** |
-| dyscalculischen | 1989 | 1915 | UNRESOLVED (bag_UB ≤ floor but a mask ILP hit the cap — needs higher cap) |
-| … (tight_UB ≥ 2001, the heaviest ~14 words) | | | running / expected **STILL-THREAT (OPEN)** |
+| dyscalculischen | 1989 | 1917 | **CERTIFIED ≤ 1952** |
+| schuurschijfjes | 2001 | 1912 | **CERTIFIED ≤ 1952** |
+| wetenschapsquiz | 2005 | 1944 | **CERTIFIED ≤ 1952** |
 
-So far: **10 of 12 processed CERTIFIED ≤ 1952**, 2 UNRESOLVED (both with bag_UB ≤ 1952 — a higher ILP
-cap should certify them). The two UNRESOLVED words are *not* claimed certified (soundness guard:
-a non-OPTIMAL mask could host a higher true max).
+(A bug — vertical tile-availability going negative when the main word needs blanks, e.g.
+dyscalculischen's mask wanting 3 'c' from a 2-'c' bag — initially mislabelled playboyachtigst /
+dyscalculischen as UNRESOLVED; fixed by clamping availability at 0, commit 0769dfb. Both then
+certified. CERTIFIED verdicts were never affected: they had all masks OPTIMAL, no infeasible mask.)
 
-> **Honest note on the proof wall (the OPEN residual):** the heaviest ~13 words (tight_UB ≥ ~2001,
-> incl. `geschenkcheques` 2158, `flauwekulexcuus` 2123, …) have **bag_UB > 1952** (e.g.
-> `geschenkcheques` bag_UB = 2067) — bag contention does *not* drop them below the floor, so the
-> analytic levers cannot certify them. A *complete* sound certification of "true max ≤ 1952" for
-> these requires an **uncapped exhaustive search of the corrected (verticals-optional, connectivity-
-> fill) model**, which is **OPEN**: the full ≤8-word board CP-SAT model does not close to OPTIMAL
-> within practical walls (confirmed: `geschenkcheques` returns only FEASIBLE after 90 s), and `xfill`
-> implements the *forced-vertical* model (handoff §0), not the corrected one, so it cannot certify
-> this model out of the box. These words are reported **OPEN**, not certified — exactly as the
-> handoff predicted for N=15. They are, however, strongly evidenced not to beat 1952: their best
-> achievable verticals (TWS cols, ≤8) are in the 60–99/col range (geschenkcheques banks 69/69/90 =
-> 228, hitting exactly 1952), and the LB hunt found no board above 1952 on the most dangerous ones.
+### The remaining 12 (tight_UB ≥ 2009): the OPEN residual
+The full per-word bag_UB (max over all masks) is being computed; the per-word *best-mask* bag_UB
+(a quick lower estimate of bag_UB) is:
 
-(Final tables refreshed when the run completes; UNRESOLVED words will be re-run at a higher cap.)
+| word | tight_UB | best-mask bag | likely |
+|---|---:|---:|---|
+| cliquetsystemen | 2009 | 1929 | borderline (may CERTIFY pending all-mask max) |
+| babyglimlachjes | 2012 | 1931 | borderline |
+| quichebuffetjes | 2019 | 1935 | borderline |
+| craqueleachtigs | 2020 | 1940 | borderline |
+| chequebedragjes | 2025 | 1939 | borderline |
+| cultuurchequeje | 2051 | 1945 | borderline |
+| chemsexpartytje | 2032 | 1971 | **OPEN** (best-mask already > floor) |
+| bouwcuratrixjes | 2036 | 1965 | **OPEN** |
+| jacquardmachine | 2046 | 1985 | **OPEN** |
+| chequeformulier | 2064 | 1989 | **OPEN** |
+| flauwekulexcuus | 2123 | 2021 | **OPEN** |
+| geschenkcheques | 2158 | 2067 | **OPEN** (the floor word itself; achieves exactly 1952) |
+
+(best-mask bag is for the DLS-maximising mask; the word's true bag_UB = max over ALL masks ≥ this,
+so a word with best-mask bag ≤ 1952 still needs the all-mask check before it can be certified — that
+is what the running job computes. A word with best-mask bag > 1952 is already not certifiable by the
+bag lever.)
+
+> **Honest proof-wall note (the OPEN residual ≈ 6–12 words).** ~6 of the heaviest words
+> (`chemsexpartytje`, `bouwcuratrixjes`, `jacquardmachine`, `chequeformulier`, `flauwekulexcuus`,
+> `geschenkcheques`) have a *best-mask* bag_UB already **> 1952**, so the bag lever cannot certify
+> them; the other ~6 are borderline (best-mask ≤ floor, pending the all-mask maximum). For the
+> genuinely-OPEN words a *complete* sound certification of "true max ≤ 1952" requires an **uncapped
+> exhaustive search of the corrected (verticals-optional, connectivity-fill) model**, which is
+> **OPEN**: the full ≤8-word board CP-SAT model does not close to OPTIMAL within practical walls
+> (confirmed — `geschenkcheques` returns only FEASIBLE after 90 s), and `xfill` implements the
+> *forced-vertical* model (handoff §0), not the corrected one, so it cannot certify this model out of
+> the box. These words are reported **OPEN**, not certified — exactly as the handoff predicted for
+> N=15. They are nonetheless strongly evidenced not to beat 1952: their best achievable TWS verticals
+> (≤8) are in the 60–99/col range (`geschenkcheques` banks 69/69/90 = 228, hitting *exactly* 1952),
+> and the LB hunt found no board above 1952 on the most dangerous of them.
+
+---
+
+## Bottom line / honest assessment
+
+- **Current best verified N=15 LB = 1952** (`geschenkcheques`, witness_check-OK). **No new LB found.**
+- **Threat set: 26 placeable 15-letter words** (sound `tight_UB > 1952`); everything else provably
+  cannot beat 1952.
+- **14 of the 26 CERTIFIED ≤ 1952** by the sound bag-aware bound (the tier up to tight_UB ≈ 2005);
+  ~6 more are borderline (likely certifiable pending the running all-mask maximum).
+- **OPEN residual: ≈ 6 words** (the very top — `geschenkcheques` 2158 down to `chemsexpartytje`
+  2032) whose bag-aware UB stays > 1952. Their complete certification is **blocked at the N=15
+  proof-wall** (no uncapped exhaustive solver for the corrected model; CP-SAT board model won't
+  close; `xfill` is the wrong model). This is the genuine wall the handoff predicted.
+- **Is the true optimum within reach?** Partly. The threat set is small and 14+ words are soundly
+  eliminated, but a *complete* machine proof that 1952 is optimal is **not** achievable with the
+  existing machinery — it needs a sound exhaustive solver for the verticals-optional connectivity-
+  fill model (the missing tool). The evidence that **1952 is the true optimum is strong**: no
+  placeable word out-scores it on the main word, no word's bag-aware ceiling that we could certify
+  exceeds it, the LB hunt finds nothing above 1952, and the floor word saturates its own ceiling
+  (banks exactly the verticals it needs to reach 1952). But it remains a *strongly-evidenced believed
+  optimum*, not a machine-proven one — the same status as N=13's 586.
+
+### Reusable artifacts
+- `experiments/n15_threat_enum.py` — threat enumeration (steps 1–2); writes `n15_threats.jsonl`
+  (loose) and `n15_threats_tight.json` (the 26).
+- `experiments/n15_bag_ub.py` — bag-aware sound-UB certifier (step 3a); writes per-word bag_UB +
+  verdict. `--reverse` (lowest-UB-first), `--threats`/`--out` for subsets.
+- `experiments/results/n15_bag_ub*.json` / `*.log` — certification verdicts.
+- `experiments/n15_push_lb.py` (pre-existing) — the LB hunt (step 3b).
