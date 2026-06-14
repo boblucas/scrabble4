@@ -1,0 +1,141 @@
+# N=15 Threat-Set Report — toward proving the true optimum (floor = 1952)
+
+Verified lower bound (floor): **1952** — `geschenkcheques`, witness
+`experiments/results/turns/N15_best_1952.json`, independently `witness_check`-OK
+(main 1724 + verticals `golfsurf` 69 / `klepstuw` 69 / `skyboxje` 90 = 228, 1 blank, reserve=1,
+center-connected). This report enumerates every main word that could *possibly* beat 1952 and reports
+the certification status of each.
+
+Tooling: `experiments/n15_threat_enum.py` (steps 1–2), `experiments/n15_bag_ub.py` (sound bag-aware
+certification refinement, step 3a), `experiments/n15_push_lb.py` (LB hunt, step 3b).
+
+---
+
+## Step 1 — the sound upper bound
+
+For a candidate main word `w` placed on row 0:
+
+```
+UB(w) = x27_proxy(w) + vert_UB(w)
+```
+
+### Why only 15-letter words (soundness receipt)
+The three ×3-WORD (TWS) premium columns on row 0 are **0, 7, 14**. A horizontal main word's board
+word-multiplier is the *product* of the per-cell word multipliers over the cells it newly places. To
+reach ×27 = 3·3·3 the word must newly-place tiles on **all three** of cols 0,7,14 — which forces a
+**15-letter** word spanning cols 0..14 (the only word reaching all three). Any word covering ≤2 TWS
+cols has word-mult ≤ ×9.
+
+Numerically (verified in code): the most generous conceivable ≤14-letter play —
+`9·(Σ letter vals + 2 best letters doubled for DLS) + 50` main, plus a *generous* vertical add (the
+2 best letters at ×3 + the next 5 at ×1, each using its dictionary-max tail) — peaks at **UB = 1047**
+(via `cyclothymische`) ≪ 1952. **So no word shorter than 15 letters can threaten the floor.** Only
+15-letter words placed newly on {0,7,14} are enumerated.
+
+### x27_proxy — sound over-estimate of the MAIN contribution
+```
+x27_proxy(w) = 27·( Σ val(letter) + val(w[3]) + val(w[11]) ) + 50
+```
+Assumes both ×2-LETTER (DLS) cols 3,11 are newly-placed (best case) and a 7-tile bingo (+50). Exact
+maximum main score over masks containing {0,7,14}; an over-estimate for masks dropping a DLS col.
+Sound.
+
+### vert_UB — sound over-estimate of the TOTAL vertical bonus
+Verticals add only at newly columns; a vertical at newly col c is `w[c]+tail`, length 2..8, scored
+`WM[c]·(LM[c]·val(w[c]) + Σ val(tail))`. Per-column exact max:
+```
+best_vert_bonus(c, w[c]) = WM[c]·( LM[c]·val(w[c]) + max_tail_value(w[c]) )
+```
+where `max_tail_value(L)` is the dictionary maximum Σ val(tail) over legal words `L+tail`, len 2..8.
+`vert_UB(w)` = sum of the **7 largest** per-column bonuses (a bingo plays exactly 7 columns).
+Per-column maxima over-estimate any realised vertical; summing 7 over-estimates any 7-column mask;
+finite-bag contention and the reserve cap are **ignored** (looser, sound). Cross-check:
+`vert_UB(geschenkcheques) = 436 ≥ 228` actually banked. ✔
+
+### tight_UB — the mask-aware bound we prune with (strictly sound, tighter)
+```
+tight_UB(w) = max over LEGAL masks m of [ true_main(w,m) + Σ_{c∈m} best_vert_bonus(c, w[c]) ]
+```
+where `true_main(w,m)` is the *exact* main score for mask m (no phantom DLS bonus) and a mask is
+"legal" iff every maximal run of ≥2 pre-placed row-0 cols already spells a dictionary word
+(necessary condition for any legal setup board). Strictly sound: a real board uses exactly one legal
+mask; its main score is `true_main` and its verticals live only on that mask's newly columns, each
+bounded by its exact per-column best.
+
+---
+
+## Step 2 — THE THREAT SET (the key result)
+
+- 15-letter words total: **116 983**
+- Loose screen `x27_proxy + vert_UB(7-best) > 1952`: **68** words
+- Of those, **12 have no legal ×27 mask** (their pre-placed substrings can never spell words —
+  e.g. `croquemboucheje`, `alfahydroxyzuur`) → unplayable ×27 → excluded.
+- **TIGHT placeable threat set (`tight_UB > 1952`): 26 words.**
+
+| tight_UB | word | best mask (newly cols) |
+|---:|---|---|
+| 2158 | geschenkcheques | 0,3,7,8,11,12,14 |
+| 2123 | flauwekulexcuus | 0,1,3,7,11,12,14 |
+| 2064 | chequeformulier | 0,3,5,7,9,11,14 |
+| 2051 | cultuurchequeje | 0,2,7,10,11,12,14 |
+| 2046 | jacquardmachine | 0,2,3,4,7,11,14 |
+| 2036 | bouwcuratrixjes | 0,1,3,5,7,11,14 |
+| 2032 | chemsexpartytje | 0,3,4,7,11,12,14 |
+| 2025 | chequebedragjes | 0,1,3,4,7,11,14 |
+| 2020 | craqueleachtigs | 0,3,4,7,11,13,14 |
+| 2019 | quichebuffetjes | 0,3,4,7,9,11,14 |
+| 2012 | babyglimlachjes | 0,3,5,7,10,11,14 |
+| 2009 | cliquetsystemen | 0,3,4,7,9,11,14 |
+| 2005 | wetenschapsquiz | 0,3,5,7,9,11,14 |
+| 2001 | schuurschijfjes | 0,1,3,5,7,11,14 |
+| 1989 | dyscalculischen | 0,2,3,6,7,11,14 |
+| 1981 | craqueleachtige | 0,3,4,7,11,13,14 |
+| 1979 | textielcyclusje | 0,3,7,9,11,12,14 |
+| 1978 | aliquotvleugels | 0,1,3,5,7,11,14 |
+| 1976 | jacquardweefsel | 0,2,3,4,7,12,14 |
+| 1966 | yoghurtcultures | 0,1,3,7,9,11,14 |
+| 1964 | upcyclestertjes | 0,2,3,5,7,11,14 |
+| 1963 | vluchtreflexjes | 0,6,7,8,9,11,14 |
+| 1959 | playboyachtigst | 0,3,7,9,11,13,14 |
+| 1957 | perscommuniques | 0,3,4,7,11,12,14 |
+| 1957 | chiquelingetjes | 0,3,4,7,9,11,14 |
+| 1955 | quicheachtigers | 0,3,6,7,8,11,14 |
+
+### Crucial structural observation
+**No placeable threat word has a main score above 1724** — the floor word `geschenkcheques` (and
+`jacquetkostuums`) at main 1724 are the highest-main placeable ×27 words; every word with a higher
+`x27_proxy` (croquemboucheje 1751, …) has *no legal mask*. So beating 1952 requires banking
+**> (1952 − true_main)** of vertical bonus (≥ 228 for the strongest word, ≥ 255, ≥ 309 … for the
+rest). The floor witness already banks *exactly* 228 → 1952. This is a tight target: the optimum is
+plausibly 1952 itself.
+
+Across the 26 threat words there are **610 legal (word,mask) pairs**, of which **187** have a
+per-mask sound UB > 1952 and thus genuinely need certification (the analytic per-mask bound already
+disposes of 423).
+
+---
+
+## Step 3 — certification (in progress)
+
+Two sound certification levers are being applied:
+
+**3a. Bag-aware sound UB (`n15_bag_ub.py`).** For each word, an ILP solved to OPTIMAL chooses ≤1
+vertical word per newly column to maximise total vertical bonus subject to the *combined* tail-tile
+multiset fitting the available bag (full − 7 main tiles − reserve=1). This is a sound relaxation
+(drops connectivity & other-run legality, which only reduce score), so `true_main + ILP_opt` is a
+sound UB. If it falls ≤ 1952 the word is **CERTIFIED ≤ 1952**. (Geschenkcheques bag-UB = 2067, down
+from 2158 but still > 1952 — correct, since 1952 *is* achievable on it.)
+
+**3b. New-LB hunt (`n15_push_lb.py`).** CP-SAT maximises the realised TWS-vertical bonus to look for
+a *verified* board scoring > 1952; any hit is re-checked by `witness_check`, saved, and raises the
+floor (pruning the threat set). [Results pending — see below.]
+
+> **Honest note on the proof wall:** a *complete* sound certification of "true max ≤ 1952" for the
+> heavy words requires either the bag-UB to drop ≤ 1952, or an uncapped exhaustive search of the
+> corrected (verticals-optional, connectivity-fill) model. The latter is **OPEN**: the full ≤8-word
+> board CP-SAT model does not close to OPTIMAL within practical walls (confirmed: geschenkcheques
+> returns only FEASIBLE after 90s), and `xfill` implements the *forced-vertical* model (handoff §0),
+> not the corrected one, so it cannot certify this model out of the box. Words whose bag-UB stays
+> > 1952 are therefore reported **OPEN**, not certified — exactly as the handoff predicted for N=15.
+
+(Results tables for 3a/3b appended once the runs complete.)
