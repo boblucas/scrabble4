@@ -139,9 +139,12 @@ word's best verified total was ≤ 1952** (no board > 1952 found anywhere). The 
 ### 3a result — bag-aware sound certifications
 The bag-aware contention bound is markedly stronger than `tight_UB`: modelling the *finite shared
 bag* (one q/x/y, two z/c/b/…, two blanks) among all the verticals drops each word's UB by ~60–110
-points, pushing the entire lower/middle tier **below the floor**. **14 of 26 threat words are
+points, pushing the entire lower/middle tier **below the floor**. **≥ 17 of 26 threat words are
 CERTIFIED ≤ 1952** (sound: each word's bag_UB = max over ALL legal masks of `true_main + OPTIMAL
-ILP`, every mask proved OPTIMAL):
+ILP`, every mask proved OPTIMAL) — the run is still classifying the heaviest ~6 words. The
+borderline tier (tight_UB 2009–2025) is certifying as predicted (cliquetsystemen 1931,
+babyglimlachjes 1933, quichebuffetjes 1940), so the final OPEN residual is shaping up to be only the
+~6 very top words:
 
 | word | tight_UB | bag_UB | verdict |
 |---|---:|---:|---|
@@ -156,9 +159,15 @@ ILP`, every mask proved OPTIMAL):
 | aliquotvleugels | 1978 | 1915 | **CERTIFIED ≤ 1952** |
 | textielcyclusje | 1979 | 1903 | **CERTIFIED ≤ 1952** |
 | craqueleachtige | 1981 | 1910 | **CERTIFIED ≤ 1952** |
+| cliquetsystemen | 2009 | 1931 | **CERTIFIED ≤ 1952** |
+| babyglimlachjes | 2012 | 1933 | **CERTIFIED ≤ 1952** |
+| quichebuffetjes | 2019 | 1940 | **CERTIFIED ≤ 1952** |
 | dyscalculischen | 1989 | 1917 | **CERTIFIED ≤ 1952** |
 | schuurschijfjes | 2001 | 1912 | **CERTIFIED ≤ 1952** |
 | wetenschapsquiz | 2005 | 1944 | **CERTIFIED ≤ 1952** |
+
+(17 listed; run continuing — craqueleachtigs, chequebedragjes, cultuurchequeje are next and their
+best-mask bag is ≤ 1952, so the certified count is likely heading to ~20.)
 
 (A bug — vertical tile-availability going negative when the main word needs blanks, e.g.
 dyscalculischen's mask wanting 3 'c' from a 2-'c' bag — initially mislabelled playboyachtigst /
@@ -210,8 +219,9 @@ bag lever.)
 - **Current best verified N=15 LB = 1952** (`geschenkcheques`, witness_check-OK). **No new LB found.**
 - **Threat set: 26 placeable 15-letter words** (sound `tight_UB > 1952`); everything else provably
   cannot beat 1952.
-- **14 of the 26 CERTIFIED ≤ 1952** by the sound bag-aware bound (the tier up to tight_UB ≈ 2005);
-  ~6 more are borderline (likely certifiable pending the running all-mask maximum).
+- **≥ 17 of the 26 CERTIFIED ≤ 1952** by the sound bag-aware bound (the tier up to tight_UB ≈ 2019,
+  and climbing); the borderline tier (2009–2025) is certifying as predicted, so the final certified
+  count is heading to ~20 and the OPEN residual is shrinking to the ~6 very top words.
 - **OPEN residual: ≈ 6 words** (the very top — `geschenkcheques` 2158 down to `chemsexpartytje`
   2032) whose bag-aware UB stays > 1952. Their complete certification is **blocked at the N=15
   proof-wall** (no uncapped exhaustive solver for the corrected model; CP-SAT board model won't
