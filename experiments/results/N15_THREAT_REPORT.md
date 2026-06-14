@@ -239,3 +239,62 @@ within ~20–125 of 1952 — the achievable max is *tightly* bracketed near the 
   verdict. `--reverse` (lowest-UB-first), `--threats`/`--out` for subsets.
 - `experiments/results/n15_bag_ub*.json` / `*.log` — certification verdicts.
 - `experiments/n15_push_lb.py` (pre-existing) — the LB hunt (step 3b).
+
+---
+
+## Step 4 — the HMAX-cap analytic certification (threat set 26 → 2 OPEN)
+
+**THE LEVER (sound, fast).** A vertical cross-word at a newly column has board RUN LENGTH ≤ HMAX = 8
+(a board run longer than HMAX is illegal — no >HMAX word is in the legal dictionary). For each newly
+column `c` with row-0 letter `M[c]`, let `G(c)` be the EXACT maximum vertical gross over all legal
+verticals `M[c]+tail` of length 2..8 (stub `tail` a dict word; the column's board word-multiplier
+applied to the row-0 tile; length-1 = bare tile, gross 0). Then for ANY legal board
+
+    total(M, mask) ≤ main_const(M, mask) + Σ_{c∈mask} G(c)  =:  UB(M, mask).
+
+This `UB` ignores tile contention, blanks, connectivity, the reserve and the center constraint (all
+of which only LOWER the achievable score), so it is a **sound over-estimate**. If
+`max over all legal masks of UB(M, mask) ≤ 1952`, the word is **CERTIFIED ≤ 1952 with no search**.
+
+Driver: `experiments/n15_analytic_certify.py` (independent recompute from `rules.words` + the
+multiplier rows; deliberately does NOT force the center-column length, which would shrink and risk
+under-counting the bound). Result over the 26 threat words:
+
+- **22 words CERTIFIED ≤ 1952 analytically** (UB ≤ 1952 across every legal mask), tightest
+  `chemsexpartytje` UB = 1945 (slack 7), independently re-checked.
+- **4 words have UB > 1952** → analytic-OPEN: `geschenkcheques` 2061, `flauwekulexcuus` 2022,
+  `chequeformulier` 1964, `jacquardmachine` 1961.
+
+*Why the prior xfill/35_certify bands were astronomical:* `35_certify.enumerate_band` lists candidate
+lengths up to H = 15, so the million-vector bands (`geschenkcheques` ~32M, `perscommuniques` ~1.5M)
+were **dominated by length>8 phantom vectors that are infeasible under HMAX=8**. Capping at HMAX
+collapses the realizable band — for all 22 certified words it is EMPTY (UB ≤ vfloor everywhere).
+
+### Step 4b — bounded xfill search for the 4 analytic-OPEN words
+Driver `experiments/n15_bounded_certify.py`: per legal mask, enumerate the **HMAX-8-capped** band
+(realizable length-vectors with col-lengths 1..8 whose optimistic UB exceeds the per-mask vertical
+floor `vfloor = 1952 − main_const`) and run `xfill --batchvec --maxscore vfloor` (base file
+`reserve=1`) over exactly those vectors. A natural `LE` on every band vector ⇒ CERTIFIED; a `MAX` ⇒
+NEW-LB; a `TO` ⇒ OPEN.
+
+- `jacquardmachine` (capped band ≤ 27/mask) — **CERTIFIED ≤ 1952** (all natural LE/NOCAND).
+- `chequeformulier` (capped band ≤ 129/mask) — **CERTIFIED ≤ 1952** (all natural LE/NOCAND).
+- `flauwekulexcuus` (capped band ~62k), `geschenkcheques` (capped band ~132k) — **OPEN**: their
+  hardest masks have slices that do not close to natural `LE` within practical walls (passA 2 s,
+  passC 300 s). `geschenkcheques` achieves *exactly* 1952, so its true slice max is 228 and proving
+  `LE 228` on its tightest slice is the genuine residual.
+
+### Step-4 bottom line (supersedes Step-3 status)
+- **24 of the 26 threat words CERTIFIED ≤ 1952** (22 analytic + 2 bounded-xfill), all sound
+  (over-estimate ≤ floor, or natural `LE` on the full realizable band).
+- **OPEN residual = exactly 2 words: `geschenkcheques` (analytic UB 2061) and `flauwekulexcuus`
+  (2022)** — the two highest-UB words; `geschenkcheques` is the floor word itself. No board > 1952
+  was found anywhere (xfill push on `geschenkcheques` top masks → TO, never MAX).
+- Verified LB unchanged: **1952**. Evidence that 1952 is the true optimum is now *stronger*: the
+  threat residual is down from 7 (bag-UB) to 2, and those 2 are the words bracketed tightest to the
+  floor.
+
+Reusable artifacts (step 4): `experiments/n15_analytic_certify.py`,
+`experiments/n15_bounded_certify.py`, `experiments/n15_xfill_push.py` (LB push),
+`experiments/n15_certify_xfill.py` (per-word 35_certify wrapper);
+logs `experiments/results/turns/analytic_cert.log`, `bounded_heavy.log`.
