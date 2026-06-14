@@ -1,0 +1,12 @@
+croquemboucheje    main(no bingo)=1701 vert_relaxed=400(opt=True,bnd=400) UB=2101 OPEN 26s
+alfahydroxyzuur    main(no bingo)=1647 vert_relaxed=387(opt=True,bnd=387) UB=2034 OPEN 20s
+circuscomedytje    main(no bingo)=1593 vert_relaxed=410(opt=True,bnd=410) UB=2003 OPEN 20s
+mytylschooltjes    main(no bingo)=1593 vert_relaxed=408(opt=True,bnd=408) UB=2001 OPEN 23s
+dyscalculicusje    main(no bingo)=1593 vert_relaxed=390(opt=True,bnd=390) UB=1983 OPEN 24s
+polysyllabische    main(no bingo)=1566 vert_relaxed=410(opt=True,bnd=410) UB=1976 OPEN 31s
+webcommunitytje    main(no bingo)=1539 vert_relaxed=393(opt=False,bnd=405) UB=1944 CERTIFIED<=floor 42s
+stafylococcusje    main(no bingo)=1512 vert_relaxed=401(opt=True,bnd=401) UB=1913 CERTIFIED<=floor 29s
+polysynthetisch    main(no bingo)=1512 vert_relaxed=401(opt=False,bnd=405) UB=1917 CERTIFIED<=floor 43s
+cryptocurrencys    main(no bingo)=1485 vert_relaxed=409(opt=True,bnd=409) UB=1894 CERTIFIED<=floor 27s
+cherrybrandytje    main(no bingo)=1512 vert_relaxed=416(opt=True,bnd=416) UB=1928 CERTIFIED<=floor 31s
+hypodermoclyses    main(no bingo)=1485 vert_relaxed=411(opt=True,bnd=411) UB=1896 CERTIFIED<=floor 33s
