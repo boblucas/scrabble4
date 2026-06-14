@@ -40,7 +40,8 @@ def run_one(word, mask):
     inst, meta = xtest.build_instance('13', word, turn, Lvec, scale=True, reserve=1)
     if inst is None:
         print("VERDICT NOCAND"); return
-    st = xtest.cpsat_decide(meta, cap=10 ** 9)   # OS wall (subprocess timeout) is the real bound
+    st = xtest.cpsat_decide_tab(meta, cap=10 ** 9)  # table-constraint encoding (leaner model; decides
+                                                    # many former TIMEOUTs fast). OS wall is the real bound.
     print("VERDICT " + str(st))
 
 

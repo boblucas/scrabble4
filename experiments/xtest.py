@@ -125,6 +125,47 @@ def build_instance(board, main, turn, Lvec, scale=True, reserve=0):
     return inst, meta
 
 
+def cpsat_decide_tab(meta, cap=120.0):
+    """Same decision as cpsat_decide, but each scoring column's valid-stub set is enforced with ONE
+    table constraint (add_allowed_assignments on the stub cells' int vars) instead of one bool var +
+    per-cell only_enforce_if PER candidate word.  Model size is then independent of candidate count,
+    so the common-letter spread columns (r/t/v/e -> 500-650 candidates) that blew up cpsat_decide's
+    model (the 341 TIMEOUTs) become decidable.  Verdict-identical to cpsat_decide (validated)."""
+    rules, W, H = meta['rules'], meta['rules'].W, meta['rules'].H
+    mt, scoring, pre, Lvec = meta['mt'], meta['scoring'], meta['pre'], meta['Lvec']
+    counts, blanks = meta['counts'], meta['blanks']
+    m = cp_model.CpModel(); m.prefix = 'g'
+    row_aut = position_independent_row_automaton([w for w in rules.words if len(w) <= HMAX])
+    cols = [row_aut if x not in scoring else None for x in range(W)]
+    cells = create_board(m, [row_aut] * H, cols, alphabet_size=len(rules.abc))
+    for x in pre:
+        m.add(cells[(x, 0)].letter[mt[x]] == 1)
+    for x in scoring:
+        m.add(cells[(x, 0)].active == 0)
+    bucket = _cand_bucket(rules, meta['board'])
+    for c in scoring:
+        L = Lvec[c]
+        stubs = list(dict.fromkeys(tuple(w[1:]) for w in bucket.get((mt[c], L), ())))
+        for r in range(L, H):                       # below the stub: forced empty (same as cpsat_decide)
+            m.add(cells[(c, r)].active == 0)
+        if L >= 2:
+            stub_vars = [cells[(c, r)].letter_int for r in range(1, L)]
+            if stubs:
+                m.add_allowed_assignments(stub_vars, stubs)   # exactly one valid stub spells the column
+            else:
+                m.add(cells[(c, 1)].active == 1); m.add(cells[(c, 1)].active == 0)  # no candidate -> UNSAT
+        # L == 1: no stub cells; rows 1..H-1 already forced empty above.
+    newly = Counter(mt[c] for c in scoring)
+    limit_letter_count(m, cells, Counter({code: counts[code] - newly[code] for code in counts}))
+    m.add(sum(cell.blank for cell in cells.values()) <= blanks)
+    if pre:
+        single_component(m, cells, (pre[0], 0))
+    s = cp_model.CpSolver(); s.parameters.num_search_workers = int(os.environ.get('CPSAT_WORKERS', '24')); s.parameters.max_presolve_iterations = 1
+    s.parameters.max_time_in_seconds = cap
+    r = s.Solve(m)
+    return {cp_model.OPTIMAL: 'SAT', cp_model.FEASIBLE: 'SAT', cp_model.INFEASIBLE: 'UNSAT'}.get(r, 'UNKNOWN')
+
+
 def cpsat_decide(meta, cap=120.0):
     """Ground truth: does a legal connected setup board exist for these fixed lengths? (no objective)"""
     rules, W, H = meta['rules'], meta['rules'].W, meta['rules'].H
