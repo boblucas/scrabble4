@@ -166,45 +166,41 @@ babyglimlachjes 1933, quichebuffetjes 1940), so the final OPEN residual is shapi
 | schuurschijfjes | 2001 | 1912 | **CERTIFIED ≤ 1952** |
 | wetenschapsquiz | 2005 | 1944 | **CERTIFIED ≤ 1952** |
 
-(17 listed; run continuing — craqueleachtigs, chequebedragjes, cultuurchequeje are next and their
-best-mask bag is ≤ 1952, so the certified count is likely heading to ~20.)
+| cliquetsystemen | 2009 | 1931 | **CERTIFIED ≤ 1952** |
+| craqueleachtigs | 2020 | 1942 | **CERTIFIED ≤ 1952** |
+| chequebedragjes | 2025 | 1944 | **CERTIFIED ≤ 1952** |
+
+**FINAL: 19 of the 26 threat words are CERTIFIED ≤ 1952** (sound — every mask proved OPTIMAL). The
+finite-bag contention bound certified the entire tier up to tight_UB 2025.
 
 (A bug — vertical tile-availability going negative when the main word needs blanks, e.g.
 dyscalculischen's mask wanting 3 'c' from a 2-'c' bag — initially mislabelled playboyachtigst /
 dyscalculischen as UNRESOLVED; fixed by clamping availability at 0, commit 0769dfb. Both then
 certified. CERTIFIED verdicts were never affected: they had all masks OPTIMAL, no infeasible mask.)
 
-### The remaining 12 (tight_UB ≥ 2009): the OPEN residual
-The full per-word bag_UB (max over all masks) is being computed; the per-word *best-mask* bag_UB
-(a quick lower estimate of bag_UB) is:
+### The OPEN residual — exactly 7 words
+The 7 heaviest threat words have a sound bag-aware UB that stays **> 1952**, so the bag lever cannot
+certify them and they remain **OPEN** (their complete certification hits the N=15 proof-wall):
 
-| word | tight_UB | best-mask bag | likely |
+| word | tight_UB | bag_UB | status |
 |---|---:|---:|---|
-| cliquetsystemen | 2009 | 1929 | borderline (may CERTIFY pending all-mask max) |
-| babyglimlachjes | 2012 | 1931 | borderline |
-| quichebuffetjes | 2019 | 1935 | borderline |
-| craqueleachtigs | 2020 | 1940 | borderline |
-| chequebedragjes | 2025 | 1939 | borderline |
-| cultuurchequeje | 2051 | 1945 | borderline |
-| chemsexpartytje | 2032 | 1971 | **OPEN** (best-mask already > floor) |
+| chemsexpartytje | 2032 | 1971 | **OPEN** |
 | bouwcuratrixjes | 2036 | 1965 | **OPEN** |
-| jacquardmachine | 2046 | 1985 | **OPEN** |
+| jacquardmachine | 2046 | 1992 | **OPEN** |
+| cultuurchequeje | 2051 | 1958 | **OPEN** |
 | chequeformulier | 2064 | 1989 | **OPEN** |
 | flauwekulexcuus | 2123 | 2021 | **OPEN** |
-| geschenkcheques | 2158 | 2067 | **OPEN** (the floor word itself; achieves exactly 1952) |
+| geschenkcheques | 2158 | ~2067 | **OPEN** (the floor word itself; achieves *exactly* 1952) |
 
-(best-mask bag is for the DLS-maximising mask; the word's true bag_UB = max over ALL masks ≥ this,
-so a word with best-mask bag ≤ 1952 still needs the all-mask check before it can be certified — that
-is what the running job computes. A word with best-mask bag > 1952 is already not certifiable by the
-bag lever.)
+(All bag_UB values are sound per-word maxima over every legal mask, each ILP OPTIMAL — except
+geschenkcheques' single-mask probe value 2067, a sound lower estimate of its bag_UB, which is already
+> floor.) Note all 7 OPEN bag_UBs are within ~20–115 of 1952 — the achievable max is *tightly*
+bracketed near the floor.
 
-> **Honest proof-wall note (the OPEN residual ≈ 6–12 words).** ~6 of the heaviest words
-> (`chemsexpartytje`, `bouwcuratrixjes`, `jacquardmachine`, `chequeformulier`, `flauwekulexcuus`,
-> `geschenkcheques`) have a *best-mask* bag_UB already **> 1952**, so the bag lever cannot certify
-> them; the other ~6 are borderline (best-mask ≤ floor, pending the all-mask maximum). For the
-> genuinely-OPEN words a *complete* sound certification of "true max ≤ 1952" requires an **uncapped
-> exhaustive search of the corrected (verticals-optional, connectivity-fill) model**, which is
-> **OPEN**: the full ≤8-word board CP-SAT model does not close to OPTIMAL within practical walls
+> **Honest proof-wall note (the OPEN residual = 7 words).** For these 7 a *complete* sound
+> certification of "true max ≤ 1952" requires an **uncapped exhaustive search of the corrected
+> (verticals-optional, connectivity-fill) model**, which is **OPEN**: the full ≤8-word board CP-SAT
+> model does not close to OPTIMAL within practical walls
 > (confirmed — `geschenkcheques` returns only FEASIBLE after 90 s), and `xfill` implements the
 > *forced-vertical* model (handoff §0), not the corrected one, so it cannot certify this model out of
 > the box. These words are reported **OPEN**, not certified — exactly as the handoff predicted for
@@ -219,13 +215,15 @@ bag lever.)
 - **Current best verified N=15 LB = 1952** (`geschenkcheques`, witness_check-OK). **No new LB found.**
 - **Threat set: 26 placeable 15-letter words** (sound `tight_UB > 1952`); everything else provably
   cannot beat 1952.
-- **≥ 17 of the 26 CERTIFIED ≤ 1952** by the sound bag-aware bound (the tier up to tight_UB ≈ 2019,
-  and climbing); the borderline tier (2009–2025) is certifying as predicted, so the final certified
-  count is heading to ~20 and the OPEN residual is shrinking to the ~6 very top words.
-- **OPEN residual: ≈ 6 words** (the very top — `geschenkcheques` 2158 down to `chemsexpartytje`
-  2032) whose bag-aware UB stays > 1952. Their complete certification is **blocked at the N=15
-  proof-wall** (no uncapped exhaustive solver for the corrected model; CP-SAT board model won't
-  close; `xfill` is the wrong model). This is the genuine wall the handoff predicted.
+- **19 of the 26 CERTIFIED ≤ 1952** by the sound bag-aware bound (the entire tier up to tight_UB
+  2025), every ILP OPTIMAL.
+- **OPEN residual: exactly 7 words** (the very top — `geschenkcheques` 2158, `flauwekulexcuus` 2123,
+  `chequeformulier` 2064, `cultuurchequeje` 2051, `jacquardmachine` 2046, `bouwcuratrixjes` 2036,
+  `chemsexpartytje` 2032) whose sound bag-aware UB stays in (1958, ~2067] — above 1952. Their
+  complete certification is **blocked at the N=15 proof-wall** (no uncapped exhaustive solver for the
+  corrected model; CP-SAT board model won't close; `xfill` is the wrong model). This is the genuine
+  wall the handoff predicted. Their bag_UBs are within ~20–115 of the floor, so the achievable max is
+  *tightly* bracketed near 1952.
 - **Is the true optimum within reach?** Partly. The threat set is small and 14+ words are soundly
   eliminated, but a *complete* machine proof that 1952 is optimal is **not** achievable with the
   existing machinery — it needs a sound exhaustive solver for the verticals-optional connectivity-
