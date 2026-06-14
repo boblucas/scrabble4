@@ -60,18 +60,31 @@ for word in r.words_str:
         _BYFIRST.setdefault(word[0], []).append((tv, tc, word))
 
 
-def _dedup(cands):
-    """Collapse to distinct tail letter-multisets, keeping the max-value representative.  Exact
-    (sound): two words with the same tail multiset are interchangeable in the bag ILP, and a lower-
-    value one is never preferred.  This is a fast O(n) reduction (no O(n^2) Pareto); the CP-SAT ILP
-    itself then finds the OPTIMAL subset under the bag, so no further (error-prone) pruning is
-    needed."""
+# A tile can only BIND the bag ILP if its availability is small enough to actually run out across the
+# <=7 verticals (each tail <=7 tiles).  We RELAX (treat as unlimited) every tile whose availability
+# is large (>= RELAX_AT); relaxing a bag constraint only ENLARGES the feasible set -> the ILP optimum
+# can only RISE -> the resulting UB is still SOUND (an over-estimate).  This lets us collapse the
+# thousands of common-letter tails (which differ only in these plentiful letters) down to a handful,
+# keyed by their multiset over the CONSTRAINED tiles only.  The relaxed letters keep their VALUE in
+# the objective (we keep the max-value representative per constrained-signature), so no score is lost
+# -- only the (sound) relaxation of those letters' bag limits.
+_RELAX_AT = 6     # tiles with availability >= 6 are relaxed (a,e,n,o appear with avail>=6; e=18,n=10)
+_CONSTRAINED = sorted(code for code, n in r.counts.items() if n < _RELAX_AT)
+
+
+def _reduce(cands):
+    """Reduce tails to their multiset over CONSTRAINED tiles only, keeping the max-value (full)
+    representative per constrained-signature.  Sound (see note above): unconstrained tiles are
+    treated as unlimited (over-estimate); value is preserved by keeping the highest-value tail.
+    Returns list of (tail_value, constrained_counter, word)."""
     best = {}
     for tv, tc, w in cands:
-        key = tuple(sorted(tc.items()))
-        cur = best.get(key)
+        sig = tuple((code, tc[code]) for code in _CONSTRAINED if tc.get(code, 0))
+        cur = best.get(sig)
         if cur is None or tv > cur[0]:
-            best[key] = (tv, tc, w)
+            # store the CONSTRAINED-only counter (the bag ILP only constrains these tiles)
+            ctc = Counter({code: tc[code] for code in _CONSTRAINED if tc.get(code, 0)})
+            best[sig] = (tv, ctc, w)
     return list(best.values())
 
 
@@ -79,7 +92,7 @@ _CAND_CACHE = {}
 def cands_for(letter):
     c = _CAND_CACHE.get(letter)
     if c is None:
-        c = _dedup(_BYFIRST.get(letter, []))
+        c = _reduce(_BYFIRST.get(letter, []))
         _CAND_CACHE[letter] = c
     return c
 
@@ -165,9 +178,13 @@ def main():
     ap.add_argument('--cap', type=float, default=15.0)
     ap.add_argument('--threats', default=f'{ROOT}/experiments/results/n15_threats_tight.json')
     ap.add_argument('--out', default=f'{ROOT}/experiments/results/n15_bag_ub.json')
+    ap.add_argument('--reverse', action='store_true', help='process lowest tight_UB first')
     a = ap.parse_args()
     threats = json.load(open(a.threats))
-    print(f"# bag-aware sound UB for {len(threats)} threat words; floor={a.floor}", flush=True)
+    if a.reverse:
+        threats = sorted(threats, key=lambda t: t['tight_UB'])   # lowest tight_UB first (likeliest to certify)
+    print(f"# bag-aware sound UB for {len(threats)} threat words; floor={a.floor}; "
+          f"reverse={a.reverse}; constrained tiles={[chr(96+c) for c in _CONSTRAINED]}", flush=True)
     results = []
     for t in threats:
         w = t['word']; t0 = time.time()

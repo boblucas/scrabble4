@@ -128,14 +128,50 @@ from 2158 but still > 1952 — correct, since 1952 *is* achievable on it.)
 
 **3b. New-LB hunt (`n15_push_lb.py`).** CP-SAT maximises the realised TWS-vertical bonus to look for
 a *verified* board scoring > 1952; any hit is re-checked by `witness_check`, saved, and raises the
-floor (pruning the threat set). [Results pending — see below.]
+floor.
 
-> **Honest note on the proof wall:** a *complete* sound certification of "true max ≤ 1952" for the
-> heavy words requires either the bag-UB to drop ≤ 1952, or an uncapped exhaustive search of the
-> corrected (verticals-optional, connectivity-fill) model. The latter is **OPEN**: the full ≤8-word
-> board CP-SAT model does not close to OPTIMAL within practical walls (confirmed: geschenkcheques
-> returns only FEASIBLE after 90s), and `xfill` implements the *forced-vertical* model (handoff §0),
-> not the corrected one, so it cannot certify this model out of the box. Words whose bag-UB stays
-> > 1952 are therefore reported **OPEN**, not certified — exactly as the handoff predicted for N=15.
+### 3b result — NO new LB found
+Ran the LB hunt on the 5 highest-true_main threat words (flauwekulexcuus, jacquardmachine,
+chequeformulier, cultuurchequeje, chemsexpartytje), all legal masks, cap 60s, rows 11. **Every
+word's best verified total was ≤ 1952** (no board > 1952 found anywhere). The floor stays **1952**.
+(`geschenkcheques` itself already *achieves* exactly 1952; the push model finds nothing above it.)
 
-(Results tables for 3a/3b appended once the runs complete.)
+### 3a result — bag-aware sound certifications (lowest-UB-first)
+The bag-aware contention bound is markedly stronger than `tight_UB`: modelling the finite shared bag
+drops each word's UB by ~60–90 points, pushing the entire lower/middle tier **below the floor**.
+Verdicts so far (run continuing on the heaviest words):
+
+| word | tight_UB | bag_UB | verdict |
+|---|---:|---:|---|
+| quicheachtigers | 1955 | 1862 | **CERTIFIED ≤ 1952** |
+| perscommuniques | 1957 | 1881 | **CERTIFIED ≤ 1952** |
+| chiquelingetjes | 1957 | 1881 | **CERTIFIED ≤ 1952** |
+| playboyachtigst | 1959 | 1896 | UNRESOLVED (bag_UB ≤ floor but a mask ILP hit the 30 s cap — needs higher cap) |
+| vluchtreflexjes | 1963 | 1906 | **CERTIFIED ≤ 1952** |
+| upcyclestertjes | 1964 | 1873 | **CERTIFIED ≤ 1952** |
+| yoghurtcultures | 1966 | 1883 | **CERTIFIED ≤ 1952** |
+| jacquardweefsel | 1976 | 1907 | **CERTIFIED ≤ 1952** |
+| aliquotvleugels | 1978 | 1915 | **CERTIFIED ≤ 1952** |
+| textielcyclusje | 1979 | 1903 | **CERTIFIED ≤ 1952** |
+| craqueleachtige | 1981 | 1910 | **CERTIFIED ≤ 1952** |
+| dyscalculischen | 1989 | 1915 | UNRESOLVED (bag_UB ≤ floor but a mask ILP hit the cap — needs higher cap) |
+| … (tight_UB ≥ 2001, the heaviest ~14 words) | | | running / expected **STILL-THREAT (OPEN)** |
+
+So far: **10 of 12 processed CERTIFIED ≤ 1952**, 2 UNRESOLVED (both with bag_UB ≤ 1952 — a higher ILP
+cap should certify them). The two UNRESOLVED words are *not* claimed certified (soundness guard:
+a non-OPTIMAL mask could host a higher true max).
+
+> **Honest note on the proof wall (the OPEN residual):** the heaviest ~13 words (tight_UB ≥ ~2001,
+> incl. `geschenkcheques` 2158, `flauwekulexcuus` 2123, …) have **bag_UB > 1952** (e.g.
+> `geschenkcheques` bag_UB = 2067) — bag contention does *not* drop them below the floor, so the
+> analytic levers cannot certify them. A *complete* sound certification of "true max ≤ 1952" for
+> these requires an **uncapped exhaustive search of the corrected (verticals-optional, connectivity-
+> fill) model**, which is **OPEN**: the full ≤8-word board CP-SAT model does not close to OPTIMAL
+> within practical walls (confirmed: `geschenkcheques` returns only FEASIBLE after 90 s), and `xfill`
+> implements the *forced-vertical* model (handoff §0), not the corrected one, so it cannot certify
+> this model out of the box. These words are reported **OPEN**, not certified — exactly as the
+> handoff predicted for N=15. They are, however, strongly evidenced not to beat 1952: their best
+> achievable verticals (TWS cols, ≤8) are in the 60–99/col range (geschenkcheques banks 69/69/90 =
+> 228, hitting exactly 1952), and the LB hunt found no board above 1952 on the most dangerous ones.
+
+(Final tables refreshed when the run completes; UNRESOLVED words will be re-run at a higher cap.)
