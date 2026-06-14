@@ -1,0 +1,340 @@
+[
+ {
+  "word": "geschenkcheques",
+  "tight_UB": 2158,
+  "mask": [
+   0,
+   3,
+   7,
+   8,
+   11,
+   12,
+   14
+  ]
+ },
+ {
+  "word": "flauwekulexcuus",
+  "tight_UB": 2123,
+  "mask": [
+   0,
+   1,
+   3,
+   7,
+   11,
+   12,
+   14
+  ]
+ },
+ {
+  "word": "chequeformulier",
+  "tight_UB": 2064,
+  "mask": [
+   0,
+   3,
+   5,
+   7,
+   9,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "cultuurchequeje",
+  "tight_UB": 2051,
+  "mask": [
+   0,
+   2,
+   7,
+   10,
+   11,
+   12,
+   14
+  ]
+ },
+ {
+  "word": "jacquardmachine",
+  "tight_UB": 2046,
+  "mask": [
+   0,
+   2,
+   3,
+   4,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "bouwcuratrixjes",
+  "tight_UB": 2036,
+  "mask": [
+   0,
+   1,
+   3,
+   5,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "chemsexpartytje",
+  "tight_UB": 2032,
+  "mask": [
+   0,
+   3,
+   4,
+   7,
+   11,
+   12,
+   14
+  ]
+ },
+ {
+  "word": "chequebedragjes",
+  "tight_UB": 2025,
+  "mask": [
+   0,
+   1,
+   3,
+   4,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "craqueleachtigs",
+  "tight_UB": 2020,
+  "mask": [
+   0,
+   3,
+   4,
+   7,
+   11,
+   13,
+   14
+  ]
+ },
+ {
+  "word": "quichebuffetjes",
+  "tight_UB": 2019,
+  "mask": [
+   0,
+   3,
+   4,
+   7,
+   9,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "babyglimlachjes",
+  "tight_UB": 2012,
+  "mask": [
+   0,
+   3,
+   5,
+   7,
+   10,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "cliquetsystemen",
+  "tight_UB": 2009,
+  "mask": [
+   0,
+   3,
+   4,
+   7,
+   9,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "wetenschapsquiz",
+  "tight_UB": 2005,
+  "mask": [
+   0,
+   3,
+   5,
+   7,
+   9,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "schuurschijfjes",
+  "tight_UB": 2001,
+  "mask": [
+   0,
+   1,
+   3,
+   5,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "dyscalculischen",
+  "tight_UB": 1989,
+  "mask": [
+   0,
+   2,
+   3,
+   6,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "craqueleachtige",
+  "tight_UB": 1981,
+  "mask": [
+   0,
+   3,
+   4,
+   7,
+   11,
+   13,
+   14
+  ]
+ },
+ {
+  "word": "textielcyclusje",
+  "tight_UB": 1979,
+  "mask": [
+   0,
+   3,
+   7,
+   9,
+   11,
+   12,
+   14
+  ]
+ },
+ {
+  "word": "aliquotvleugels",
+  "tight_UB": 1978,
+  "mask": [
+   0,
+   1,
+   3,
+   5,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "jacquardweefsel",
+  "tight_UB": 1976,
+  "mask": [
+   0,
+   2,
+   3,
+   4,
+   7,
+   12,
+   14
+  ]
+ },
+ {
+  "word": "yoghurtcultures",
+  "tight_UB": 1966,
+  "mask": [
+   0,
+   1,
+   3,
+   7,
+   9,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "upcyclestertjes",
+  "tight_UB": 1964,
+  "mask": [
+   0,
+   2,
+   3,
+   5,
+   7,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "vluchtreflexjes",
+  "tight_UB": 1963,
+  "mask": [
+   0,
+   6,
+   7,
+   8,
+   9,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "playboyachtigst",
+  "tight_UB": 1959,
+  "mask": [
+   0,
+   3,
+   7,
+   9,
+   11,
+   13,
+   14
+  ]
+ },
+ {
+  "word": "perscommuniques",
+  "tight_UB": 1957,
+  "mask": [
+   0,
+   3,
+   4,
+   7,
+   11,
+   12,
+   14
+  ]
+ },
+ {
+  "word": "chiquelingetjes",
+  "tight_UB": 1957,
+  "mask": [
+   0,
+   3,
+   4,
+   7,
+   9,
+   11,
+   14
+  ]
+ },
+ {
+  "word": "quicheachtigers",
+  "tight_UB": 1955,
+  "mask": [
+   0,
+   3,
+   6,
+   7,
+   8,
+   11,
+   14
+  ]
+ }
+]

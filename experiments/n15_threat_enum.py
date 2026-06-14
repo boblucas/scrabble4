@@ -165,6 +165,39 @@ def best_legal_mask(w):
     return best
 
 
+def true_main(w, mask):
+    """Exact main-word turn score for a SPECIFIC legal mask: x27 word mult on {0,7,14}, x2 letter on
+    whichever of {3,11} are newly, + bingo 50.  This is what witness_check computes for an
+    empty-column board with this mask -- the EXACT main contribution (not the optimistic x27_proxy
+    which assumes BOTH DLS are newly)."""
+    ms = set(mask)
+    s = 0
+    for x in range(W):
+        lm = 2 if (x in ms and x in (3, 11)) else 1
+        s += val[w[x]] * lm
+    return 27 * s + 50
+
+
+def tight_UB(w):
+    """TIGHT sound per-word upper bound, maximised over every LEGAL mask:
+        max over legal masks m of [ true_main(w,m) + sum_{c in m} best_vert_bonus(c, w[c]) ].
+    Sound: a real board uses exactly one legal mask m; its main score is true_main(w,m) and its
+    verticals live only on the newly columns of m, each bounded by its exact per-column best.
+    Tighter than x27_proxy+vert_UB(7-best) because (a) it uses the EXACT main score for the chosen
+    mask (no phantom DLS bonus) and (b) it ties verticals to the mask's actual letters/columns
+    instead of a free 7-best.  Returns (ub, argmax_mask) or (None, None) if no legal mask."""
+    free = [c for c in range(W) if c not in (0, 7, 14)]
+    best = None; bestmask = None
+    for extra in combinations(free, 4):
+        mask = tuple(sorted((0, 7, 14) + extra))
+        if not _pre_runs_legal(w, mask):
+            continue
+        u = true_main(w, mask) + sum(best_vert_bonus(c, w[c]) for c in mask)
+        if best is None or u > best:
+            best = u; bestmask = mask
+    return best, bestmask
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--floor', type=int, default=FLOOR_DEFAULT)
@@ -203,16 +236,29 @@ def main():
             f.write(json.dumps(rec) + '\n')
     print(f"# wrote {out}", flush=True)
 
-    # print top of the threat list
-    print(f"\n{'UB':>6} {'x27p':>6} {'vUB':>5}  {'mask?':>5}  word", flush=True)
-    n_mask = 0
+    # ------- TIGHT per-word bound (the bound we actually prune with) -------
+    # Only words that pass the loose UB>floor screen can survive the tighter bound, so refine those.
+    tight = []
     for ub, xp, vu, w in rows:
-        mask = best_legal_mask(w)
-        if mask is not None:
-            n_mask += 1
-        print(f"{ub:6d} {xp:6d} {vu:5d}  {str(mask is not None):>5}  {w}", flush=True)
-    print(f"\n# threat words (UB>{floor}): {len(rows)};  "
-          f"with a legal x27 mask: {n_mask}", flush=True)
+        tu, tmask = tight_UB(w)
+        if tu is None:                       # no legal x27 mask -> unplayable x27 -> excluded
+            continue
+        if tu > floor:
+            tight.append((tu, w, tmask))
+    tight.sort(reverse=True)
+
+    print(f"\n# === TIGHT THREAT SET (sound per-word UB = max_mask[true_main+vert]) ===", flush=True)
+    print(f"# placeable 15-letter words with TIGHT UB > {floor}: {len(tight)}", flush=True)
+    print(f"\n{'tightUB':>7}  word                mask", flush=True)
+    for tu, w, tmask in tight:
+        print(f"{tu:7d}  {w:18s}  {list(tmask)}", flush=True)
+
+    tout = f'{ROOT}/experiments/results/n15_threats_tight.json'
+    json.dump([{'word': w, 'tight_UB': tu, 'mask': list(tmask)} for tu, w, tmask in tight],
+              open(tout, 'w'), indent=1)
+    print(f"\n# wrote {tout}", flush=True)
+    print(f"# SUMMARY: loose-screen threats (UB>{floor}) = {len(rows)};  "
+          f"tight placeable threats = {len(tight)}", flush=True)
 
 
 if __name__ == '__main__':
