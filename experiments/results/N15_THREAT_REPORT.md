@@ -298,3 +298,57 @@ Reusable artifacts (step 4): `experiments/n15_analytic_certify.py`,
 `experiments/n15_bounded_certify.py`, `experiments/n15_xfill_push.py` (LB push),
 `experiments/n15_certify_xfill.py` (per-word 35_certify wrapper);
 logs `experiments/results/turns/analytic_cert.log`, `bounded_heavy.log`.
+
+## Step 5 — VARMAX certification at the current verified LB = 1955 (2026-06-16)
+
+Verified LB is **1955** (`geschenkcheques`, `experiments/results/turns/N15_best_1955.json`,
+witness_check-OK; re-verified). Re-deriving the analytic OPEN set at LB=1955
+(`n15_analytic_certify.py --lb 1955`): **22 of 26 threat words CERTIFIED ≤ 1955** by the sound
+HMAX-capped analytic UB; the **4 OPEN** words (analytic UB > 1955) are
+`geschenkcheques` (UB 2061), `flauwekulexcuus` (2022), `chequeformulier` (1964),
+`jacquardmachine` (1961).
+
+The 4 OPEN words were attacked with the **variable-length xfill engine**
+(`xfill_varmax --varmax BASE --maxscore vfloor`, one search per (word,mask) == the full fixed
+length-vector sweep; equivalence battery `xfill_rs_varlen_equiv.sh` re-validated ALL PASS).
+Driver: `experiments/n15_varmax_certify.py` (24 tracked Popen workers, specific-PID kills only,
+per-unit + heartbeat ETA logging, `verdicts.jsonl`). For each of the 118 legal masks over the 4
+words, `vfloor = 1955 − main_const`; a natural `LE vfloor` ⇒ that mask CERTIFIED ≤ 1955; a
+`MAX m` with `main_const+m > 1955` ⇒ witness_check'd NEW LB; a wall/deadline `TO` ⇒ OPEN
+(proves nothing).
+
+Two stages: stage-1 wall=180s (`certs/n15varmax_stage1/`), stage-2 wall=1800s
+(`certs/n15varmax_stage2/`, parent driver externally killed at 98/118 with the last 20 hard
+masks mid-TO — recorded verdicts are sound). Union of both stages (a natural `LE` in either
+stage certifies the mask, wall-independent):
+
+| word | certified / legal masks | OPEN |
+|---|---|---|
+| geschenkcheques | 31 / 39 | 8 |
+| flauwekulexcuus | 6 / 35 | 29 |
+| chequeformulier | 7 / 10 | 3 |
+| jacquardmachine | 30 / 34 | 4 |
+| **total** | **74 / 118** | **44** |
+
+**Outcome: LB unchanged at 1955; NOT proven optimal.** No mask anywhere produced a `MAX`
+beating 1955 (0 NEW-LB, 0 witness-rejects) — every completed search confirmed its verticals
+cannot reach the floor. **74 of 118 masks CERTIFIED ≤ 1955** (all natural `LE`). The residual is
+**44 OPEN masks** — every one a *wall-clock TO that proves nothing*, NOT a counterexample. The
+OPEN masks are exactly those that include both ×2-letter newly cols {3, 11} (highest scoring
+pressure, least prunable).
+
+**ETA / feasibility picture (the hard finding).** The varmax+knapsack engine instantly certifies
+the easy masks (natural `LE` in **1 node / ~1 s** — the root knapsack proves the bound), but the
+hard masks are intractable for it: at the 180 s wall the OPEN searches had explored 4k–7.8M
+nodes; at the **1800 s** wall the *hardest* masks (cols {3,11}+neighbours) explored **~0–20
+nodes in 30 minutes** — i.e. the per-node cost on a full-length N=15 instance (per-node knapsack
+over 15-length × hundreds-of-words domains + large connectivity bridge-fill) is **tens of
+seconds per node**, so the 1800 s wall could not even fire cleanly (the watchdog SIGTERM'd a few
+that overran by ~2 min). A longer wall buys *nothing* on these masks; **a full optimality proof
+is NOT in reach with the current engine.** Closing it needs a cheaper root prune (incremental
+consistent-set / bitset knapsack deltas, a connectivity-coupled root bound), not more wall time.
+
+Reusable artifacts (step 5): `experiments/n15_varmax_certify.py`,
+`experiments/xfill_rs/target/release/xfill_varmax` (stable copy of the varmax binary 46e025d),
+logs `experiments/results/n15_varmax_certify.log` / `n15_varmax_stage2.log`,
+verdicts `experiments/results/certs/n15varmax_stage{1,2}/verdicts.jsonl`.
