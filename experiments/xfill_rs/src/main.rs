@@ -628,6 +628,7 @@ struct Solver<'a> {
     knap_budget: Vec<i64>,      // remaining per-code budget snapshot (counts - used)
     knap_extra: Vec<i64>,       // running per-code extra usage during the knapsack DFS (reset each call)
     knap_suffix: Vec<i64>,      // suffix best-gross sums for the DFS bound
+    knap_sfx2: Vec<i64>,        // budget-coupled suffix bound, flattened [k*(blanks+1)+r] (see knap_ub)
     knap_unc: Vec<usize>,       // uncommitted scoring-column indices
     // ----- INCREMENTAL CONSISTENT-WORD-SET MAINTENANCE (knap_ub rebuild speedup) -----
     // Per scoring column, the indices of candidate words still consistent with the cells already FIXED
@@ -814,6 +815,69 @@ impl<'a> Solver<'a> {
         // current per-code overflow already consumed (used > counts) eats into blanks.
         let mut base_over = 0i64;
         for c in 1..=a { if self.used[c] > self.inst.counts[c] { base_over += self.used[c] - self.inst.counts[c]; } }
+        // -------- BUDGET-COUPLED SUFFIX BOUND (sfx2) --------------------------------------------------
+        // The plain `suffix` ignores the shared blank-overflow budget, so it is far too loose: rec descends
+        // a huge subtree before the per-step `no<=blanks` feasibility test prunes it word-by-word, and the
+        // KNAPSTEPS budget often EXHAUSTS (-> returns true -> no prune).  sfx2 is a SOUND OVER-ESTIMATE that
+        // also accounts for the overflow budget, so the bound fires HIGHER in the tree (more sound prunes).
+        //
+        // Define, per uncommitted column k, the word's STANDALONE overflow so_w = sum_l max(0, cnt_l - budget[l])
+        // (the overflow the word would force if `extra` were all-zero, i.e. it alone competed for the budget).
+        // colbest[k][o] = max gross among column-k words with so_w <= o, for o in 0..=blanks.
+        // sfx2[k][r] = max over choices for columns k..m-1 of total gross s.t. sum of standalone overflows <= r.
+        //   sfx2[k][r] = max over o in 0..=r of ( colbest[k][o] + sfx2[k+1][r-o] ),  sfx2[m][*] = 0.
+        // SOUNDNESS: at a rec node with remaining capacity R = blanks - cur_over, any REAL-feasible completion
+        // of columns k..m-1 has total REAL overflow <= R.  A word's real overflow (extra>=0 along the path)
+        // is always >= its standalone overflow, so its standalone-overflow sum is also <= R, hence that real
+        // selection is counted in sfx2[k][R].  Therefore sfx2[k][R] >= true achievable additional gross --
+        // a sound over-estimate -- and it is <= suffix[k] (which allows unbounded overflow), so it dominates.
+        // Pruning on cur_g + sfx2[k][R] <= thresh never discards a real improver.  blanks is tiny (<=2 here)
+        // so the table is m x (blanks+1): built once per knap_ub call, O(m*blanks) lookups in the DFS.
+        let blanks = self.inst.blanks;
+        let nb = (blanks as usize) + 1;   // overflow levels 0..=blanks
+        let mut sfx2 = std::mem::take(&mut self.knap_sfx2);
+        sfx2.clear(); sfx2.resize((m + 1) * nb, 0);
+        {
+            // colbest reuses a small scratch (nb entries) per column.
+            let mut colbest = [i64::MIN; 8];   // nb <= blanks+1; blanks small. guard below.
+            let nbc = nb.min(colbest.len());
+            for k in (0..m).rev() {
+                for o in 0..nb { if o < nbc { colbest[o] = i64::MIN; } }
+                for &(g, ref delta) in &self.knap_words[k] {
+                    // standalone overflow of this word = sum_l max(0, cnt_l - budget_l): the overflow it would
+                    // force if `extra` were all-zero (it alone competing for the budget).  budget_l may be
+                    // negative (already over by base blanks), which only RAISES so -> still sound (we never
+                    // under-count an over-estimate's overflow gate; a higher so only EXCLUDES words, lowering
+                    // the bound, which stays >= the true achievable gross because real overflow >= standalone).
+                    let mut so = 0i64;
+                    for &(l, cnt) in delta {
+                        let need = cnt - self.knap_budget[l as usize];
+                        if need > 0 { so += need; }
+                    }
+                    if so > blanks { continue; }   // standalone-infeasible: cannot be in any feasible combo
+                    let oi = so as usize;
+                    if oi < nbc && g > colbest[oi] { colbest[oi] = g; }
+                }
+                // prefix-max over overflow level so colbest[o] = best gross with standalone overflow <= o.
+                for o in 1..nbc { if colbest[o - 1] > colbest[o] { colbest[o] = colbest[o - 1]; } }
+                // DP: sfx2[k][r] = max_o<=r colbest[o] + sfx2[k+1][r-o].
+                for r in 0..nb {
+                    let mut best = i64::MIN;
+                    for o in 0..=r {
+                        let cb = if o < nbc { colbest[o] } else { i64::MIN };
+                        if cb == i64::MIN { continue; }
+                        let rest = sfx2[(k + 1) * nb + (r - o)];
+                        if rest == i64::MIN { continue; }   // suffix infeasible at remaining capacity
+                        let v = cb + rest;
+                        if v > best { best = v; }
+                    }
+                    // if no feasible word at any level <= r, this column is dead at capacity r: mark MIN so
+                    // any path through it is pruned (a column with NO standalone-feasible word at <=r cannot
+                    // be completed within r; that branch can't beat thresh -> sound to treat as -inf gross).
+                    sfx2[k * nb + r] = best;   // best stays i64::MIN if column infeasible at r
+                }
+            }
+        }
         // We only need to know whether the uncommitted columns can add ENOUGH gross to BEAT self.best
         // (the node is pruned iff committed_gross + max_additional <= best). So search as a DECISION:
         // does a feasible word-combo with total additional gross > thresh exist? Stop at the first one.
@@ -822,7 +886,6 @@ impl<'a> Solver<'a> {
         // branch over uncommitted columns; track extra per-code usage (reuse scratch; reset to 0).
         let mut extra = std::mem::take(&mut self.knap_extra);
         extra.clear(); extra.resize(a + 1, 0);
-        let blanks = self.inst.blanks;
         // Returns true as soon as a feasible combo with cur_g + (rest) > thresh is found (improver exists).
         // `cur_over` = current overflow beyond counts given base used + extra so far.
         // NOTE: iterate exactly `m` (= number of uncommitted columns) columns, NOT words.len(): the scratch
@@ -830,7 +893,7 @@ impl<'a> Solver<'a> {
         // empty), and treating an empty buffer as a column would make rec wrongly find no combo.
         fn rec(k: usize, m: usize, cur_g: i64, cur_over: i64, thresh: i64,
                words: &Vec<Vec<(i64, Vec<(u8, i64)>)>>, budget: &[i64], extra: &mut [i64],
-               suffix: &[i64], blanks: i64, steps: &mut i64) -> bool {
+               suffix: &[i64], blanks: i64, steps: &mut i64, sfx2: &[i64], nb: usize) -> bool {
             // ITERATION BUDGET: the root-level knapsack (all columns uncommitted, full domains) can
             // blow up combinatorially and run for SECONDS-TO-MINUTES before the search's first tick
             // (measured: a 5s WALL aborting only at 44s -- the deadline lives in tick(), which never
@@ -839,6 +902,15 @@ impl<'a> Solver<'a> {
             *steps -= 1;
             if *steps < 0 { return true; }
             if cur_g + suffix[k] <= thresh { return false; }   // even the optimistic rest can't beat thresh
+            // BUDGET-COUPLED bound (sfx2): tighter sound over-estimate of the best additional gross from
+            // columns k..m-1 achievable within the REMAINING overflow capacity R = blanks - cur_over.  R is
+            // always in 0..=blanks here (rec is only entered with cur_over <= blanks).  sfx2[k][R]==MIN means
+            // NO standalone-feasible completion fits in R -> no real combo can either -> sound to prune.
+            if k < m {
+                let r = (blanks - cur_over) as usize;          // 0..=blanks
+                let s2 = sfx2[k * nb + r];
+                if s2 == i64::MIN || cur_g + s2 <= thresh { return false; }
+            }
             if k == m { return cur_g > thresh; }
             // LAST-COLUMN FAST PATH: when only one uncommitted column remains we do NOT recurse -- the
             // child rec(m,..) merely returns `cur_g+g > thresh`.  Most-constrained-FIRST ordering puts the
@@ -879,7 +951,7 @@ impl<'a> Solver<'a> {
                 }
                 let no = cur_over + d_over;
                 let hit = no <= blanks
-                    && rec(k + 1, m, cur_g + g, no, thresh, words, budget, extra, suffix, blanks, steps);
+                    && rec(k + 1, m, cur_g + g, no, thresh, words, budget, extra, suffix, blanks, steps, sfx2, nb);
                 for &(l, cnt) in delta { extra[l as usize] -= cnt; }
                 if hit { return true; }
             }
@@ -894,12 +966,12 @@ impl<'a> Solver<'a> {
             Some(now)
         } else { None };
         let improver = rec(0, m, 0, base_over, thresh, &self.knap_words, &self.knap_budget,
-                           &mut extra, &suffix, blanks, &mut steps);
+                           &mut extra, &suffix, blanks, &mut steps, &sfx2, nb);
         if let Some(t1) = prof_t1 {
             self.prof_knap_rec_ns += std::time::Instant::now().duration_since(t1).as_nanos();
         }
         // return the scratch buffers to their fields for reuse next call.
-        self.knap_unc = unc; self.knap_suffix = suffix; self.knap_extra = extra;
+        self.knap_unc = unc; self.knap_suffix = suffix; self.knap_extra = extra; self.knap_sfx2 = sfx2;
         // improver=true  -> some uncommitted-column word-combo beats best -> UB > best (no prune).
         // improver=false -> no feasible combo beats best -> sound UB <= best -> prune.
         if improver { Some(self.best + 1) } else { Some(self.best) }
@@ -1777,7 +1849,7 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
         use_knap: maxscore && std::env::var("NOKNAP").is_err(),
         knap_maxcols: std::env::var("KNAPCOLS").ok().and_then(|s| s.parse().ok()).unwrap_or(ncols.max(1)),
         knap_words: Vec::new(), knap_budget: vec![0i64; inst.alpha + 1],
-        knap_extra: Vec::new(), knap_suffix: Vec::new(), knap_unc: Vec::new(),
+        knap_extra: Vec::new(), knap_suffix: Vec::new(), knap_sfx2: Vec::new(), knap_unc: Vec::new(),
         use_inc: maxscore && std::env::var("NOKNAP").is_err() && std::env::var("INCOFF").is_err(),
         col_consistent: (0..ncols).map(|si| (0..inst.scoring_words[si].len() as u32).collect()).collect(),
         inc_undo: Vec::new(), inc_undo_pool: Vec::new(),
