@@ -174,6 +174,55 @@ In fixed mode the prior soundness argument is unchanged.
 3. **regress.sh: ALL GATES GREEN** -- N=7 26/26, deep-col10 LE-224 (x3), center col0=1 LE-173 (x15);
    fixed-length / decision engines byte-identical (node counts unchanged).
 
+## Incremental consistent-word-set rebuild (knap_ub speedup, 2026-06-16)
+
+### Profiling finding (the hard {3,11} masks are BIMODAL)
+
+Instrumented `knap_ub` with `XFILL_PROF=1` counters (rebuild ns vs `rec` ns vs other; zero-cost when
+off) and profiled the hard geschenkcheques {3,11} masks (capture BOTH x2-letter cols 3 and 11).  They
+split into TWO regimes -- the earlier perf(1) "88.8% rec, ~0% rebuild" number was the FIXED-length
+N=11 case (tiny domains); under varmax the per-column domain is the UNION over all lengths (hundreds-
+to-thousands of words/col), so the picture changes:
+
+| mask | regime | rebuild | rec | other | nodes/s (before) |
+|---|---|---|---|---|---|
+| `0,3,7,8,11,12,14` (vfloor 231) | REBUILD-bound | **63.3%** | 30.3% | 6.4% | ~12.0k |
+| `0,3,5,7,8,10,14` (vfloor 393) | REC-bound | 1.7% | **98.3%** | 0% | ~23 nodes/s |
+
+The rebuild rescanned every word of every uncommitted column's FULL varmax domain at every node
+(col0 ~1799, col7 ~3913, col14 ~4479 words on the 231-mask).
+
+### The fix (verdict-neutral)
+
+Per scoring column, maintain `col_consistent[si]` = the indices of candidate words still consistent
+with the column's FIXED stub cells.  On each stub-cell place (`inc_fix`) the list is filtered in
+O(survivors) -- keep words with `wd[r-1]==v`, the SAME `g>0 => match` / `g==0 => empty` test the
+rebuild ran over the full domain -- and restored O(removed) on unplace (`inc_unfix`) via a LIFO undo
+stack (DFS stack discipline guarantees correct restore).  `knap_ub` iterates the maintained list
+(taken out via `mem::take`, zero copy) instead of the full domain.  The per-word delta + the knapsack
+`rec` are byte-for-byte unchanged, so the consistent set, the bound, and every MAX/LE/UNSAT verdict
+are IDENTICAL -- only the scan length shrinks.  Gated on `use_inc` (default on with knap; `INCOFF=1`
+restores the full rescan for A/B).
+
+### Validation (soundness)
+
+- **Byte-identical node counts** (knap calls / prunes / best identical with `INCOFF=1`): N=11 fixed
+  LE-224 family (3097044 / 111812 / 8327 nodes all identical), the rebuild-bound mask @300k-node cap
+  (calls=239902 prunes=60910), and the rec-bound mask @cap (calls=948 prunes=584).
+- `regress.sh` ALL GATES GREEN (N=7 26/26, deep-col10 LE-224, center LE-173).
+- `xfill_rs_varlen_equiv.sh` synthetic + real-board batteries ALL PASS; bench ALL MAX MATCH.
+- `xfill_varmax_knap_check.sh --band 1-6 --floors 224,220,200`: ALL MAX/LE MATCH (UB verdict-neutral),
+  values identical to the documented 24008 / 97952 / 1653 nodes.
+- Prior `n15varmax` CERT masks re-run: identical LE (nodes=1 root-pruned ones match; the 2 non-trivial
+  ones still reach LE 393, just need a longer wall -- rec-bound).
+
+### Speedup
+
+Rebuild-bound mask (`0,3,7,8,11,12,14`): rebuild share 63%->40%, **~1.5-1.65x nodes/s** (e.g. 720,896
+-> 1,056,768 nodes in 60s; 18.3s->15.8s and 32.8s->19.9s at a fixed 300k-node cap).  Rec-bound masks
+are unchanged at the node level (rebuild was already ~2%) and not slower -- the no-copy `mem::take`
+iteration keeps the bookkeeping free; closing them needs a `rec`/suffix-bound attack, not the rebuild.
+
 ### Caveat: full N=15 geschenkcheques
 
 Replacing the per-vector sweep with varmax eliminates the `K^n` multiplier (one hard mask =
