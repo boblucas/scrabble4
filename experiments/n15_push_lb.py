@@ -142,8 +142,12 @@ def vert_tables(top_code, top_letter, hmax=HMAX):
     L = hmax - 1                                   # number of tail cells modelled (rows 1..hmax-1)
     rows = [[0] * L]                               # no vertical
     cba = r.alphabet.cba
+    wordset = set(r.words_str)                      # for SETUP tail-legality (tail must stand alone)
     for word in r.words_str:
-        if 2 <= len(word) <= hmax and word[0] == top_letter:
+        # SETUP-legality: the tail (word[1:]) hangs as a standalone maximal run below the newly tile
+        # in the pre-turn board; if its length >= 2 it must itself be a legal dictionary word.
+        if 2 <= len(word) <= hmax and word[0] == top_letter \
+                and (len(word) - 1 <= 1 or word[1:] in wordset):
             tail = [cba[c] for c in word[1:]]
             tail = tail + [0] * (L - len(tail))
             rows.append(tail)

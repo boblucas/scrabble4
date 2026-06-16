@@ -139,11 +139,22 @@ def check_witness(rules, W, H, grid, blank, mask, claimed_total=None, require_ce
     if require_center and (cc, cr) not in setup:
         return False, {'fail': f'center cell ({cc},{cr}) not occupied in the setup board '
                                f'(game-start requirement)'}
-    # 3) every run >= 2 is a word
+    # 3) every run >= 2 is a word -- on the FINAL board
     wl = rules.words_lookup
     for (d, x, y, word) in _runs(grid, W, H):
         if word not in wl:
             return False, {'fail': f'illegal {d}-word at ({x},{y}): '
+                                   f'{rules.alphabet.to_str(list(word))}'}
+    # 3b) SETUP legality: every maximal run >= 2 on the SETUP board (final minus the newly-placed
+    #     row-0 tiles) must ALSO be a legal word.  The pre-turn position must itself be a fully
+    #     legal scrabble position -- a scored vertical of length L hangs a setup tail (rows 1..L-1)
+    #     that, in the pre-turn board, is a STANDALONE maximal vertical run; if its length >= 2 it
+    #     must be a dictionary word for the position to be reachable.  (length-1 tails: no run.)
+    setup_grid = [[(0 if (yy == 0 and mask[xx]) else grid[yy][xx])
+                   for xx in range(W)] for yy in range(H)]
+    for (d, x, y, word) in _runs(setup_grid, W, H):
+        if word not in wl:
+            return False, {'fail': f'illegal SETUP {d}-word at ({x},{y}): '
                                    f'{rules.alphabet.to_str(list(word))}'}
     # 4) physical bag (final board): non-blank usage per letter <= bag; blanks <= blank_count
     used = Counter(); nblank = 0
