@@ -1,0 +1,18 @@
+# analytic OPEN set @ LB=2053 (word_file=data/words/dutch_bigger_le15)
+recyclingcyclus	2237	0,3,7,9,11,12,14
+psychologenquiz	2174	0,1,2,3,7,11,14
+polycyclischers	2158	0,3,5,7,9,11,14
+babyslaapcyclus	2154	0,3,7,8,11,12,14
+polyglottenquiz	2150	0,2,3,5,7,11,14
+vuurwerkcheques	2138	0,3,4,7,8,11,14
+polycyclischere	2128	0,3,5,7,9,11,14
+polyoxyethyleen	2110	0,3,5,7,9,11,14
+recyclagecyclus	2109	0,3,4,7,10,12,14
+hexyloxyethanol	2100	0,2,3,6,7,11,14
+hypecycluscurve	2087	0,2,5,7,9,11,14
+recyclingstypes	2079	0,2,3,7,11,12,14
+plaquehypothese	2077	0,1,3,6,7,11,14
+geschenkcheques	2072	0,2,3,7,8,11,14
+psychofysischer	2066	0,1,2,3,7,11,14
+jacquetkostuums	2063	0,3,5,7,9,11,14
+copyrightklucht	2059	0,2,3,7,9,11,14

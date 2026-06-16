@@ -1,0 +1,35 @@
+# loading rules (word_file=data/words/dutch_bigger_le15) ...
+# loaded 4117291 words in 13.6s
+# building per-column vertical-gross table G[c][letter] ...
+# built G in 0.3s; letters with a legal >=2 vertical: 26
+# sweeping ALL 605797 15-letter words
+  ... 100000 words, open=2 cert=99998 (0s)
+  ... 200000 words, open=4 cert=199996 (1s)
+  ... 300000 words, open=9 cert=299991 (1s)
+  ... 400000 words, open=12 cert=399988 (1s)
+  ... 500000 words, open=14 cert=499986 (1s)
+  ... 600000 words, open=16 cert=599984 (2s)
+  (fast-prefilter certified 605778 of 605780 without mask enumeration)
+=== ANALYTIC SWEEP @ LB=2053 ===
+total 15-letter words scanned: 605797
+CERTIFIED (UB<=LB): 605780
+UNPLAYABLE (no legal x27 mask): 0
+OPEN (UB>LB): 17
+  OPEN recyclingcyclus: UB=2237 mask=[0, 3, 7, 9, 11, 12, 14] (slack 184)
+  OPEN psychologenquiz: UB=2174 mask=[0, 1, 2, 3, 7, 11, 14] (slack 121)
+  OPEN polycyclischers: UB=2158 mask=[0, 3, 5, 7, 9, 11, 14] (slack 105)
+  OPEN babyslaapcyclus: UB=2154 mask=[0, 3, 7, 8, 11, 12, 14] (slack 101)
+  OPEN polyglottenquiz: UB=2150 mask=[0, 2, 3, 5, 7, 11, 14] (slack 97)
+  OPEN vuurwerkcheques: UB=2138 mask=[0, 3, 4, 7, 8, 11, 14] (slack 85)
+  OPEN polycyclischere: UB=2128 mask=[0, 3, 5, 7, 9, 11, 14] (slack 75)
+  OPEN polyoxyethyleen: UB=2110 mask=[0, 3, 5, 7, 9, 11, 14] (slack 57)
+  OPEN recyclagecyclus: UB=2109 mask=[0, 3, 4, 7, 10, 12, 14] (slack 56)
+  OPEN hexyloxyethanol: UB=2100 mask=[0, 2, 3, 6, 7, 11, 14] (slack 47)
+  OPEN hypecycluscurve: UB=2087 mask=[0, 2, 5, 7, 9, 11, 14] (slack 34)
+  OPEN recyclingstypes: UB=2079 mask=[0, 2, 3, 7, 11, 12, 14] (slack 26)
+  OPEN plaquehypothese: UB=2077 mask=[0, 1, 3, 6, 7, 11, 14] (slack 24)
+  OPEN geschenkcheques: UB=2072 mask=[0, 2, 3, 7, 8, 11, 14] (slack 19)
+  OPEN psychofysischer: UB=2066 mask=[0, 1, 2, 3, 7, 11, 14] (slack 13)
+  OPEN jacquetkostuums: UB=2063 mask=[0, 3, 5, 7, 9, 11, 14] (slack 10)
+  OPEN copyrightklucht: UB=2059 mask=[0, 2, 3, 7, 9, 11, 14] (slack 6)
+# wrote open set -> /home/bob/programming/scrabble4/experiments/results/n15_bigger_open.txt
