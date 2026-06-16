@@ -17,10 +17,14 @@ reserve=1) boards strictly above 1955 on the SAME word/mask (`geschenkcheques`, 
 | 2030 | LNS (thaw {8,12,14}) | 306 | 0:gymjufje 93, 3:chemobox 27, 7:kapotduw 63, 8:claviger 20, 11:qatveld 33, 12:uraat 10, 14:showbizz 60 |
 | 2037 | LNS (thaw {3,7,12}) | 313 | 0:gymjufje 93, 3:complext 31, 7:krulwerk 69, 8:chefarts 17, 11:qatveld 33, 12:uraat 10, 14:showbizz 60 |
 | 2039 | LNS thaw-k4 (thaw {0,7,11,14}) | 315 | 0:gezwijmd 69, 3:chefstaf 24, 7:klepstuw 69, 8:copieuze 20, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
+| 2041 | LNS thaw-k4 (thaw {0,8,11,14}) | 317 | 0:gezwijmd 69, 3:chefstaf 24, 7:klepstuw 69, 8:coulombs 22, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
+| **2042** | LNS thaw-k4 (thaw {3,8,11,14}) | 318 | 0:gezwijmd 69, 3:catfight 23, 7:klepstuw 69, 8:cumprefs 24, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
 
-Progression on one mask via LNS: 1955 → 1958 → 1995 → 2014 → 2030 → 2037 → 2039 (+84 over the
-start). All seven newly columns now carry a scored vertical. (Table updated as the portfolio finds
-higher boards.)
+Progression on one mask via LNS: 1955 → 1958 → 1995 → 2014 → 2030 → 2037 → 2039 → 2041 → 2042
+(**+87 over the start**, all witness-verified). All seven newly columns now carry a scored vertical;
+the high earners are the three ×3 columns (col 0 gezwijmd 69, col 7 klepstuw 69, col 14 skyboxje 90).
+Larger LNS neighbourhoods (thaw-k 4–5) keep finding gains past the thaw-k 2–3 plateau. (Table updated
+as the portfolio finds higher boards — the latest `N15_best_<total>.json` is the current best.)
 
 Analytic per-column-independent ceiling for this mask is 2158 (ignores the shared bag + connectivity,
 so it is loose); LNS keeps closing the gap. A separate cold-start TARGET run on `chequeformulier`
