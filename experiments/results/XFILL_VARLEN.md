@@ -223,6 +223,32 @@ Rebuild-bound mask (`0,3,7,8,11,12,14`): rebuild share 63%->40%, **~1.5-1.65x no
 are unchanged at the node level (rebuild was already ~2%) and not slower -- the no-copy `mem::take`
 iteration keeps the bookkeeping free; closing them needs a `rec`/suffix-bound attack, not the rebuild.
 
+## Budget-coupled suffix bound `sfx2` (the REC-bound regime, 2026-06-16)
+
+The follow-up lever attacks the rec-bound masks (where `rec` is ~98%).  The old `suffix[k]` =
+sum of per-column MAX gross IGNORES the shared blank-overflow budget, so `rec` descended a huge
+subtree and frequently EXHAUSTED the 500000-step KNAPSTEPS budget (which returns `true` = no prune).
+`sfx2` is a small DP table built once per `knap_ub` call: `sfx2[k][r]` = max total gross over
+uncommitted columns `k..m-1` whose SUMMED standalone overflows (`so_w = sum_l max(0, cnt_l -
+budget_l)`) are <= `r`.  At each `rec` node it does an O(1) lookup with remaining capacity
+`R = blanks - cur_over` and prunes when `cur_g + sfx2[k][R] <= thresh` (or when the entry is MIN =
+nothing feasible fits `R`).
+
+SOUNDNESS (sound over-estimate, dominates `suffix[k]`): a word's real path overflow (extra >= 0) is
+always >= its standalone overflow, so any real-feasible completion's standalone-overflow sum is <= R
+and is counted in `sfx2[k][R]`.  Hence `sfx2[k][R] >=` the true best achievable additional gross --
+pruning on it can only convert a step-exhaustion non-prune into a SOUND prune; the KNAPSTEPS
+exhaustion-returns-true safety is untouched.  Verdict-neutral.
+
+Measured (rec-bound mask `0,3,5,7,8,10,14`, floor 393): at a 1000-node cap **91.3s -> 30.2s (~3x)**
+(prunes 584->614, i.e. more sound prunes -> fewer search nodes uncapped); run to completion at floor
+440 **`LE 440` 199.0s/4240 nodes -> 24.6s/1879 nodes (8.1x wall, 2.26x fewer nodes)**, identical
+verdict.  Rebuild-bound mask: no regression (0.40s->0.30s).  Validation: regress.sh ALL GATES GREEN
+(gate-2 LE-224 family byte-identical 3097044/111812/8327), equivalence battery + knap-check ALL PASS.
+
+The two levers stack: the combined engine (incremental rebuild + sfx2) is the snapshot
+`xfill_varmax` used by `n15_hunt_3_11.py`.
+
 ### Caveat: full N=15 geschenkcheques
 
 Replacing the per-vector sweep with varmax eliminates the `K^n` multiplier (one hard mask =
