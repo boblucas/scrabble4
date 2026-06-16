@@ -13,8 +13,16 @@ reserve=1) boards strictly above 1955 on the SAME word/mask (`geschenkcheques`, 
 |------:|--------|---------------:|------------------------------|
 | 1958 | TARGET (feasibility ≥1956, warm-started from 1955) | 234 | 0:garstige 45, 3:cafezaal 25, 7:kuulkjes 72, 8:cel 9, 11:qats 25, 12:uvea 10, 14:steenweg 48 |
 | 1995 | LNS (thaw {0,3,11}, re-maximize) | 271 | 0:gymshows 72, 3:chemobox 27, 7:kuulkjes 72, 8:cel 9, 11:qatveld 33, 12:uvea 10, 14:steenweg 48 |
+| 2014 | LNS (thaw {0,7,8}) | 290 | 0:gymjufje 93, 3:chemobox 27, 7:kapotduw 63, 8:chloraal 16, 11:qatveld 33, 12:uvea 10, 14:steenweg 48 |
+| 2030 | LNS (thaw {8,12,14}) | 306 | 0:gymjufje 93, 3:chemobox 27, 7:kapotduw 63, 8:claviger 20, 11:qatveld 33, 12:uraat 10, 14:showbizz 60 |
 
-(table updated as the portfolio finds higher boards)
+Progression on one mask via LNS: 1955 → 1958 → 1995 → 2014 → 2030 (+75 over the start). All seven
+newly columns now carry a scored vertical. (Table updated as the portfolio finds higher boards.)
+
+Analytic per-column-independent ceiling for this mask is 2158 (ignores the shared bag + connectivity,
+so it is loose); LNS keeps closing the gap. A separate cold-start TARGET run on `chequeformulier`
+mask `(0,3,5,7,9,11,14)` returned INFEASIBLE at total ≥ 1959 (a proven per-mask bound, a useful
+by-product of the feasibility formulation).
 
 The key structural change vs. the 1955 board: verticals now hang on **all 7 newly columns**
 (including the ×2-LETTER cols 3 and 11 and the two plain newly cols 8,12), not just the three ×3
