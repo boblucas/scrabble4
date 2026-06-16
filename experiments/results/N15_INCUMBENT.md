@@ -100,3 +100,19 @@ witness_check scored 2031, below the incumbent, so nothing was saved — exactly
 
 Portfolio: launch several `--word/--mask/--engine` invocations as separate processes; each saves its
 own `N15_best_<total>.json`, so the highest-numbered file is the shared global best.
+
+## Incumbent → prover handoff
+
+The exact prover is `xfill_varmax --varmax BASE --maxscore (total − main_const)` (one varmax search
+per (word,mask) replaces the full length-vector sweep; see `XFILL_VARLEN.md`,
+`n15_hunt_3_11.py`/`n15_varmax_certify.py`). Raising the floor from `1955 − main_const` to
+`2042 − main_const` makes the *LE-proof direction strictly easier*: a higher floor lets the
+varmax-aware joint-knapsack UB prune far more aggressively (the documented N=11 LE-proofs go from
+tens of thousands of nodes to 1 once the floor is high enough). So the new incumbent is a better
+floor to hand the prover than 1955 — every mask whose true optimum is ≤ 2042 is now closer to a
+1-node root prune. The remaining obstacle is the documented full-N=15 caveat: the per-node knapsack
+over 15-length × hundreds-of-words domains plus the connectivity bridge-fill still makes a *single*
+full mask TO in tens of seconds, so closing all masks needs the root-knapsack-cost lever, not a
+higher floor alone. (We did not spend cores on a long prover run here — finding the board was the
+priority and the LNS portfolio was using the machine — but the handoff is a one-liner: point
+`n15_hunt_3_11.py --lb 2042` / the varmax certify at the saved board's total.)
