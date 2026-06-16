@@ -629,7 +629,28 @@ struct Solver<'a> {
     knap_extra: Vec<i64>,       // running per-code extra usage during the knapsack DFS (reset each call)
     knap_suffix: Vec<i64>,      // suffix best-gross sums for the DFS bound
     knap_unc: Vec<usize>,       // uncommitted scoring-column indices
+    // ----- INCREMENTAL CONSISTENT-WORD-SET MAINTENANCE (knap_ub rebuild speedup) -----
+    // Per scoring column, the indices of candidate words still consistent with the cells already FIXED
+    // in that column.  Maintained in O(survivors) on each stub-cell place/unplace (a fixed cell at row r
+    // to value v keeps exactly the words with wd[r-1]==v -- the SAME consistency test the knap_ub rebuild
+    // ran over the FULL domain every node).  knap_ub then iterates only this surviving list (per uncommitted
+    // column) instead of rescanning hundreds of words -> the dominant 63% rebuild cost drops to O(survivors).
+    // VERDICT-NEUTRAL: same consistent set, same per-word delta, same knap -> identical node counts.
+    // Gated on `use_inc` (default on with use_knap; INCOFF=1 falls back to the full rescan for A/B).
+    use_inc: bool,
+    col_consistent: Vec<Vec<u32>>,   // [si] -> live word indices consistent with fixed cells of col si
+    // Undo stack: each stub-cell place that filtered a column pushes (si, removed-word-indices) so the
+    // matching unplace restores the column's list exactly.  A place that fixes a committed/short column
+    // (row >= its len) pushes nothing.  DFS stack discipline guarantees correct LIFO restore.
+    inc_undo: Vec<(usize, Vec<u32>)>,
+    inc_undo_pool: Vec<Vec<u32>>,    // reuse removed-index buffers to avoid per-place allocation
     knap_calls: u64, knap_prunes: u64,             // diagnostics
+    // ----- PROFILING (gated on env XFILL_PROF=1; zero-cost when off: the `prof` flag is checked once
+    // per knap_ub call, and the Instant::now() pair is skipped entirely when prof==false) -----
+    prof: bool,
+    prof_knap_rebuild_ns: u128,    // time in knap_ub's per-column consistent-candidate REBUILD
+    prof_knap_rec_ns: u128,        // time in knap_ub's `rec` DFS (the multiple-choice knapsack search)
+    prof_knap_rec_calls: u64,      // number of top-level rec() invocations (== knap_calls that ran rec)
 }
 
 impl<'a> Solver<'a> {
@@ -723,13 +744,29 @@ impl<'a> Solver<'a> {
         // delta-usage = letters at the column's NOT-YET-FIXED stub positions (the fixed positions are already
         // in self.used). Dedup by (gross, delta) is unnecessary; we just need the per-column option list.
         // Clear & reuse scratch buffers.
+        let prof_t0 = if self.prof { Some(std::time::Instant::now()) } else { None };
         for b in self.knap_words.iter_mut() { b.clear(); }
         while self.knap_words.len() < unc.len() { self.knap_words.push(Vec::new()); }
+        // INCREMENTAL: when on, iterate only each column's maintained consistent-word list (col_consistent)
+        // instead of rescanning its full domain.  The maintained list is EXACTLY the set this loop's
+        // consistency test selects (proven by inc_fix mirroring the same wd[r-1]==v test), so the resulting
+        // (gross, delta) buffers -- and hence the knapsack and every verdict -- are identical; only the scan
+        // length differs.  INCOFF=1 scans the full domain (A/B fallback).  Empty scratch index buffer reused.
+        let use_inc = self.use_inc;
         for (k, &si) in unc.iter().enumerate() {
             let col = self.inst.scoring_cols[si];
             let len = self.inst.scoring_len[si];
+            let nfull = self.inst.scoring_words[si].len() as u32;
+            // candidate word indices: the maintained consistent list (no copy -- take it out, iterate,
+            // restore at the end of this iteration) when use_inc; else the full 0..nfull range.  Taking
+            // col_consistent[si] out resolves the borrow conflict with &mut knap_words[k] (disjoint
+            // fields, but both reached through self) at zero allocation/copy cost.
+            let cands = if use_inc { std::mem::take(&mut self.col_consistent[si]) } else { Vec::new() };
             let buf = &mut self.knap_words[k];
-            'words: for (wi, wd) in self.inst.scoring_words[si].iter().enumerate() {
+            let mut early_dead = false;
+            'words: for ii in 0..(if use_inc { cands.len() } else { nfull as usize }) {
+                let wi = if use_inc { cands[ii] as usize } else { ii };
+                let wd = &self.inst.scoring_words[si][wi];
                 // consistency with fixed cells + collect delta usage at free cells.
                 // VARMAX: a stub value of 0 means EMPTY (the column's word ended above this row), NOT a
                 // tile -- so a free 0-cell costs NOTHING (no delta) and a FIXED empty cell (g==0) requires
@@ -749,9 +786,12 @@ impl<'a> Solver<'a> {
                 }
                 buf.push((self.inst.scoring_gross[si][wi], delta));
             }
-            if buf.is_empty() { self.knap_unc = unc; return Some(i64::MIN); }  // no consistent word: dead node
+            if buf.is_empty() { early_dead = true; }
+            // restore the taken consistent list before any return / next iteration.
+            if use_inc { self.col_consistent[si] = cands; }
+            if early_dead { self.knap_unc = unc; return Some(i64::MIN); }  // no consistent word: dead node
             // sort by gross descending so the knapsack DFS finds a strong incumbent / bounds fast.
-            buf.sort_by(|a, b| b.0.cmp(&a.0));
+            self.knap_words[k].sort_by(|a, b| b.0.cmp(&a.0));
         }
         // remaining per-code budget = counts - used (can be negative if already over by blanks).
         let a = self.inst.alpha;
@@ -847,8 +887,17 @@ impl<'a> Solver<'a> {
         }
         let mut steps: i64 = std::env::var("KNAPSTEPS").ok().and_then(|s| s.parse().ok())
             .unwrap_or(500_000);
+        let prof_t1 = if let Some(t0) = prof_t0 {
+            let now = std::time::Instant::now();
+            self.prof_knap_rebuild_ns += now.duration_since(t0).as_nanos();
+            self.prof_knap_rec_calls += 1;
+            Some(now)
+        } else { None };
         let improver = rec(0, m, 0, base_over, thresh, &self.knap_words, &self.knap_budget,
                            &mut extra, &suffix, blanks, &mut steps);
+        if let Some(t1) = prof_t1 {
+            self.prof_knap_rec_ns += std::time::Instant::now().duration_since(t1).as_nanos();
+        }
         // return the scratch buffers to their fields for reuse next call.
         self.knap_unc = unc; self.knap_suffix = suffix; self.knap_extra = extra;
         // improver=true  -> some uncommitted-column word-combo beats best -> UB > best (no prune).
@@ -934,6 +983,7 @@ impl<'a> Solver<'a> {
                     // by the (pre-validated) scoring word and so needs no dict check here.  We still must
                     // verify the cell ABOVE can reach the root (sealed_ok) just like a bridge empty.
                     self.grid[id] = 0;
+                    self.inc_fix(si, y, 0);
                     self.recompute_live_mask(si, col);
                     let new_ub = self.col_best_consistent(si, col);
                     self.remaining_best += new_ub - prev_ub;
@@ -944,6 +994,7 @@ impl<'a> Solver<'a> {
                     self.remaining_best += prev_ub - self.col_ub[si];
                     self.col_ub[si] = prev_ub;
                     self.grid[id] = -1;
+                    self.inc_unfix(si);
                     self.recompute_live_mask(si, col);
                     if hit { return true; }
                     continue;
@@ -951,6 +1002,7 @@ impl<'a> Solver<'a> {
                 if !self.place_ok(x, y, l) { continue; }
                 if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
                 self.grid[id] = l as i16;
+                self.inc_fix(si, y, l as i16);
                 // fixing this stub cell narrows the column's live word-domain -> refresh its live masks
                 // (used by place_ok's horizontal cross-check on the cells BELOW in this column).
                 self.recompute_live_mask(si, col);
@@ -964,6 +1016,7 @@ impl<'a> Solver<'a> {
                 self.remaining_best += prev_ub - self.col_ub[si];
                 self.col_ub[si] = prev_ub;
                 self.grid[id] = -1;
+                self.inc_unfix(si);
                 self.recompute_live_mask(si, col);   // restore (cell now -1 again)
                 self.rm_letter(l as usize);
                 if hit { return true; }
@@ -1042,6 +1095,43 @@ impl<'a> Solver<'a> {
             }
             for q in 0..len - 1 { if wd[q] != 0 { self.col_live_mask[si][q] |= bit(wd[q]); } }
         }
+    }
+
+    // INCREMENTAL: a stub cell of column si at row `r` (1-based) was just FIXED to value `v` (0 = empty
+    // in varmax, or a letter code).  Remove from col_consistent[si] every word whose row-r letter differs
+    // (wd[r-1] != v), saving the removed indices on the undo stack for inc_unfix to restore.  This keeps
+    // col_consistent[si] EXACTLY the set the knap rebuild's consistency loop would compute over the full
+    // domain, but updates it in O(current-list) instead of O(full-domain).
+    #[inline]
+    fn inc_fix(&mut self, si: usize, r: usize, v: i16) {
+        if !self.use_inc { return; }
+        let q = r - 1;
+        let live = &mut self.col_consistent[si];
+        let mut removed = self.inc_undo_pool.pop().unwrap_or_default();
+        removed.clear();
+        let words = &self.inst.scoring_words[si];
+        let mut i = 0;
+        while i < live.len() {
+            let wi = live[i] as usize;
+            if (words[wi][q] as i16) != v {
+                removed.push(live[i]);
+                live.swap_remove(i);          // order is irrelevant (knap sorts by gross)
+            } else {
+                i += 1;
+            }
+        }
+        self.inc_undo.push((si, removed));
+    }
+    // INCREMENTAL: undo the most recent inc_fix for column si (LIFO with the DFS stack).  Re-append the
+    // removed indices to col_consistent[si].
+    #[inline]
+    fn inc_unfix(&mut self, si: usize) {
+        if !self.use_inc { return; }
+        let (usi, mut removed) = self.inc_undo.pop().expect("inc_undo underflow");
+        debug_assert_eq!(usi, si);
+        self.col_consistent[usi].extend_from_slice(&removed);
+        removed.clear();
+        self.inc_undo_pool.push(removed);
     }
 
     // Best gross over candidate words of column si consistent with its current partial stub (>0 cells).
@@ -1688,7 +1778,12 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
         knap_maxcols: std::env::var("KNAPCOLS").ok().and_then(|s| s.parse().ok()).unwrap_or(ncols.max(1)),
         knap_words: Vec::new(), knap_budget: vec![0i64; inst.alpha + 1],
         knap_extra: Vec::new(), knap_suffix: Vec::new(), knap_unc: Vec::new(),
-        knap_calls: 0, knap_prunes: 0 };
+        use_inc: maxscore && std::env::var("NOKNAP").is_err() && std::env::var("INCOFF").is_err(),
+        col_consistent: (0..ncols).map(|si| (0..inst.scoring_words[si].len() as u32).collect()).collect(),
+        inc_undo: Vec::new(), inc_undo_pool: Vec::new(),
+        knap_calls: 0, knap_prunes: 0,
+        prof: std::env::var("XFILL_PROF").is_ok(),
+        prof_knap_rebuild_ns: 0, prof_knap_rec_ns: 0, prof_knap_rec_calls: 0 };
     let t = std::time::Instant::now();
     let sat = solver.run();
     let dt = t.elapsed().as_secs_f64();
@@ -1697,6 +1792,16 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
     }
     if solver.use_knap {
         eprintln!("knap-ub: calls={} prunes={}", solver.knap_calls, solver.knap_prunes);
+    }
+    if solver.prof {
+        let total = dt * 1e9;
+        let reb = solver.prof_knap_rebuild_ns as f64;
+        let rec = solver.prof_knap_rec_ns as f64;
+        eprintln!("PROF: total={:.3}s knap_rec_calls={} rebuild={:.3}s({:.1}%) rec={:.3}s({:.1}%) other={:.3}s({:.1}%)",
+            dt, solver.prof_knap_rec_calls,
+            reb / 1e9, 100.0 * reb / total,
+            rec / 1e9, 100.0 * rec / total,
+            (total - reb - rec) / 1e9, 100.0 * (total - reb - rec) / total);
     }
     let board = if maxscore && solver.best > floor { Some(solver.best_grid.clone()) } else { None };
     // An ABORTED search (node cap / wall deadline) proves nothing: report TO/TIMEOUT, never LE/UNSAT.
