@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+# regenerable scratch output of the variable-length equivalence/benchmark harnesses
+xfill_varlen_scratch/

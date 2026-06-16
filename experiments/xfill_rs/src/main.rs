@@ -42,6 +42,9 @@ struct Inst {
     can_active: Vec<bool>,     // cell is or can become active (hold a tile)
     #[allow(dead_code)]
     can_empty: Vec<bool>,      // cell can be empty (no tile); kept for the cell model / future MRV
+    varmax: bool,              // VARIABLE-LENGTH mode: scoring columns choose their own vertical length
+                               // in one search (stub cells may be EMPTY = word ended above).  See
+                               // inst_var_from_base.  Default false = byte-identical fixed-length engine.
 }
 
 #[inline] fn bit(l: u8) -> u32 { 1u32 << (l - 1) }
@@ -181,7 +184,7 @@ fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, reserve: i64, count
                 let si = scol_of[id] as usize;
                 let r = id / w; let posn = r - 1;
                 let mut m = 0u32;
-                for wd in &scoring_words[si] { m |= bit(wd[posn]); }
+                for wd in &scoring_words[si] { if wd[posn] != 0 { m |= bit(wd[posn]); } }  // 0 = empty (varmax pad)
                 cell_mask[id] = m; can_active[id] = true;
             }
             _ => { cell_mask[id] = all_mask; can_active[id] = true; can_empty[id] = true; } // bridge
@@ -191,7 +194,7 @@ fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, reserve: i64, count
         .map(|gs| gs.iter().cloned().max().unwrap_or(0)).collect();
     Inst { w, h, alpha, blanks, reserve, counts, scores, grid0, kind, scol_of, scoring_cols, scoring_len,
            scoring_words, scoring_gross, scoring_best, scoring_wm,
-           cell_mask, can_active, can_empty }
+           cell_mask, can_active, can_empty, varmax: false }
 }
 
 // ---- BASE FILE: per-main-word data shared by ALL length-vectors (the --batchvec scale path) ----
@@ -273,6 +276,73 @@ fn parse_base(path: &str) -> Base {
     }
     Base { w, h, hmax, alpha, blanks, reserve, counts, scores, preplaced, nonscoring, dict_path,
            bcols, bwm, bylen }
+}
+
+// ===== VARIABLE-LENGTH ASSEMBLY ================================================================
+// Build ONE instance whose scoring columns each choose their OWN vertical length in a single search.
+//
+// MODEL EQUIVALENCE (the soundness crux):
+//   The fixed-length sweep enumerates every length-vector v = (len[c])_c and, per v, maximizes the
+//   legal-connected score over the word-choice space W(v) = X_c { length-len[c] words of col c }.
+//   The variable search's per-column candidate set is the UNION over ALL lengths in the base, PLUS
+//   the length-1 (bare tile, no vertical, gross 0) option.  Choosing length L for column c =
+//   restricting that column to its length-L candidates and forcing rows >=L empty -- i.e. exactly a
+//   point of some W(v).  Conversely every board the variable search visits assigns each column a
+//   single word of SOME length, hence lies in W(v) for the v naming those lengths.  So the set of
+//   boards the variable search ranges over is EXACTLY  union over v of (legal boards of W(v)),
+//   therefore  varmax_MAX = max over v of fixed_MAX(v),  and  varmax LE floor  <=>  every fixed
+//   length-vector is LE floor.  No board is added or dropped; only the artificial per-run length
+//   pinning is removed.
+//
+// REPRESENTATION: stub region of column c spans rows 1..maxlen[c] (maxlen = largest length present
+// in the base for that column).  A candidate of length L is stored as a `maxlen-1`-long pattern:
+// letters in rows 1..L, then 0 (EMPTY) in rows L..maxlen.  Suffix-empty is automatic (each pattern
+// is a real word padded with trailing zeros).  A grid value of 0 at a stub cell therefore means the
+// vertical word ended above -> that cell is a genuine empty cell for connectivity / cross-words /
+// budget, identical to the fixed model's forced-empty cells below a short column.
+//
+// The length-1 option is the all-empty pattern (no stub letters) with gross 0; it always exists.
+fn inst_var_from_base(b: &Base) -> Option<Inst> {
+    let ncols = b.bcols.len();
+    let mut maxlen = vec![1usize; ncols];
+    for ci in 0..ncols {
+        for (&l, (ws, _)) in b.bylen[ci].iter() {
+            if !ws.is_empty() && l > maxlen[ci] { maxlen[ci] = l; }
+        }
+    }
+    // Per column: the union candidate set, each padded to maxlen-1 (0 = empty tail).  Includes the
+    // length-1 bare-tile option (all zeros, gross 0).
+    let mut words: Vec<Vec<Vec<u8>>> = Vec::with_capacity(ncols);
+    let mut gross: Vec<Vec<i64>> = Vec::with_capacity(ncols);
+    for ci in 0..ncols {
+        let pad = maxlen[ci].saturating_sub(1);
+        let mut wcol: Vec<Vec<u8>> = Vec::new();
+        let mut gcol: Vec<i64> = Vec::new();
+        // length-1 bare tile: gross 0, all stub cells empty.
+        wcol.push(vec![0u8; pad]); gcol.push(0);
+        for (&l, (ws, gs)) in b.bylen[ci].iter() {
+            if l == 1 { continue; }                          // length-1 handled above (the bare tile)
+            for (wi, w) in ws.iter().enumerate() {
+                // w is the stub (len-1 letters); pad rows l..maxlen with 0 (empty).
+                let mut p = w.clone();
+                p.resize(pad, 0u8);
+                wcol.push(p); gcol.push(gs[wi]);
+            }
+        }
+        words.push(wcol); gross.push(gcol);
+    }
+    let lvec = maxlen.clone();   // scoring_len[c] = full stub span 1..maxlen[c]
+    let mut inst = build_inst(b.w, b.h, b.alpha, b.blanks, b.reserve, b.counts.clone(),
+                              b.scores.clone(), &b.preplaced, &b.nonscoring,
+                              b.bcols.clone(), lvec, b.bwm.clone(), words, gross);
+    inst.varmax = true;
+    // In varmax a stub cell may be EMPTY (a shorter word ended above), so its static cell_mask must
+    // INCLUDE the empty option for the horizontal cross-check: treat stub cells as can-be-empty and
+    // never extend a forced horizontal span through an UNDECIDED one (done in place_ok via inst.varmax).
+    for id in 0..inst.w * inst.h {
+        if inst.kind[id] == 1 { inst.can_empty[id] = true; }
+    }
+    Some(inst)
 }
 
 // Assemble the per-vector instance from the base.  None if a column has no candidate of its length.
@@ -416,7 +486,7 @@ impl Inst {
                 let si = self.scol_of[id] as usize;
                 let r = id / w; let posn = r - 1;
                 let mut m = 0u32;
-                for wd in &self.scoring_words[si] { m |= bit(wd[posn]); }
+                for wd in &self.scoring_words[si] { if wd[posn] != 0 { m |= bit(wd[posn]); } }
                 self.cell_mask[id] = m;
             }
         }
@@ -821,23 +891,46 @@ impl<'a> Solver<'a> {
             let col = self.inst.scoring_cols[si];
             let posn = y - 1;
             let len = self.inst.scoring_len[si];
-            // candidate letters at this cell + the best gross of any consistent word using that letter
-            // (for descending ordering -> find a strong incumbent fast, sharpening the B&B floor).
-            let mut cand: Vec<(u8, i64)> = Vec::new();   // (letter, best-consistent-gross via this letter)
+            // candidate cell-values at this cell + the best gross of any consistent word using that
+            // value (for descending ordering -> find a strong incumbent fast).  In VARMAX a value may
+            // be 0 = EMPTY (the column's word ended above this row); otherwise it is a letter code.
+            let mut cand: Vec<(u8, i64)> = Vec::new();   // (cell value: 0=empty / letter, best gross)
             'words: for (wi, wd) in self.inst.scoring_words[si].iter().enumerate() {
                 for r in 1..len {
                     let cid = idx(col, r, w);
                     let g = self.grid[cid];
-                    if g > 0 && (wd[r - 1] as i16) != g { continue 'words; }
+                    // fixed cell (letter g>0, or empty g==0 in varmax) must match the word at row r.
+                    if g >= 0 && (wd[r - 1] as i16) != g { continue 'words; }
                 }
                 let l = wd[posn];
                 let g = self.inst.scoring_gross[si][wi];
                 if let Some(e) = cand.iter_mut().find(|e| e.0 == l) { if g > e.1 { e.1 = g; } }
                 else { cand.push((l, g)); }
             }
-            cand.sort_by(|a, b| b.1.cmp(&a.1));          // high-gross letters first
+            cand.sort_by(|a, b| b.1.cmp(&a.1));          // high-gross values first
             let prev_ub = self.col_ub[si];
             for (l, _) in cand {
+                if l == 0 {
+                    // EMPTY stub cell (varmax: word ended above).  No tile consumed.  Closing this cell
+                    // closes the H run to its left and the V run above (the column's vertical word, which
+                    // ends at the cell above) -- closed_runs_ok validates the H run; the V run is owned
+                    // by the (pre-validated) scoring word and so needs no dict check here.  We still must
+                    // verify the cell ABOVE can reach the root (sealed_ok) just like a bridge empty.
+                    self.grid[id] = 0;
+                    self.recompute_live_mask(si, col);
+                    let new_ub = self.col_best_consistent(si, col);
+                    self.remaining_best += new_ub - prev_ub;
+                    self.col_ub[si] = new_ub;
+                    let committed = self.commit_if_col_done(si, col);
+                    let hit = self.closed_runs_ok(x, y) && self.sealed_ok(id) && self.dfs_score(id + 1);
+                    self.uncommit(si, committed);
+                    self.remaining_best += prev_ub - self.col_ub[si];
+                    self.col_ub[si] = prev_ub;
+                    self.grid[id] = -1;
+                    self.recompute_live_mask(si, col);
+                    if hit { return true; }
+                    continue;
+                }
                 if !self.place_ok(x, y, l) { continue; }
                 if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
                 self.grid[id] = l as i16;
@@ -927,9 +1020,10 @@ impl<'a> Solver<'a> {
         'words: for wd in &self.inst.scoring_words[si] {
             for r in 1..len {
                 let g = self.grid[idx(col, r, w)];
-                if g > 0 && (wd[r - 1] as i16) != g { continue 'words; }
+                // consistency: a fixed cell (g>0 letter or g==0 empty in varmax) must match the word.
+                if g >= 0 && (wd[r - 1] as i16) != g { continue 'words; }
             }
-            for q in 0..len - 1 { self.col_live_mask[si][q] |= bit(wd[q]); }
+            for q in 0..len - 1 { if wd[q] != 0 { self.col_live_mask[si][q] |= bit(wd[q]); } }
         }
     }
 
@@ -941,7 +1035,8 @@ impl<'a> Solver<'a> {
         'words: for (wi, wd) in self.inst.scoring_words[si].iter().enumerate() {
             for r in 1..len {
                 let g = self.grid[idx(col, r, w)];
-                if g > 0 && (wd[r - 1] as i16) != g { continue 'words; }
+                // fixed cell (letter g>0, or empty g==0 in varmax) must match; g==-1 is free.
+                if g >= 0 && (wd[r - 1] as i16) != g { continue 'words; }
             }
             let gr = self.inst.scoring_gross[si][wi];
             if gr > best { best = gr; }
@@ -957,7 +1052,7 @@ impl<'a> Solver<'a> {
     fn commit_if_col_done(&mut self, si: usize, col: usize) -> Option<i64> {
         let w = self.inst.w;
         let len = self.inst.scoring_len[si];
-        for r in 1..len { if self.grid[idx(col, r, w)] <= 0 { return None; } }
+        for r in 1..len { if self.grid[idx(col, r, w)] == -1 { return None; } }
         let g = self.col_ub[si];                  // = chosen word's gross (full prefix pins one word)
         self.col_committed[si] = true;
         self.committed_gross += g;
@@ -1194,7 +1289,10 @@ impl<'a> Solver<'a> {
             let cid = idx(ex, y, w);
             let g = self.grid[cid];
             if g > 0 { if mlen >= 8 { bad = true; break; } masks[mlen] = bit(g as u8); mlen += 1; ex += 1; }
-            else if g == -1 && self.inst.kind[cid] == 1 {            // unplaced active scoring-stub cell
+            else if g == -1 && self.inst.kind[cid] == 1 && !self.inst.varmax {  // unplaced active scoring-stub cell
+                // VARMAX: an undecided stub cell MAY be empty (the column's word ends above it), so it is
+                // NOT forced-active -> treat it as a can-be-empty stopper (break below).  Relaxation: a
+                // narrower forced span never rejects a feasible board, so soundness holds.
                 // use the DYNAMIC live mask (narrowed by this column's already-fixed stub cells), not the
                 // static all-words union -- this is the lever that prunes the adjacent-block explosion.
                 if mlen >= 8 { bad = true; break; }
@@ -1386,6 +1484,33 @@ fn main() {
         }
         return;
     }
+    // ---- VARMAX MODE: `xfill --varmax BASEFILE --maxscore FLOOR` --------------------------------
+    // VARIABLE-LENGTH score maximization over a BASE file: ONE search in which each scoring column
+    // chooses BOTH its vertical length (1..maxlen, from the base) AND its word.  Equivalent to running
+    // the fixed-length --batchvec sweep over EVERY length-vector and taking the max (proof in
+    // inst_var_from_base).  Prints the usual `MAX <s>` / `LE <floor>` / `TO ...` line; --emit prints
+    // the best board.  Optional WALL (env) gives a sound wall-clock abort (-> TO, never LE).
+    if let Some(vi) = args.iter().position(|a| a == "--varmax") {
+        let base = parse_base(&args[vi + 1]);
+        let floor: i64 = args.iter().position(|a| a == "--maxscore")
+            .and_then(|i| args.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(-1);
+        let wall: Option<f64> = std::env::var("WALL").ok().and_then(|s| s.parse().ok());
+        let td = std::time::Instant::now();
+        let dict = load_dict(&base.dict_path, base.hmax);
+        eprintln!("dict loaded: {} words, {} prefixes, {:.2}s",
+                  dict.words.len(), dict.prefixes.len(), td.elapsed().as_secs_f64());
+        let mut inst = inst_var_from_base(&base).expect("varmax: empty base");
+        let (line, board) = solve_inst(&mut inst, &dict, true, floor, wall);
+        println!("{}", line);
+        if args.iter().any(|a| a == "--emit") {
+            if let Some(bg) = board {
+                print!("BOARD");
+                for &g in &bg { print!(" {}", if g > 0 { g } else { 0 }); }
+                println!();
+            }
+        }
+        return;
+    }
     // ---- SINGLE MODE (legacy stdout contract preserved) ------------------------------------------
     let path = &args[1];
     // --maxscore [floor]: score-maximization mode. Returns the MAX legal vertical score, or "LE floor"
@@ -1444,7 +1569,9 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
               wall: Option<f64>) -> (String, Option<Vec<i16>>) {
     // ARC-CONSISTENCY presolve over adjacent scoring-column word-domains (the forced-2-letter-word join).
     // Sound, global; collapses the full-height adjacent-block hard tail. Opt out with NOAC=1 for A/B.
-    if std::env::var("NOAC").is_err() {
+    // VARMAX: SKIPPED -- its forced-2-letter-word join assumes FIXED column lengths (definitely_empty
+    // flanks).  With variable lengths a flanking stub cell is not provably empty, so the join is unsound.
+    if !inst.varmax && std::env::var("NOAC").is_err() {
         let tac = std::time::Instant::now();
         let unsat = inst.arc_consistency(dict);
         eprintln!("arc-consistency: {} surviving words/col, {:.3}s{}",
@@ -1457,9 +1584,12 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
         }
     }
     let grid = inst.grid0.clone();
-    // mandatory cells: preplaced (grid0>0) + scoring-stub positions (kind==1)
+    // mandatory cells: preplaced (grid0>0) + scoring-stub positions (kind==1).
+    // VARMAX: a stub cell MAY be empty (its column's word ends above), so it is NOT mandatory-active --
+    // only the preplaced cells are guaranteed active.  (The root for sealed_ok / connectivity must be a
+    // truly-always-active cell; mandatory[0] is used as that root.)
     let mandatory: Vec<usize> = (0..inst.w * inst.h)
-        .filter(|&id| inst.grid0[id] > 0 || inst.kind[id] == 1).collect();
+        .filter(|&id| inst.grid0[id] > 0 || (!inst.varmax && inst.kind[id] == 1)).collect();
     // free columns = scoring columns with NO adjacent scoring column (isolated -> coupled only via
     // bridges). Defer their stub cells to phase 2 so their large domains don't multiply the search.
     let scol_set: HashSet<usize> = inst.scoring_cols.iter().cloned().collect();
@@ -1503,7 +1633,7 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
     let col_live_mask: Vec<Vec<u32>> = (0..ncols).map(|si| {
         let len = inst.scoring_len[si];
         let mut v = vec![0u32; len.saturating_sub(1)];
-        for wd in &inst.scoring_words[si] { for q in 0..len - 1 { v[q] |= bit(wd[q]); } }
+        for wd in &inst.scoring_words[si] { for q in 0..len - 1 { if wd[q] != 0 { v[q] |= bit(wd[q]); } } }
         v
     }).collect();
     let mut solver = Solver { inst: &*inst, dict, grid, mandatory, deferred, free_cols, used,
@@ -1529,7 +1659,11 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
         // the deep-isolated-col10 N=11 hard tail (LE 224 in seconds vs the prior >90s timeout) and never
         // slows the easy / AC-3 vectors. Opt out with NOKNAP=1. KNAPCOLS caps the #uncommitted columns the
         // per-node knapsack runs over (default = all scoring columns -> tightest bound).
-        use_knap: maxscore && std::env::var("NOKNAP").is_err(),
+        // VARMAX: the joint-knapsack UB's per-column consistency test treats a stub cell's value 0 as
+        // "free" rather than "empty (word ended)", so it would mis-account the empty-tail option (a
+        // phantom code-0 delta).  It only ever LOOSENS the bound (never a false prune), but to keep
+        // varmax obviously sound we run plain committed+remaining_best UB instead.  Off in varmax.
+        use_knap: maxscore && !inst.varmax && std::env::var("NOKNAP").is_err(),
         knap_maxcols: std::env::var("KNAPCOLS").ok().and_then(|s| s.parse().ok()).unwrap_or(ncols.max(1)),
         knap_words: Vec::new(), knap_budget: vec![0i64; inst.alpha + 1],
         knap_extra: Vec::new(), knap_suffix: Vec::new(), knap_unc: Vec::new(),
