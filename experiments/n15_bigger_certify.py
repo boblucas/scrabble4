@@ -351,8 +351,18 @@ def main():
         if 'nodes=' in line:
             try: nodes = int(line.split('nodes=')[1].split()[0])
             except Exception: nodes = None
+        # detect a binary PANIC (frozen xfill underflows on letter-starved bigger instances): a
+        # crash proves NOTHING -> OPEN_CRASH (sound: not treated as a certification).
+        panicked = False
+        try:
+            with open(u.verb_path) as f:
+                panicked = 'panicked' in f.read()
+        except Exception:
+            pass
         verdict = 'UNKNOWN'; value = None; note = ''
-        if line.startswith('LE '):
+        if panicked and not line:
+            verdict = 'OPEN_CRASH'; note = f'binary panic (rc={rc}) -> proves nothing'
+        elif line.startswith('LE '):
             value = int(line.split()[1]); verdict = 'CERT'
             assert value == u.vfloor, f'LE {value} != vfloor {u.vfloor}'
         elif line.startswith('NOCAND'):
@@ -406,12 +416,15 @@ def main():
             rc = u.proc.poll()
             if rc is not None:
                 finished.append((u, rc))
-            elif now - u.start > args.wall + 180:
+            elif now - u.start > args.wall + 30:
+                # the frozen binary's own WALL deadline is UNRELIABLE on bigger instances (it does
+                # not fire during the seed phase), so WE enforce the wall: kill this specific PID
+                # (never a group / negative PID).  A killed-by-watchdog unit is OPEN (proves nothing).
                 try:
                     u.proc.send_signal(signal.SIGTERM); time.sleep(2)
                     if u.proc.poll() is None: u.proc.kill()
                 except Exception: pass
-                log(f'WATCHDOG killed PID {u.proc.pid} ({u.word} {u.mask})'); finished.append((u, -99))
+                log(f'WATCHDOG killed PID {u.proc.pid} ({u.word} {u.mask}) overran wall'); finished.append((u, -99))
         for u, rc in finished:
             inflight.remove(u); handle_completion(u, rc)
         if now - last_hb >= HB:
