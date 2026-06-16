@@ -693,6 +693,17 @@ impl<'a> Solver<'a> {
     // the same per-code "used minus counts, summed, <= blanks" relaxation as leaf_ok's budget check and is
     // an under-count of the true blank penalty (it charges nothing for the blanks themselves), so the
     // bound never rejects a feasible higher-scoring board. Hence pruning on it can never discard the optimum.
+    //
+    // VARMAX SOUNDNESS: in variable-length mode an uncommitted column may choose ANY length 1..maxlen.
+    // The per-column candidate list (self.inst.scoring_words[si]) is already the UNION over all lengths
+    // PLUS the length-1 bare-tile (all-zeros, gross 0) option, so the knapsack ranges over exactly the
+    // enlarged option set: one (length,word) per uncommitted column.  The (0,0) empty option is always
+    // present (it is consistent with any partial column whose fixed cells are all empty), so the bound is
+    // never lower than the true best achievable -- it stays a SOUND OVER-ESTIMATE.  A still-undecided stub
+    // cell (g==-1) is NOT charged as a forced tile: only a word's REAL tail letters (wl>0) at free cells
+    // count toward usage; an empty tail (wl==0) charges nothing.  A fixed-empty cell (g==0) restricts the
+    // column to words that ended at or above it.  Bridges/cross-words/connectivity are still ignored (they
+    // only reduce), so pruning on committed+UB <= best can never discard the optimum in varmax either.
     fn knap_ub(&mut self) -> Option<i64> {
         // collect uncommitted scoring columns (reuse the scratch field to avoid a per-call allocation).
         let ncols = self.inst.scoring_cols.len();
@@ -719,16 +730,22 @@ impl<'a> Solver<'a> {
             let len = self.inst.scoring_len[si];
             let buf = &mut self.knap_words[k];
             'words: for (wi, wd) in self.inst.scoring_words[si].iter().enumerate() {
-                // consistency with fixed cells + collect delta usage at free cells
+                // consistency with fixed cells + collect delta usage at free cells.
+                // VARMAX: a stub value of 0 means EMPTY (the column's word ended above this row), NOT a
+                // tile -- so a free 0-cell costs NOTHING (no delta) and a FIXED empty cell (g==0) requires
+                // the word to also be empty (wl==0) there.  In fixed mode words never carry a 0 and stub
+                // cells are never fixed-empty (g>=1 once placed, -1 while free), so both 0-branches are
+                // inert -> byte-identical to the pre-varmax knapsack.
                 let mut delta: Vec<(u8, i64)> = Vec::new();
                 for r in 1..len {
                     let g = self.grid[idx(col, r, w)];
                     let wl = wd[r - 1];
-                    if g > 0 { if (wl as i16) != g { continue 'words; } }   // fixed -> must match
-                    else {                                                  // free -> contributes delta
+                    if g > 0 { if (wl as i16) != g { continue 'words; } }   // fixed letter -> must match
+                    else if g == 0 { if wl != 0 { continue 'words; } }      // fixed empty (varmax) -> word ended here
+                    else if wl != 0 {                                       // free cell, real tile -> charge delta
                         if let Some(e) = delta.iter_mut().find(|e| e.0 == wl) { e.1 += 1; }
                         else { delta.push((wl, 1)); }
-                    }
+                    }                                                       // free cell, empty tail -> no tile
                 }
                 buf.push((self.inst.scoring_gross[si][wi], delta));
             }
@@ -1659,11 +1676,15 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
         // the deep-isolated-col10 N=11 hard tail (LE 224 in seconds vs the prior >90s timeout) and never
         // slows the easy / AC-3 vectors. Opt out with NOKNAP=1. KNAPCOLS caps the #uncommitted columns the
         // per-node knapsack runs over (default = all scoring columns -> tightest bound).
-        // VARMAX: the joint-knapsack UB's per-column consistency test treats a stub cell's value 0 as
-        // "free" rather than "empty (word ended)", so it would mis-account the empty-tail option (a
-        // phantom code-0 delta).  It only ever LOOSENS the bound (never a false prune), but to keep
-        // varmax obviously sound we run plain committed+remaining_best UB instead.  Off in varmax.
-        use_knap: maxscore && !inst.varmax && std::env::var("NOKNAP").is_err(),
+        // VARMAX-AWARE: the joint-knapsack UB's per-column consistency test now treats a stub cell's
+        // value 0 as EMPTY (the column's word ended above) -- a free 0-cell charges NO tile and a
+        // fixed-empty cell (g==0) only admits words that are also empty there (see knap_ub).  The
+        // per-column candidate list is the base's union over ALL lengths PLUS the length-1 bare-tile
+        // (all-zeros, gross 0) option, exactly the enlarged option set the varmax model requires, so the
+        // knapsack still picks one (length,word) per uncommitted column maximizing gross under the shared
+        // per-letter budget -- a SOUND over-estimate (bridges/cross-words/connectivity only reduce it).
+        // Hence varmax pruning on it is verdict-neutral.  Opt out with NOKNAP=1.
+        use_knap: maxscore && std::env::var("NOKNAP").is_err(),
         knap_maxcols: std::env::var("KNAPCOLS").ok().and_then(|s| s.parse().ok()).unwrap_or(ncols.max(1)),
         knap_words: Vec::new(), knap_budget: vec![0i64; inst.alpha + 1],
         knap_extra: Vec::new(), knap_suffix: Vec::new(), knap_unc: Vec::new(),

@@ -49,10 +49,9 @@ model's forced-empty). Hence `varmax_MAX = max_v fixed_MAX(v)`, and the LE/floor
 No board is added or dropped; only the artificial per-run length pinning is removed.
 
 Implementation notes that preserve soundness:
-- The joint-knapsack UB and the AC-3 presolve are **disabled** in varmax (both assume FIXED column
-  lengths -- AC-3's forced-2-letter-word join needs provably-empty flanks; the knapsack's
-  consistency test treats a stub `0` as "free" rather than "empty"). The plain
-  `committed + remaining_best` UB is sound for varmax.
+- The joint-knapsack UB is now **varmax-aware and ENABLED** (the AC-3 presolve stays disabled -- its
+  forced-2-letter-word join needs provably-empty flanks, unsound under variable lengths). See the
+  "varmax-aware knapsack UB" section below.
 - `place_ok`'s horizontal right-extension does **not** treat an *undecided* stub cell as
   forced-active in varmax (it may be empty) -- it is a can-be-empty stopper, a relaxation that never
   rejects a feasible board.
@@ -115,13 +114,74 @@ the 3s per-vector wall, so the strict MAX-match assertion is skipped there for s
 MAX of 97 equals the maximum observed across the completed sweep vectors, and the node/wall counts are
 exact.)
 
-## Caveat: scaling to the real N=15 geschenkcheques certification
+## Varmax-aware knapsack UB (the prune that lets varmax finish)
 
-The per-node UB in varmax is currently the plain `committed + remaining_best` bound (the
-joint-knapsack UB is disabled because its consistency test mishandles the empty-tail option). On the
-hard N=15 isolated-column tail, the knapsack UB is precisely what cracks the deep search, so a
-straight varmax run there would be far slower than the per-vector engine *with* knap. To scale
-varmax to geschenkcheques one would re-enable a varmax-aware knapsack UB (treat a stub `0` as "empty,
-contributes no tile" rather than "free letter") -- a sound, mechanical fix, left as the obvious next
-step. The win demonstrated here is the elimination of the K^n length-vector multiplier; combining it
-with the knapsack UB is what makes it production-grade for N=15.
+`--varmax` originally **disabled** the joint-knapsack UB (`knap_ub`), because the fixed-mode bound
+assumes one length per scoring column. Without it, varmax removes the `K^n` blowup but each search no
+longer prunes -- fatal on the hard isolated-column tail (in fixed mode the knapsack UB is ~88.8% of
+runtime and prunes ~72% of nodes). The UB is now **varmax-aware and on by default** (opt out
+`NOKNAP=1`).
+
+What changed (one surgical edit in `knap_ub`'s per-column consistency loop):
+- A stub value of `0` means EMPTY (the column's word ended above that row), **not** a tile. A
+  free stub cell (`g==-1`) whose word letter is `0` charges **no** tile (no delta) -- this is the
+  "empty, no tile" vs "free letter" fix; previously it added a phantom code-0 delta.
+- A **fixed-empty** stub cell (`g==0`, only reachable in varmax) admits only words that are also
+  empty there (the word ended at/above it).
+- A fixed letter (`g>0`) still forces a match; a real tail letter (`wl>0`) at a free cell still
+  charges its delta.
+
+The per-column candidate set is therefore the base's UNION over all lengths PLUS the length-1
+bare-tile (all-zeros, gross 0) option -- exactly the enlarged varmax option set. The knapsack picks
+one (length, word) per uncommitted column maximizing gross under the shared per-letter budget (with
+the same blank-overflow relaxation as fixed mode).
+
+Soundness (SOUND OVER-ESTIMATE). The bound is never below the true best achievable for the
+uncommitted columns: the `(0,0)` empty option is always present (consistent with any partial column
+whose fixed cells are empty), and taking the max over lengths can only raise the bound. An undecided
+stub cell is never charged as a forced tile. Bridges, horizontal cross-words and connectivity are
+ignored (they only *reduce* the achievable score). Hence `committed + UB <= best` can never discard
+the optimum, so enabling the UB is **verdict-neutral** -- it only changes node counts. In fixed mode
+words never carry a `0` and a stub cell is never fixed-empty, so the two new `0`-branches are inert
+-> the fixed-mode knapsack is byte-identical (regress.sh ALL GATES GREEN).
+
+In fixed mode the prior soundness argument is unchanged.
+
+### Validation
+
+1. **Equivalence battery** (`bash experiments/xfill_rs_varlen_equiv.sh`) -- now with the knap UB
+   enabled in varmax, varmax MAX and LE/floor verdicts are STILL identical to the full fixed sweep on
+   every synthetic case (blanks / reserve=1 / wm=3 / length-1 / 2 scoring cols) AND the real Dutch
+   N=7 boards: **ALL PASS**.
+
+2. **With-UB vs without-UB MAX/LE equality** (`experiments/xfill_varmax_knap_check.{py,sh}`,
+   `NOKNAP` toggle == the fd886d7 no-UB behaviour). On real N=11 bouwfysicus (7 scoring columns),
+   every floor gives the IDENTICAL verdict with and without the UB -- the UB changes only node counts:
+
+        band 1-6, floor 224:  KNAP ON  LE 224  nodes=1        |  KNAP OFF  LE 224  nodes=24008   (0.10s vs 0.17s)
+        band 1-6, floor 220:  KNAP ON  LE 220  nodes=1        |  KNAP OFF  LE 220  nodes=97952   (0.09s vs 0.59s, 6.5x)
+        band 1-5, floor 200:  KNAP ON  LE 200  nodes=1        |  KNAP OFF  LE 200  nodes=7699
+        (TO cases at low floors / wide bands: both modes report the same TO -- still verdict-neutral)
+
+   On the LE-proof direction (how certification uses it) the root knapsack proves `LE floor` in **1
+   node** vs tens of thousands without it (24008x / 97952x fewer nodes), exactly mirroring the
+   fixed-mode "knap cracks the tail" behaviour. (At low floors / very wide bands the connectivity
+   bridge-fill, not the knapsack, dominates and both modes TO -- the UB still prunes ~47-78% of the
+   visited nodes but the per-node knapsack over full N=15 domains is itself expensive; `KNAPCOLS`
+   bounds how many uncommitted columns it runs over, and `KNAPSTEPS` bounds each call so the bound
+   only ever *weakens* on exhaustion, never goes unsound.)
+
+3. **regress.sh: ALL GATES GREEN** -- N=7 26/26, deep-col10 LE-224 (x3), center col0=1 LE-173 (x15);
+   fixed-length / decision engines byte-identical (node counts unchanged).
+
+### Caveat: full N=15 geschenkcheques
+
+Replacing the per-vector sweep with varmax eliminates the `K^n` multiplier (one hard mask =
+~79.7M length-vectors -> ONE search), and the knapsack UB now fires and prunes (~47% of nodes on a
+real geschenkcheques mask). But a single full-length N=15 mask is intrinsically hard: the per-node
+knapsack over 15-length × hundreds-of-words domains is costly, and the connectivity bridge fill is
+large, so a full mask still TOs in tens of seconds (the dedicated `n15_bounded_certify` proof job
+grinds the same base for hours). The varmax+UB mechanism is correct and engaged on the real mask; the
+clean, dramatic prune is demonstrated on the tractable N=11 LE-proof slices above. Tightening the
+N=15 root-knapsack cost (incremental consistent-set / bitset deltas, a cheaper root pre-filter) is
+the next scaling lever, not a soundness gap.
