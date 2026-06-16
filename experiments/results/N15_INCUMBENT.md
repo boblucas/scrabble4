@@ -15,9 +15,12 @@ reserve=1) boards strictly above 1955 on the SAME word/mask (`geschenkcheques`, 
 | 1995 | LNS (thaw {0,3,11}, re-maximize) | 271 | 0:gymshows 72, 3:chemobox 27, 7:kuulkjes 72, 8:cel 9, 11:qatveld 33, 12:uvea 10, 14:steenweg 48 |
 | 2014 | LNS (thaw {0,7,8}) | 290 | 0:gymjufje 93, 3:chemobox 27, 7:kapotduw 63, 8:chloraal 16, 11:qatveld 33, 12:uvea 10, 14:steenweg 48 |
 | 2030 | LNS (thaw {8,12,14}) | 306 | 0:gymjufje 93, 3:chemobox 27, 7:kapotduw 63, 8:claviger 20, 11:qatveld 33, 12:uraat 10, 14:showbizz 60 |
+| 2037 | LNS (thaw {3,7,12}) | 313 | 0:gymjufje 93, 3:complext 31, 7:krulwerk 69, 8:chefarts 17, 11:qatveld 33, 12:uraat 10, 14:showbizz 60 |
+| 2039 | LNS thaw-k4 (thaw {0,7,11,14}) | 315 | 0:gezwijmd 69, 3:chefstaf 24, 7:klepstuw 69, 8:copieuze 20, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
 
-Progression on one mask via LNS: 1955 → 1958 → 1995 → 2014 → 2030 (+75 over the start). All seven
-newly columns now carry a scored vertical. (Table updated as the portfolio finds higher boards.)
+Progression on one mask via LNS: 1955 → 1958 → 1995 → 2014 → 2030 → 2037 → 2039 (+84 over the
+start). All seven newly columns now carry a scored vertical. (Table updated as the portfolio finds
+higher boards.)
 
 Analytic per-column-independent ceiling for this mask is 2158 (ignores the shared bag + connectivity,
 so it is loose); LNS keeps closing the gap. A separate cold-start TARGET run on `chequeformulier`
@@ -68,8 +71,17 @@ hard-coded.
 
 The engines are parameterised purely by `(word, mask, which columns to thaw, target)` over the v2
 model, so they generalise to any 15-letter word, any legal mask, any board incumbent, any dictionary
-the rules object provides. Soundness gate: a total is reported ONLY when witness_check returns
-ok=True; CP-SAT is just the proposal mechanism.
+the rules object provides.
+
+**Soundness gate (the only authority).** A total is reported / saved ONLY when
+`witness_check.check_witness(require_center=True)` returns ok=True, and the saved `claimed_total` is
+the score witness_check recomputed — never the CP-SAT model objective. The model objective `obj`
+(top-tile premium + Σ premium-weighted tail values) is just the search-steering proxy and is NOT
+exactly the witnessed turn score: it omits the horizontal cross-words that adjacent column tails can
+form (which witness_check does count), so `obj` and the verified total can differ by a few points in
+either direction. That is harmless here — CP-SAT only proposes boards; witness_check decides and the
+saved number is its verdict. (A warm-started full `maximize` variant proposed an `obj`+323 board that
+witness_check scored 2031, below the incumbent, so nothing was saved — exactly the gate working.)
 
 ### CLI
 
