@@ -19,10 +19,12 @@ reserve=1) boards strictly above 1955 on the SAME word/mask (`geschenkcheques`, 
 | 2039 | LNS thaw-k4 (thaw {0,7,11,14}) | 315 | 0:gezwijmd 69, 3:chefstaf 24, 7:klepstuw 69, 8:copieuze 20, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
 | 2041 | LNS thaw-k4 (thaw {0,8,11,14}) | 317 | 0:gezwijmd 69, 3:chefstaf 24, 7:klepstuw 69, 8:coulombs 22, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
 | 2042 | LNS thaw-k4 (thaw {3,8,11,14}) | 318 | 0:gezwijmd 69, 3:catfight 23, 7:klepstuw 69, 8:cumprefs 24, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
-| **2043** | LNS thaw-k4 (thaw {0,8,11}) | 319 | best verified board, `N15_best_2043.json` |
+| 2043 | LNS thaw-k4 (thaw {0,8,11}) | 319 | 0:gymjufje 93, 3:complext 31, 7:kwabbigs 63, 8:cakevorm 20, 11:qatveld 33, 12:uraat 10, 14:stuwklep 69 |
+| **2047** | LNS thaw-k4 (thaw {3,7,11,14}) | 323 | 0:gezwijmd 69, 3:comforts 25, 7:krulwilg 72, 8:cumprefs 24, 11:qatveld 33, 12:uvea 10, 14:skyboxje 90 |
 
-Progression on one mask via LNS: 1955 → 1958 → 1995 → 2014 → 2030 → 2037 → 2039 → 2041 → 2042 → 2043
-(**+88 over the start**, all witness-verified). All seven newly columns now carry a scored vertical;
+Progression on one mask via LNS: 1955 → 1958 → 1995 → 2014 → 2030 → 2037 → 2039 → 2041 → 2042 →
+2043 → 2047 (**+92 over the start**, all witness-verified). All seven newly columns now carry a
+scored vertical;
 the high earners are the three ×3 columns (col 0 gezwijmd 69, col 7 klepstuw 69, col 14 skyboxje 90).
 Larger LNS neighbourhoods (thaw-k 4–5) keep finding gains past the thaw-k 2–3 plateau. (Table updated
 as the portfolio finds higher boards — the latest `N15_best_<total>.json` is the current best.)
