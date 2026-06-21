@@ -1,0 +1,302 @@
+# word=geschenkcheques masks=[(0, 3, 7, 8, 11, 12, 14)] LB=2007 reserve=1 cap=120.0 workers=24
+# mask (0, 3, 7, 8, 11, 12, 14) main_const=1724 vfloor=283 (LB=2007)
+# enumerating combos (total gross > 283) ...
+# 81872 combos>vfloor (capped=False), collected 81872; enum 29s; 23 already in ledger
+# ledger: 23 UNSAT, 0 SAT, 0 UNKNOWN, 0 ERROR already; 81849 to test
+  ... 200/81849 tested (3.01/s, ~7.5h left); undecided=0
+  ... 400/81849 tested (3.28/s, ~6.9h left); undecided=0
+  ... 600/81849 tested (3.36/s, ~6.7h left); undecided=0
+  ... 800/81849 tested (3.44/s, ~6.5h left); undecided=0
+  ... 1000/81849 tested (3.50/s, ~6.4h left); undecided=0
+  ... 1200/81849 tested (3.50/s, ~6.4h left); undecided=0
+  ... 1400/81849 tested (3.52/s, ~6.4h left); undecided=0
+  ... 1600/81849 tested (3.53/s, ~6.3h left); undecided=0
+  ... 1800/81849 tested (3.54/s, ~6.3h left); undecided=0
+  ... 2000/81849 tested (3.51/s, ~6.3h left); undecided=0
+  ... 2200/81849 tested (3.48/s, ~6.4h left); undecided=0
+  ... 2400/81849 tested (3.46/s, ~6.4h left); undecided=0
+  ... 2600/81849 tested (3.39/s, ~6.5h left); undecided=0
+  ... 2800/81849 tested (3.34/s, ~6.6h left); undecided=0
+  ... 3000/81849 tested (3.30/s, ~6.6h left); undecided=0
+  ... 3200/81849 tested (3.26/s, ~6.7h left); undecided=0
+  ... 3400/81849 tested (3.22/s, ~6.8h left); undecided=0
+  ... 3600/81849 tested (3.18/s, ~6.8h left); undecided=1
+  ... 3800/81849 tested (3.17/s, ~6.8h left); undecided=2
+  ... 4000/81849 tested (3.14/s, ~6.9h left); undecided=2
+  ... 4200/81849 tested (3.14/s, ~6.9h left); undecided=6
+  ... 4400/81849 tested (3.15/s, ~6.8h left); undecided=6
+  ... 4600/81849 tested (3.15/s, ~6.8h left); undecided=6
+  ... 4800/81849 tested (3.15/s, ~6.8h left); undecided=6
+  ... 5000/81849 tested (3.14/s, ~6.8h left); undecided=6
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+# word=geschenkcheques masks=[(0, 3, 7, 8, 11, 12, 14)] LB=2007 reserve=1 cap=1200.0 workers=16
+# mask (0, 3, 7, 8, 11, 12, 14) main_const=1724 vfloor=283 (LB=2007)
+# enumerating combos (total gross > 283) ...
+# 81872 combos>vfloor (capped=False), collected 81872; enum 38s; 5173 already in ledger
+# ledger: 5167 UNSAT, 0 SAT, 0 UNKNOWN, 0 ERROR already; 76705 to test
+  ... 200/76705 tested (2.56/s, ~8.3h left); undecided=0
+  ... 400/76705 tested (2.69/s, ~7.9h left); undecided=0
+  ... 600/76705 tested (2.63/s, ~8.0h left); undecided=0
+  ... 800/76705 tested (2.56/s, ~8.2h left); undecided=0
+  ... 1000/76705 tested (2.49/s, ~8.5h left); undecided=0
+  ... 1200/76705 tested (2.49/s, ~8.4h left); undecided=0
+  ... 1400/76705 tested (2.46/s, ~8.5h left); undecided=0
+  ... 1600/76705 tested (2.40/s, ~8.7h left); undecided=0
+  ... 1800/76705 tested (2.37/s, ~8.8h left); undecided=0
+  ... 2000/76705 tested (2.29/s, ~9.1h left); undecided=0
+  ... 2200/76705 tested (2.21/s, ~9.3h left); undecided=0
+  ... 2400/76705 tested (2.16/s, ~9.6h left); undecided=0
+  cid=5806 gross=286 SAT but witness total 2002 (not > LB) -> continue
+  ... 2600/76705 tested (2.08/s, ~9.9h left); undecided=0
+  ... 2800/76705 tested (2.05/s, ~10.0h left); undecided=0
+  ... 3000/76705 tested (2.05/s, ~10.0h left); undecided=1
+  ... 3200/76705 tested (2.05/s, ~10.0h left); undecided=1
+  ... 3400/76705 tested (2.05/s, ~9.9h left); undecided=1
+  ... 3600/76705 tested (2.05/s, ~9.9h left); undecided=3
+  ... 3800/76705 tested (2.05/s, ~9.9h left); undecided=3
+  ... 4000/76705 tested (2.05/s, ~9.9h left); undecided=3
+  cid=7588 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  ... 4200/76705 tested (2.05/s, ~9.8h left); undecided=4
+  ... 4400/76705 tested (2.05/s, ~9.8h left); undecided=4
+  ... 4600/76705 tested (2.06/s, ~9.7h left); undecided=4
+  ... 4800/76705 tested (2.07/s, ~9.7h left); undecided=4
+  ... 5000/76705 tested (2.07/s, ~9.6h left); undecided=4
+  ... 5200/76705 tested (2.07/s, ~9.6h left); undecided=4
+  cid=8585 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  ... 5400/76705 tested (2.03/s, ~9.8h left); undecided=4
+  cid=9666 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  ... 5600/76705 tested (1.82/s, ~10.9h left); undecided=5
+  ... 5800/76705 tested (1.74/s, ~11.3h left); undecided=6
+  cid=10524 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  cid=10525 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  ... 6000/76705 tested (1.70/s, ~11.6h left); undecided=6
+  cid=10535 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  ... 6200/76705 tested (1.68/s, ~11.6h left); undecided=7
+  ... 6400/76705 tested (1.68/s, ~11.6h left); undecided=8
+  ... 6600/76705 tested (1.69/s, ~11.5h left); undecided=14
+  ... 6800/76705 tested (1.70/s, ~11.4h left); undecided=14
+  ... 7000/76705 tested (1.71/s, ~11.3h left); undecided=14
+  ... 7200/76705 tested (1.72/s, ~11.2h left); undecided=14
+  ... 7400/76705 tested (1.73/s, ~11.1h left); undecided=14
+  ... 7600/76705 tested (1.73/s, ~11.1h left); undecided=14
+  ... 7800/76705 tested (1.74/s, ~11.0h left); undecided=14
+  ... 8000/76705 tested (1.74/s, ~11.0h left); undecided=14
+  ... 8200/76705 tested (1.74/s, ~11.0h left); undecided=14
+  cid=11744 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  cid=11563 gross=286 SAT but witness total 2006 (not > LB) -> continue
+  ... 8400/76705 tested (1.73/s, ~11.0h left); undecided=14
+  ... 8600/76705 tested (1.67/s, ~11.4h left); undecided=15
+  cid=13001 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 8800/76705 tested (1.61/s, ~11.7h left); undecided=15
+  ... 9000/76705 tested (1.55/s, ~12.1h left); undecided=17
+  cid=13619 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  cid=13656 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 9200/76705 tested (1.51/s, ~12.4h left); undecided=22
+  ... 9400/76705 tested (1.51/s, ~12.4h left); undecided=25
+  ... 9600/76705 tested (1.51/s, ~12.3h left); undecided=25
+  ... 9800/76705 tested (1.51/s, ~12.3h left); undecided=26
+  ... 10000/76705 tested (1.51/s, ~12.2h left); undecided=26
+  ... 10200/76705 tested (1.52/s, ~12.2h left); undecided=27
+  ... 10400/76705 tested (1.52/s, ~12.1h left); undecided=27
+  cid=14193 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 10600/76705 tested (1.52/s, ~12.0h left); undecided=27
+  ... 10800/76705 tested (1.53/s, ~12.0h left); undecided=27
+  cid=14331 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 11000/76705 tested (1.53/s, ~11.9h left); undecided=27
+  cid=14764 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 11200/76705 tested (1.52/s, ~11.9h left); undecided=28
+  ... 11400/76705 tested (1.52/s, ~11.9h left); undecided=28
+  ... 11600/76705 tested (1.52/s, ~11.9h left); undecided=28
+  ... 11800/76705 tested (1.50/s, ~12.0h left); undecided=29
+  ... 12000/76705 tested (1.49/s, ~12.0h left); undecided=29
+  cid=16178 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 12200/76705 tested (1.49/s, ~12.1h left); undecided=30
+  ... 12400/76705 tested (1.48/s, ~12.0h left); undecided=32
+  ... 12600/76705 tested (1.48/s, ~12.0h left); undecided=33
+  ... 12800/76705 tested (1.48/s, ~12.0h left); undecided=33
+  ... 13000/76705 tested (1.48/s, ~12.0h left); undecided=35
+  ... 13200/76705 tested (1.48/s, ~11.9h left); undecided=38
+  ... 13400/76705 tested (1.49/s, ~11.8h left); undecided=38
+  ... 13600/76705 tested (1.49/s, ~11.8h left); undecided=38
+  ... 13800/76705 tested (1.49/s, ~11.7h left); undecided=38
+  ... 14000/76705 tested (1.48/s, ~11.8h left); undecided=38
+  cid=17771 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 14200/76705 tested (1.47/s, ~11.8h left); undecided=40
+  ... 14400/76705 tested (1.45/s, ~12.0h left); undecided=42
+  cid=18557 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 14600/76705 tested (1.43/s, ~12.1h left); undecided=42
+  ... 14800/76705 tested (1.42/s, ~12.1h left); undecided=44
+  ... 15000/76705 tested (1.42/s, ~12.1h left); undecided=47
+  cid=19481 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 15200/76705 tested (1.42/s, ~12.0h left); undecided=48
+  cid=19330 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 15400/76705 tested (1.43/s, ~11.9h left); undecided=48
+  ... 15600/76705 tested (1.44/s, ~11.8h left); undecided=49
+  ... 15800/76705 tested (1.44/s, ~11.7h left); undecided=49
+  ... 16000/76705 tested (1.45/s, ~11.6h left); undecided=50
+  cid=19531 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 16200/76705 tested (1.46/s, ~11.5h left); undecided=50
+  ... 16400/76705 tested (1.46/s, ~11.5h left); undecided=50
+  ... 16600/76705 tested (1.46/s, ~11.4h left); undecided=50
+  ... 16800/76705 tested (1.46/s, ~11.4h left); undecided=50
+  ... 17000/76705 tested (1.45/s, ~11.4h left); undecided=50
+  ... 17200/76705 tested (1.45/s, ~11.4h left); undecided=50
+  ... 17400/76705 tested (1.45/s, ~11.4h left); undecided=50
+  cid=21504 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 17600/76705 tested (1.45/s, ~11.4h left); undecided=50
+  ... 17800/76705 tested (1.44/s, ~11.3h left); undecided=50
+  ... 18000/76705 tested (1.45/s, ~11.3h left); undecided=55
+  cid=21828 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 18200/76705 tested (1.45/s, ~11.2h left); undecided=55
+  ... 18400/76705 tested (1.46/s, ~11.1h left); undecided=55
+  ... 18600/76705 tested (1.46/s, ~11.0h left); undecided=55
+  ... 18800/76705 tested (1.47/s, ~11.0h left); undecided=55
+  ... 19000/76705 tested (1.47/s, ~10.9h left); undecided=55
+  ... 19200/76705 tested (1.48/s, ~10.8h left); undecided=55
+  ... 19400/76705 tested (1.48/s, ~10.7h left); undecided=55
+  ... 19600/76705 tested (1.49/s, ~10.7h left); undecided=55
+  ... 19800/76705 tested (1.49/s, ~10.6h left); undecided=56
+  ... 20000/76705 tested (1.50/s, ~10.5h left); undecided=57
+  ... 20200/76705 tested (1.50/s, ~10.5h left); undecided=57
+  ... 20400/76705 tested (1.50/s, ~10.4h left); undecided=57
+  ... 20600/76705 tested (1.51/s, ~10.3h left); undecided=57
+  ... 20800/76705 tested (1.51/s, ~10.3h left); undecided=57
+  ... 21000/76705 tested (1.50/s, ~10.3h left); undecided=58
+  ... 21200/76705 tested (1.49/s, ~10.3h left); undecided=58
+  ... 21400/76705 tested (1.49/s, ~10.3h left); undecided=59
+  ... 21600/76705 tested (1.48/s, ~10.4h left); undecided=61
+  ... 21800/76705 tested (1.48/s, ~10.3h left); undecided=62
+  ... 22000/76705 tested (1.47/s, ~10.3h left); undecided=63
+  ... 22200/76705 tested (1.48/s, ~10.3h left); undecided=67
+  ... 22400/76705 tested (1.48/s, ~10.2h left); undecided=67
+  ... 22600/76705 tested (1.48/s, ~10.1h left); undecided=68
+  ... 22800/76705 tested (1.49/s, ~10.1h left); undecided=68
+  ... 23000/76705 tested (1.48/s, ~10.1h left); undecided=68
+  cid=26857 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 23200/76705 tested (1.40/s, ~10.7h left); undecided=77
+  cid=28256 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  cid=28276 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 23400/76705 tested (1.39/s, ~10.7h left); undecided=81
+  ... 23600/76705 tested (1.39/s, ~10.6h left); undecided=82
+  ... 23800/76705 tested (1.39/s, ~10.6h left); undecided=83
+  ... 24000/76705 tested (1.39/s, ~10.6h left); undecided=83
+  ... 24200/76705 tested (1.39/s, ~10.5h left); undecided=83
+  cid=28312 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 24400/76705 tested (1.39/s, ~10.5h left); undecided=83
+  cid=28482 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 24600/76705 tested (1.39/s, ~10.4h left); undecided=85
+  ... 24800/76705 tested (1.39/s, ~10.4h left); undecided=86
+  ... 25000/76705 tested (1.40/s, ~10.3h left); undecided=86
+  ... 25200/76705 tested (1.40/s, ~10.2h left); undecided=87
+  ... 25400/76705 tested (1.41/s, ~10.1h left); undecided=88
+  cid=28793 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 25600/76705 tested (1.41/s, ~10.1h left); undecided=88
+  ... 25800/76705 tested (1.41/s, ~10.0h left); undecided=88
+  ... 26000/76705 tested (1.41/s, ~10.0h left); undecided=88
+  ... 26200/76705 tested (1.41/s, ~10.0h left); undecided=88
+  cid=30921 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 26400/76705 tested (1.36/s, ~10.3h left); undecided=90
+  ... 26600/76705 tested (1.36/s, ~10.2h left); undecided=96
+  ... 26800/76705 tested (1.36/s, ~10.2h left); undecided=97
+  cid=31481 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 27000/76705 tested (1.34/s, ~10.3h left); undecided=102
+  ... 27200/76705 tested (1.34/s, ~10.3h left); undecided=102
+  ... 27400/76705 tested (1.34/s, ~10.2h left); undecided=102
+  cid=31784 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 27600/76705 tested (1.34/s, ~10.2h left); undecided=102
+  cid=31988 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 27800/76705 tested (1.34/s, ~10.1h left); undecided=103
+  ... 28000/76705 tested (1.34/s, ~10.1h left); undecided=104
+  cid=31975 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 28200/76705 tested (1.35/s, ~10.0h left); undecided=105
+  ... 28400/76705 tested (1.35/s, ~9.9h left); undecided=107
+  cid=32732 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  ... 28600/76705 tested (1.31/s, ~10.2h left); undecided=111
+  cid=33730 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33729 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33673 gross=285 SAT but witness total 2005 (not > LB) -> continue
+  cid=33785 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33788 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33795 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33787 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33838 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33846 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 28800/76705 tested (1.18/s, ~11.3h left); undecided=140
+  cid=33874 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33881 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33981 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=33965 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=34026 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 29000/76705 tested (1.13/s, ~11.7h left); undecided=154
+  cid=34074 gross=284 SAT but witness total 2002 (not > LB) -> continue
+  cid=34050 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 29200/76705 tested (1.12/s, ~11.8h left); undecided=157
+  cid=34087 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=34114 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=34460 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 29400/76705 tested (1.08/s, ~12.1h left); undecided=167
+  cid=34450 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=34464 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 29600/76705 tested (1.08/s, ~12.1h left); undecided=173
+  ... 29800/76705 tested (1.08/s, ~12.1h left); undecided=175
+  ... 30000/76705 tested (1.08/s, ~12.1h left); undecided=175
+  ... 30200/76705 tested (1.07/s, ~12.1h left); undecided=178
+  cid=34648 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 30400/76705 tested (1.07/s, ~12.0h left); undecided=182
+  cid=34908 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 30600/76705 tested (1.07/s, ~12.0h left); undecided=182
+  cid=35182 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 30800/76705 tested (1.06/s, ~12.0h left); undecided=183
+  ... 31000/76705 tested (1.06/s, ~12.0h left); undecided=186
+  cid=35506 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 31200/76705 tested (1.06/s, ~11.9h left); undecided=187
+  ... 31400/76705 tested (1.06/s, ~11.8h left); undecided=188
+  ... 31600/76705 tested (1.06/s, ~11.8h left); undecided=191
+  ... 31800/76705 tested (1.06/s, ~11.8h left); undecided=192
+  ... 32000/76705 tested (1.06/s, ~11.7h left); undecided=194
+  ... 32200/76705 tested (1.06/s, ~11.7h left); undecided=196
+  ... 32400/76705 tested (1.06/s, ~11.6h left); undecided=196
+  ... 32600/76705 tested (1.06/s, ~11.5h left); undecided=196
+  ... 32800/76705 tested (1.06/s, ~11.5h left); undecided=200
+  ... 33000/76705 tested (1.07/s, ~11.4h left); undecided=203
+  ... 33200/76705 tested (1.07/s, ~11.3h left); undecided=203
+  cid=37294 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 33400/76705 tested (1.07/s, ~11.3h left); undecided=203
+  ... 33600/76705 tested (1.06/s, ~11.3h left); undecided=204
+  ... 33800/76705 tested (1.06/s, ~11.3h left); undecided=204
+  cid=38420 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 34000/76705 tested (1.05/s, ~11.2h left); undecided=204
+  ... 34200/76705 tested (1.06/s, ~11.2h left); undecided=214
+  ... 34400/76705 tested (1.06/s, ~11.1h left); undecided=215
+  ... 34600/76705 tested (1.06/s, ~11.0h left); undecided=215
+  ... 34800/76705 tested (1.06/s, ~10.9h left); undecided=215
+  ... 35000/76705 tested (1.07/s, ~10.9h left); undecided=215
+  ... 35200/76705 tested (1.07/s, ~10.8h left); undecided=215
+  ... 35400/76705 tested (1.07/s, ~10.7h left); undecided=215
+  cid=39340 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 35600/76705 tested (1.07/s, ~10.6h left); undecided=215
+  cid=39470 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 35800/76705 tested (1.08/s, ~10.5h left); undecided=215
+  ... 36000/76705 tested (1.08/s, ~10.5h left); undecided=215
+  ... 36200/76705 tested (1.08/s, ~10.4h left); undecided=215
+  ... 36400/76705 tested (1.09/s, ~10.3h left); undecided=215
+  ... 36600/76705 tested (1.09/s, ~10.2h left); undecided=216
+  ... 36800/76705 tested (1.09/s, ~10.1h left); undecided=219
+  ... 37000/76705 tested (1.10/s, ~10.0h left); undecided=219
+  ... 37200/76705 tested (1.10/s, ~10.0h left); undecided=219
+  ... 37400/76705 tested (1.11/s, ~9.9h left); undecided=219
+  ... 37600/76705 tested (1.11/s, ~9.8h left); undecided=219
+  ... 37800/76705 tested (1.11/s, ~9.7h left); undecided=219
+  ... 38000/76705 tested (1.12/s, ~9.6h left); undecided=219
+  cid=43254 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  cid=43190 gross=284 SAT but witness total 2006 (not > LB) -> continue
+  cid=43271 gross=284 SAT but witness total 2004 (not > LB) -> continue
+  ... 38200/76705 tested (1.09/s, ~9.8h left); undecided=220
+  *** NEW-LB *** cid=43183 gross=284 total(model)=2008 witness=2008 > LB 2007
+      saved /home/bob/programming/scrabble4/experiments/results/turns/N15_best_2008.json
+=== mask (0, 3, 7, 8, 11, 12, 14): NEW-LB {'mask': (0, 3, 7, 8, 11, 12, 14), 'verdict': 'NEW-LB', 'total': 2008, 'tested': 38208, 'count': 81872}
+### LB RAISED to 2008; remaining masks will use the higher floor (re-enumerated)
+=== SUMMARY ===
+  mask (0, 3, 7, 8, 11, 12, 14): NEW-LB {'mask': (0, 3, 7, 8, 11, 12, 14), 'verdict': 'NEW-LB', 'total': 2008, 'tested': 38208, 'count': 81872}
+=== final LB = 2008
