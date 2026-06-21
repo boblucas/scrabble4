@@ -26,15 +26,20 @@ Parallel driver `experiments/n15_oracle_parallel.py`: process pool, `CPSAT_WORKE
 N solves run concurrently; resumable JSONL ledger keyed by combo id; targeted-PID cleanup only.
 
 ## Combo counts at LB=2007 (vfloor=283)
-| mask | combos > vfloor | complete? | bag-UB total |
-|------|-----------------|-----------|--------------|
-| (0,3,7,**8**,11,**12**,14) | **81,872** | YES | 2015 |
-| (0,3,7,**9**,11,**12**,14) | 339,539+ | capped (>>) | 2020 |
-| (0,3,7,**8**,11,**13**,14) | 2,169,393+ | capped (>>) | 2025 |
-| (0,3,7,**9**,11,**13**,14) | 11,840,826+ | capped (>>) | 2028 |
+My first measurements were time-budget-CAPPED undercounts (339k / 2.17M / 11.8M).  A later COMPLETE
+enumeration (n15_adjacent_filter, `N15_ADJACENT_FILTER.md`) gives the true counts -- the three large
+masks are even bigger than I first reported:
 
-Only mask (8,12) is tractable at LB=2007 (~5s/oracle, ~82k combos). The other three are millions+
-and remain intractable unless the LB rises substantially (which would shrink their bands).
+| mask | combos > vfloor (COMPLETE) | adj-bigram filtered survivors | bag-UB total |
+|------|---------------------------|-------------------------------|--------------|
+| (0,3,7,**8**,11,**12**,14) | **81,872** | 80,549 (-1.6%) | 2015 |
+| (0,3,7,**9**,11,**12**,14) | ~8,234,245 | 8,234,245 (-0%) | 2020 |
+| (0,3,7,**8**,11,**13**,14) | ~4,982,962 | 4,151,140 (-16.7%) | 2025 |
+| (0,3,7,**9**,11,**13**,14) | many millions (>40min to count) | <=~3% reduction | 2028 |
+
+Only mask (8,12) (81,872) is tractable at LB=2007. The other three are MILLIONS, and the sound
+adjacent-bigram filter prunes them only 0-17% (geschenkcheques' verticals are 97-100% bigram-
+compatible per adjacent pair), nowhere near enough -- they stay intractable unless the LB rises.
 
 Per-oracle observation: all combos tested so far return **proven UNSAT** in ~5s; **zero UNKNOWN**
 (cap=120s >> avg solve), so the certification basis holds (no timeouts counted as infeasible).
