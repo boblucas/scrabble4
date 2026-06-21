@@ -1,0 +1,2 @@
+mask (0,3,7,8,11,12,14) at LB=2008: 33716/33716 decided, verdicts={'UNSAT': 33716}, undecided=0
+VERDICT: CERTIFIED <= 2008 (no board > 2008; the 2008 witness achieves the max for this mask)
