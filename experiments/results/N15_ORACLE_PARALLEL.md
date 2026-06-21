@@ -71,3 +71,23 @@ rises substantially (which would require a >2007 witness, not yet found).
 
 **Bracket: [2007, 2030].**  Final mask-(8,12) verdict (CERTIFIED<=2007 expected, pending the sweep
 completing with zero residual UNKNOWN) filled in on completion.
+
+## Autonomous completion pipeline
+Because the shared host advances slowly under the competing training load, the run finishes
+unattended via three nohup'd processes (survive shell/session resets):
+1. **driver** (`n15_oracle_parallel.py --workers 16 --cap 1200 --recheck`) sweeps the 81,872 combos,
+   appending verdicts to the resumable ledger; exits CERTIFIED when all are UNSAT/SAT-witness<=2007
+   with zero undecided, or stops+saves on the first witness>2007 (NEW-LB).
+2. **status logger** (`/tmp/n15_status_logger.sh` -> `oracle_parallel/status.log`) records progress.
+3. **finisher** (`/tmp/n15_finish.sh` -> `oracle_parallel/FINISH.log`) waits for the driver, then runs
+   up to 3 low-worker (4 workers, 1800s cap) `--recheck` passes so each residual starvation-UNKNOWN
+   gets ~dedicated CPU and resolves to UNSAT, and writes the FINAL verdict:
+   `CERTIFIED <= 2007` iff all 81,872 combos decided, zero undecided, no NEW-LB.
+
+To read the outcome later: `cat experiments/results/oracle_parallel/FINISH.log`.
+
+## How to certify the other 3 masks (future work)
+At LB=2007 they are intractable (0.34M / 2.2M / 11.8M combos).  Paths: (i) a >2007 witness from
+mask (8,12) would raise the LB and shrink every band (cascade); (ii) a still-tighter relaxation than
+the adjacent-pair UB (triple-column / full-row-automaton coupling) dropping their UB <=2007;
+(iii) the same parallel oracle at a raised LB once (i) lands.
