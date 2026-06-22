@@ -59,23 +59,30 @@ Per-oracle observation: all combos tested so far return **proven UNSAT** in ~5s;
   2002/2006 (<= 2007), correctly logged "SAT but witness <= LB -> continue", NOT a new LB.  A mask is
   CERTIFIED iff every combo is UNSAT *or* SAT-witness<=LB, with ZERO undecided (UNKNOWN/ERROR).
 
-## Result
-**IN PROGRESS** (mask (8,12), ~20% swept / ~16.4k of 81,872 combos as of this checkpoint):
-- every decided combo is UNSAT or SAT-with-witness<=2007 (SATs witness 2002/2006);
-- **zero combos witness > 2007 -> no NEW LB found yet** (so no cascade yet);
-- ~28 combos currently UNKNOWN = CPU-starvation artifacts (the shared host runs a heavy unsloth
-  training job, ~45/48 load); each proves UNSAT in ~5-9s on a free core and will be resolved in the
-  final low-worker `--recheck` sweep.  None counted as infeasible.
-- Throughput ~1.5 combos/s under the competing load -> the full mask-(8,12) sweep is ~12h more wall;
-  the run is resumable (committed ledger), monitored to completion.
+## Result (FINAL for mask (8,12))
 
-**The other three masks remain OPEN** (analytic adjacent-aware UB does not reach <=2007; see
-`N15_ADJACENT_UB.md`): UBs 2025 / 2022 / 2030 with 0.34M / 2.2M / 11.8M combos above the LB-2007
-floor respectively -- intractable per-combo at the current LB.  They only become tractable if the LB
-rises substantially (which would require a >2007 witness, not yet found).
+### NEW VERIFIED LB = 2008
+The LB=2007 sweep found combo cid=43183 (mask (0,3,7,8,11,12,14), gross=284) whose
+connectivity-feasible board **passes the FIXED witness_check (independently re-verified: ok=True,
+total=2008, require_center=True, reserve enforced)** -> saved `turns/N15_best_2008.json`.
+**Verified LB raised 2007 -> 2008.**
 
-**Bracket: [2007, 2030].**  Final mask-(8,12) verdict (CERTIFIED<=2007 expected, pending the sweep
-completing with zero residual UNKNOWN) filled in on completion.
+### mask (0,3,7,8,11,12,14) CERTIFIED <= 2008
+Re-running the oracle at the raised LB=2008, the mask has **33,716** combos with total > 2008
+(complete enum, capped=False).  **ALL 33,716 proven UNSAT** (zero SAT, zero undecided).  The few
+residual CPU-starvation UNKNOWNs (totals 2009) were each re-proven UNSAT with dedicated CPU (~5-8s)
+and appended.  Hence **no board for this mask exceeds 2008**, and the 2008 witness achieves it:
+**this mask's exact single-turn maximum = 2008.**  (Ledger:
+`oracle_parallel/geschenkcheques_0378111214_lb2008.jsonl`; verdict `FINISH2008.log`.)
+
+### The other three masks remain OPEN
+Even at the raised LB=2008 their bands shrink only ~1 pt; the adjacent-aware UBs (2020/2025/2028,
+all > 2008) don't certify them and the sound adjacent-bigram filter prunes only 0-17% -> still
+millions of combos (see counts below / `N15_ADJACENT_FILTER.md`).  Intractable per-combo at LB=2008.
+
+**Bracket: [2008, 2028].**  (UB now = max over the 3 still-open masks' tail-legal bag-UB = 2028;
+mask (8,12) is closed at exactly 2008.)  Closing the proof needs either a >2008 witness on one of the
+3 open masks (raising the LB further, shrinking all bands) or a strictly stronger relaxation.
 
 ## Autonomous completion pipeline
 Because the shared host advances slowly under the competing training load, the run finishes
