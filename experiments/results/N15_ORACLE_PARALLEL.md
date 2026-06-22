@@ -84,6 +84,18 @@ millions of combos (see counts below / `N15_ADJACENT_FILTER.md`).  Intractable p
 mask (8,12) is closed at exactly 2008.)  Closing the proof needs either a >2008 witness on one of the
 3 open masks (raising the LB further, shrinking all bands) or a strictly stronger relaxation.
 
+### Open-mask combo counts at the raised LB=2008 (vfloor=284)
+| mask | combos > 2008 | bag-UB | status |
+|------|---------------|--------|--------|
+| (0,3,7,8,11,12,14) | 33,716 (all UNSAT) | 2015 | **CERTIFIED = 2008** |
+| (0,3,7,8,11,13,14) | 2,566,094 | 2025 | OPEN (millions) |
+| (0,3,7,9,11,12,14) | >3,877,070 | 2020 | OPEN (millions; q-u pair) |
+| (0,3,7,9,11,13,14) | many millions | 2028 | OPEN (largest) |
+
+The 1-pt LB rise roughly halved each mask's band (like (8,12): 81,872->33,716) but the three large
+masks stay in the millions -- still per-combo-intractable.  **Net: 1 of 4 geschenkcheques {3,11}
+masks certified (= 2008); 3 remain OPEN.  Verified N=15 max-turn LB raised 2007 -> 2008.**
+
 ## Autonomous completion pipeline
 Because the shared host advances slowly under the competing training load, the run finishes
 unattended via three nohup'd processes (survive shell/session resets):
