@@ -151,19 +151,14 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
     try:
         for (key, gross, verdict, grid, secs, err) in pool.imap_unordered(_decide, work, chunksize=1):
             tested += 1
-            rec = {'key': key, 'gross': gross, 'verdict': verdict, 'secs': round(secs, 1)}
-            if err:
-                rec['err'] = err
-            lf.write(json.dumps(rec) + '\n')
-            if verdict == 'UNKNOWN':
-                undecided += 1
-            elif verdict == 'ERROR':
-                undecided += 1
-                print(f"  [ERROR] key={key} gross={gross}: {err}", flush=True)
-            elif verdict == 'SAT':
+            if verdict == 'SAT':
+                # witness FIRST, then record: a witness-rejected SAT is a MODEL BUG and must land
+                # in the ledger as retryable MISMATCH, never as a skip-forever SAT.
                 total = mc + gross
                 ok, vt, rep = T.verify_board(word, mask, grid)
                 if ok and vt > lb:
+                    lf.write(json.dumps({'key': key, 'gross': gross, 'verdict': 'SAT',
+                                         'secs': round(secs, 1), 'witness': vt}) + '\n')
                     print(f"  *** NEW-LB *** key={key} gross(nominal)={gross} "
                           f"witness={vt} > LB {lb}", flush=True)
                     new_lb = vt; new_grid = grid
@@ -177,12 +172,22 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
                         print(f"      saved {path}", flush=True)
                     break                    # stop the band: LB rises, re-enumerate needed
                 else:
-                    # v2: SAT MEANS realized > LB.  A witness disagreement is a MODEL BUG, not a
-                    # skippable combo -- record loudly and keep the mask OPEN.
                     undecided += 1
                     fail = ('witness total ' + str(vt)) if ok else rep.get('fail')
+                    lf.write(json.dumps({'key': key, 'gross': gross, 'verdict': 'MISMATCH',
+                                         'secs': round(secs, 1), 'note': str(fail)}) + '\n')
                     print(f"  [MODEL-WITNESS MISMATCH] key={key} SAT but {fail} -- "
                           f"INVESTIGATE (mask stays OPEN)", flush=True)
+                continue
+            rec = {'key': key, 'gross': gross, 'verdict': verdict, 'secs': round(secs, 1)}
+            if err:
+                rec['err'] = err
+            lf.write(json.dumps(rec) + '\n')
+            if verdict == 'UNKNOWN':
+                undecided += 1
+            elif verdict == 'ERROR':
+                undecided += 1
+                print(f"  [ERROR] key={key} gross={gross}: {err}", flush=True)
             if tested % 200 == 0:
                 rate = tested / (time.time() - t1)
                 rem = len(work) - tested

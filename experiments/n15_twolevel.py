@@ -532,6 +532,12 @@ def _oracle_template(word, mask):
     cells = create_board(m, [aut] * H, [aut] * W, alphabet_size=len(r.abc))
     for x in pre:
         m.add(cells[(x, 0)].letter[mt[x]] == 1)
+        # NO blank on a row-0 main-word cell: blanking one forfeits val*WM >= 27 realized points
+        # (witness _cell_score_weight) while oracle_beats_lb's slack <= UB-LB-1 <= 21, so no such
+        # grid can beat LB.  Without this the solver "free-blanked" main tiles to dodge bag
+        # overflow (penalty terms only cover scored tails) -> SAT over-claims the witness rejects
+        # (the 2026-07-03 MODEL-WITNESS MISMATCH).  Sound for lb >= UB-26 (driver asserts).
+        m.add(cells[(x, 0)].blank == 0)
     for x in newly:
         m.add(cells[(x, 0)].active == 0)
     m.add(cells[CENTER].active == 1)
