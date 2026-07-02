@@ -668,6 +668,10 @@ def oracle_beats_lb(word, mask, combo, vfloor, cap=120.0, fix_grid=None):
         grid = [[int(s.value(cells[(x, y)].letter_int)) for x in range(W)] for y in range(H)]
         for x in range(W):
             grid[0][x] = int(mt[x])
+        if os.environ.get('ORACLE_DEBUG_BLANKS'):
+            bl = [[bool(s.value(cells[(x, y)].blank)) if grid[y][x] and y > 0 else False
+                   for x in range(W)] for y in range(H)]
+            return 'SAT', (grid, bl)
         return 'SAT', grid
     return 'UNKNOWN', None
 
