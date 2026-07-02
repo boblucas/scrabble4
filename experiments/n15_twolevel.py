@@ -391,6 +391,231 @@ def oracle_feasible(word, mask, combo, cap=120.0, conn_maxlen=None):
     return 'UNKNOWN', None
 
 
+def combo_key(combo):
+    """CONTENT key for a combo (ledger identity). The positional enumeration id is
+    PYTHONHASHSEED-NONDETERMINISTIC across processes (proven 2026-07-02: same count, different
+    id->combo mapping under different hash seeds), so id-keyed resume has coverage holes. Keying
+    by content makes the ledger process-independent."""
+    parts = []
+    for c in sorted(combo):
+        ww = combo[c]
+        parts.append(f"{c}:{''.join(chr(96 + x) for x in ww) if ww else '-'}")
+    return '|'.join(parts)
+
+
+def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0):
+    """BLANK-AWARE complete band enumeration. Like enumerate_above_fast, but a combo whose tails
+    exceed `avail` on some letters may still be placeable using <=blank_budget blanks (a blank
+    stands in for any letter but SCORES 0). Each blank costs >= 1 realized point (min letter val
+    1, vertical word-mult >= 1), so best-possible realized gross <= nominal - n_deficit.
+    Band criterion: nominal - n_deficit > vfloor  (SOUND superset of {combos that can beat vfloor});
+    the score-aware oracle (oracle_beats_lb) then decides each exactly.
+    Returns dict(count, nodes, capped, top) with top = desc-sorted (nominal_gross, combo)."""
+    cols = list(mask)
+    coldata = []
+    for c in cols:
+        cands = col_candidates(w, c)
+        opts = [(0, Counter(), None)] + [(d['gross'], d['tail_ct'], d['word']) for d in cands]
+        opts.sort(key=lambda o: (-o[0], o[2] or ()))    # FULL deterministic order (tiebreak: word)
+        coldata.append((c, opts))
+    coldata.sort(key=lambda cd: (-cd[1][0][0], cd[0]))
+    order = [cd[0] for cd in coldata]
+    optlists = [cd[1] for cd in coldata]
+    n = len(order)
+    sufmax = [0] * (n + 1)
+    for k in range(n - 1, -1, -1):
+        sufmax[k] = sufmax[k + 1] + optlists[k][0][0]
+    bud = Counter(avail)
+    import heapq
+    top = []
+    tie = [0]
+    state = {'count': 0, 'nodes': 0, 'capped': False}
+    pick = [None] * n
+
+    def dfs(k, cur, used_b):
+        state['nodes'] += 1
+        if cur + sufmax[k] - used_b <= vfloor:      # best realized from here <= vfloor -> prune
+            return
+        if k == n:
+            state['count'] += 1
+            if collect_top:
+                combo = {order[i]: pick[i] for i in range(n)}
+                if len(top) < collect_top:
+                    tie[0] += 1; heapq.heappush(top, (cur, tie[0], combo))
+                elif cur > top[0][0]:
+                    tie[0] += 1; heapq.heapreplace(top, (cur, tie[0], combo))
+            return
+        for (g, tc, ww) in optlists[k]:
+            if cur + g + sufmax[k + 1] - used_b <= vfloor:
+                break
+            db = 0                                   # extra blanks this option needs
+            ok = True
+            for code, q in tc.items():
+                short = q - max(bud[code], 0)        # bud<0 = earlier deficit already counted
+                if short > 0:
+                    db += short
+                    if used_b + db > blank_budget:
+                        ok = False; break
+            if not ok:
+                continue
+            for code, q in tc.items():
+                bud[code] -= q
+            pick[k] = ww
+            dfs(k + 1, cur + g, used_b + db)
+            for code, q in tc.items():
+                bud[code] += q
+
+    sys.setrecursionlimit(100000)
+    dfs(0, 0, 0)
+    # canonical output order: (-gross, combo_key) -- fully deterministic across processes
+    top_sorted = sorted(((g, combo) for g, _, combo in top),
+                        key=lambda x: (-x[0], combo_key(x[1])))
+    return {'count': state['count'], 'nodes': state['nodes'], 'capped': state['capped'],
+            'top': top_sorted, 'order': order}
+
+
+_FAST_TMPL = {}
+def _oracle_template(word, mask):
+    """Build the combo-INDEPENDENT part of oracle_feasible's model ONCE per (word,mask):
+    board automata (full <=HMAX rows+cols), row-0 pre pins + newly row-0 inactive, center pin,
+    connectivity flow, bag/blank/reserve. Everything except the per-combo vertical pins.
+    Returns (model, cells). Cached: building this is ~7s; per-combo reuse is the whole speedup."""
+    from solve import create_board, single_component_flow, limit_letter_count
+    key = (word, tuple(mask))
+    tm = _FAST_TMPL.get(key)
+    if tm is not None:
+        return tm
+    mt = r.alphabet.to_tup(word)
+    newly = set(mask)
+    pre = [x for x in range(W) if x not in newly]
+    CENTER = (W // 2, H // 2)
+    aut = _aut_le(HMAX)
+    m = cp_model.CpModel(); m.prefix = 'o'
+    cells = create_board(m, [aut] * H, [aut] * W, alphabet_size=len(r.abc))
+    for x in pre:
+        m.add(cells[(x, 0)].letter[mt[x]] == 1)
+    for x in newly:
+        m.add(cells[(x, 0)].active == 0)
+    m.add(cells[CENTER].active == 1)
+    single_component_flow(m, cells, CENTER)
+    newly_ct = Counter(mt[c] for c in mask)
+    base, blanks = scale_counts()
+    avail = Counter({code: base[code] - newly_ct.get(code, 0) for code in base})
+    limit_letter_count(m, cells, avail)
+    m.add(sum(cell.blank for cell in cells.values()) <= blanks)
+    RESERVE = int(os.environ.get('RESERVE', '1'))
+    total_cap = sum(base.values()) + blanks - RESERVE - 7
+    m.add(sum(cell.active for cell in cells.values()) <= total_cap)
+    tm = (m, cells)
+    _FAST_TMPL[key] = tm
+    return tm
+
+
+def oracle_feasible_fast(word, mask, combo, cap=120.0):
+    """Semantically identical to oracle_feasible(conn_maxlen=None) but ~10x faster: reuses the
+    cached template model (92% of oracle_feasible's per-combo cost is rebuilding it) and applies
+    the per-combo vertical pins as VARIABLE DOMAIN FIXES on a proto copy -- a domain fix [v,v]
+    is exactly m.add(var == v). Verdicts gated A/B against oracle_feasible (see _fast_gate.py)."""
+    tmpl, cells = _oracle_template(word, mask)
+    m = cp_model.CpModel()
+    m.proto.CopyFrom(tmpl.proto)
+
+    def fix(var, v):
+        dom = m.proto.variables[var.index].domain
+        del dom[:]
+        dom.extend([v, v])
+
+    for c in mask:
+        ww = combo.get(c)
+        if ww is None:
+            fix(cells[(c, 1)].active, 0)
+        else:
+            L = len(ww)
+            for y in range(1, L):
+                fix(cells[(c, y)].letter[ww[y]], 1)
+            if L < H:
+                fix(cells[(c, L)].active, 0)
+    s = cp_model.CpSolver()
+    s.parameters.num_search_workers = int(os.environ.get('CPSAT_WORKERS', '8'))
+    s.parameters.max_time_in_seconds = cap
+    st = s.Solve(m)
+    if st == cp_model.INFEASIBLE:
+        return 'UNSAT', None
+    if st in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        mt = r.alphabet.to_tup(word)
+        grid = [[int(s.value(cells[(x, y)].letter_int)) for x in range(W)] for y in range(H)]
+        for x in range(W):
+            grid[0][x] = int(mt[x])
+        return 'SAT', grid
+    return 'UNKNOWN', None
+
+
+def vert_gross(ww, c):
+    """Nominal gross of vertical ww at newly col c (row-0 tile newly, tail = setup tiles)."""
+    return int(get_word_score(r, ww, c, 0, 0, [i == 0 for i in range(len(ww))])[0])
+
+
+def oracle_beats_lb(word, mask, combo, vfloor, cap=120.0):
+    """SOUND per-combo decision: does ANY legal setup board with exactly these verticals REALIZE
+    a total > LB (= main_const + vfloor)?  Replaces the unsound 'oracle_feasible SAT -> witness
+    the returned grid -> if <= LB continue' flow (a DIFFERENT grid for the same combo can score
+    higher when blanks land on scored tiles).
+
+    Realized gross = nominal - sum over blanked scored tail cells of val[letter] * wm[c]  (a blank
+    scores 0; the vertical's word-multiplier wm[c] comes from its newly row-0 tile).  We constrain
+    penalty <= nominal - vfloor - 1, i.e. realized > vfloor.  Blanks stay ALLOWED on scored cells
+    (bag-deficit combos need them) but must leave the total above LB.
+
+    Turn-tile blanks are NOT modeled: blanking a newly row-0 tile costs >= 27 points (main word
+    x27 for the {0,7,14} masks, min letter val 1), so for LB within 26 of the analytic mask UB
+    (2030) no turn-blank board can beat LB.  Caller must ensure main_const's x27 structure holds
+    (masks containing 0,7,14) and LB >= UB-26; the driver asserts this.
+
+    Returns (status, grid): 'UNSAT' = no grid beats LB (SAFE), 'SAT' = grid found (witness it),
+    'UNKNOWN' = cap hit."""
+    tmpl, cells = _oracle_template(word, mask)
+    m = cp_model.CpModel()
+    m.proto.CopyFrom(tmpl.proto)
+
+    def fix(var, v):
+        dom = m.proto.variables[var.index].domain
+        del dom[:]
+        dom.extend([v, v])
+
+    nominal = 0
+    pen_terms = []
+    for c in mask:
+        ww = combo.get(c)
+        if ww is None:
+            fix(cells[(c, 1)].active, 0)
+        else:
+            L = len(ww)
+            nominal += vert_gross(ww, c)
+            for y in range(1, L):
+                fix(cells[(c, y)].letter[ww[y]], 1)
+                pen_terms.append(val[chr(96 + ww[y])] * wm[c] * cells[(c, y)].blank)
+            if L < H:
+                fix(cells[(c, L)].active, 0)
+    slack = nominal - vfloor - 1                 # realized = nominal - penalty must be > vfloor
+    if slack < 0:
+        return 'UNSAT', None                     # nominal itself can't beat LB
+    if pen_terms:
+        m.add(sum(pen_terms) <= slack)
+    s = cp_model.CpSolver()
+    s.parameters.num_search_workers = int(os.environ.get('CPSAT_WORKERS', '8'))
+    s.parameters.max_time_in_seconds = cap
+    st = s.Solve(m)
+    if st == cp_model.INFEASIBLE:
+        return 'UNSAT', None
+    if st in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        mt = r.alphabet.to_tup(word)
+        grid = [[int(s.value(cells[(x, y)].letter_int)) for x in range(W)] for y in range(H)]
+        for x in range(W):
+            grid[0][x] = int(mt[x])
+        return 'SAT', grid
+    return 'UNKNOWN', None
+
+
 def oracle_feasible_core(word, mask, combo, cap=120.0):
     """Like oracle_feasible but the per-column vertical pins are placed under ASSUMPTION literals so
     that on UNSAT we can extract a SUFFICIENT infeasibility core = the SUBSET of columns whose pinned
