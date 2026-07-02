@@ -1,0 +1,29 @@
+canary combo: {0: 'glazuurt', 3: 'crossing', 7: 'kwalmpje', 8: 'cambrere', 11: 'qatjes', 12: 'uzelf', 14: 'stypende'}
+canary oracle_beats_lb(vfloor=283, fix_grid) = SAT  (10.1s)
+canary verify_board ok=True total=2008
+enum (0, 3, 7, 8, 11, 12, 14) lb=2007: count=3859674 capped=False (273s)
+band(8,12)@2007: 3859674 combos (v1 no-blank band was 81872)
+canary key present; band grew by 3777802 blank-assisted combos
+    [enum] 50M nodes, 3417165 in band
+    [enum] 100M nodes, 7439299 in band
+    [enum] 150M nodes, 17228506 in band
+    [enum] 200M nodes, 22999376 in band
+    [enum] 250M nodes, 27216594 in band
+    [enum] 300M nodes, 31109293 in band
+    [enum] 350M nodes, 34085983 in band
+    [enum] 400M nodes, 35429457 in band
+enum (0, 3, 7, 9, 11, 12, 14) lb=2008: count=35540735 capped=False (3383s)
+  10/40 checked, mismatches=0
+  20/40 checked, mismatches=0
+  30/40 checked, mismatches=0
+  40/40 checked, mismatches=0
+slow(feas): median=6.73s p90=7.08s max=11.38s
+fast(feas): median=0.56s p90=0.71s max=11.08s
+beats_lb: median=0.57s p90=0.80s max=4.88s
+
+=== GATE REPORT ===
+canary: SAT + witness 2008 > 2007  OK
+band superset: OK (3859674 >= 81872)
+A/B verdicts: 40/40 consistent; mismatches: []
+speedup (median slow feas / median beats_lb): 11.8x
+*** GATE PASS ***

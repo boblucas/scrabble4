@@ -406,37 +406,72 @@ def combo_key(combo):
 def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0):
     """BLANK-AWARE complete band enumeration. Like enumerate_above_fast, but a combo whose tails
     exceed `avail` on some letters may still be placeable using <=blank_budget blanks (a blank
-    stands in for any letter but SCORES 0). Each blank costs >= 1 realized point (min letter val
-    1, vertical word-mult >= 1), so best-possible realized gross <= nominal - n_deficit.
-    Band criterion: nominal - n_deficit > vfloor  (SOUND superset of {combos that can beat vfloor});
-    the score-aware oracle (oracle_beats_lb) then decides each exactly.
+    stands in for any letter but SCORES 0).
+
+    PENALTY BOUND: each deficit blank must sit on a TAIL cell carrying that letter (bridges using
+    the letter would only deepen the deficit), so it forfeits >= val[letter] * wm[col] >=
+    val[letter] realized points.  Best-possible realized gross <= nominal - sum val[deficit
+    letters].  Band criterion: nominal - penalty_lb > vfloor -- a SOUND superset of {combos that
+    can beat vfloor}; the score-aware oracle (oracle_beats_lb) then decides each exactly.
+    (Charging only 1/blank made blank-unlocked scarce-letter words explode the tree: the val-
+    based charge restores the suffix cut.)  Per-option adj_gross = gross - standalone penalty vs
+    the FULL avail (a lower bound on the true penalty, since the shared bag only shrinks) drives
+    ordering, the per-column max, and the suffix bound.
     Returns dict(count, nodes, capped, top) with top = desc-sorted (nominal_gross, combo)."""
+    vv = {i: val[chr(96 + i)] for i in range(1, 27)}
     cols = list(mask)
     coldata = []
     for c in cols:
         cands = col_candidates(w, c)
-        opts = [(0, Counter(), None)] + [(d['gross'], d['tail_ct'], d['word']) for d in cands]
-        opts.sort(key=lambda o: (-o[0], o[2] or ()))    # FULL deterministic order (tiebreak: word)
+        opts = []
+        for d in [{'gross': 0, 'tail_ct': Counter(), 'word': None}] + cands:
+            g, tc, ww = d['gross'], d['tail_ct'], d['word']
+            sb = sum(vv[code] * max(0, q - max(avail.get(code, 0), 0))
+                     for code, q in tc.items())          # standalone penalty LB vs full avail
+            nb = sum(max(0, q - max(avail.get(code, 0), 0)) for code, q in tc.items())
+            if nb > blank_budget:
+                continue                                  # can never be placed at all
+            opts.append((g, tc, ww, g - sb))              # adj_gross = gross - penaltyLB
+        opts.sort(key=lambda o: (-o[3], o[2] or ()))      # desc by adj_gross, deterministic tiebreak
         coldata.append((c, opts))
-    coldata.sort(key=lambda cd: (-cd[1][0][0], cd[0]))
+    coldata.sort(key=lambda cd: (-cd[1][0][3], cd[0]))
     order = [cd[0] for cd in coldata]
     optlists = [cd[1] for cd in coldata]
     n = len(order)
     sufmax = [0] * (n + 1)
     for k in range(n - 1, -1, -1):
-        sufmax[k] = sufmax[k + 1] + optlists[k][0][0]
+        sufmax[k] = sufmax[k + 1] + optlists[k][0][3]     # suffix bound on ADJUSTED gross
     bud = Counter(avail)
     import heapq
     top = []
     tie = [0]
     state = {'count': 0, 'nodes': 0, 'capped': False}
     pick = [None] * n
+    tprint = [time.time()]
 
-    def dfs(k, cur, used_b):
+    def dfs(k, cur, curadj, used_b):
+        # cur = nominal gross so far; curadj = nominal - true-deficit penaltyLB so far
         state['nodes'] += 1
-        if cur + sufmax[k] - used_b <= vfloor:      # best realized from here <= vfloor -> prune
+        if state['nodes'] % 50_000_000 == 0 and time.time() - tprint[0] > 60:
+            tprint[0] = time.time()
+            print(f"    [enum] {state['nodes']/1e6:.0f}M nodes, {state['count']} in band",
+                  flush=True)
+        if curadj + sufmax[k] <= vfloor:            # best realized from here <= vfloor -> prune
             return
         if k == n:
+            # LEAF-EXACT penalty: a deficit blank on letter code sits on some CHOSEN tail cell
+            # carrying code, forfeiting val[code] * wm[that col]; min over containing columns.
+            # (curadj charged only val*1 -- exact min-wm here drops loose-bound survivors.)
+            if cur != curadj:                        # has deficits: recheck with exact min-wm
+                pen = 0
+                for code in bud:
+                    d = -bud[code]
+                    if d > 0:
+                        mw = min((wm[order[i]] for i in range(n)
+                                  if pick[i] and code in pick[i][1:]), default=1)
+                        pen += d * vv[code] * mw
+                if cur - pen <= vfloor:
+                    return
             state['count'] += 1
             if collect_top:
                 combo = {order[i]: pick[i] for i in range(n)}
@@ -445,28 +480,31 @@ def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0
                 elif cur > top[0][0]:
                     tie[0] += 1; heapq.heapreplace(top, (cur, tie[0], combo))
             return
-        for (g, tc, ww) in optlists[k]:
-            if cur + g + sufmax[k + 1] - used_b <= vfloor:
-                break
-            db = 0                                   # extra blanks this option needs
+        for (g, tc, ww, gadj) in optlists[k]:
+            if curadj + gadj + sufmax[k + 1] <= vfloor:
+                break                                # opts sorted desc by adj_gross
+            db = 0; pen = 0                          # TRUE deficits vs the shared bag state
             ok = True
             for code, q in tc.items():
                 short = q - max(bud[code], 0)        # bud<0 = earlier deficit already counted
                 if short > 0:
                     db += short
+                    pen += vv[code] * short
                     if used_b + db > blank_budget:
                         ok = False; break
             if not ok:
                 continue
+            if curadj + g - pen + sufmax[k + 1] <= vfloor:
+                continue                             # true-penalty cut (not sorted by this: no break)
             for code, q in tc.items():
                 bud[code] -= q
             pick[k] = ww
-            dfs(k + 1, cur + g, used_b + db)
+            dfs(k + 1, cur + g, curadj + g - pen, used_b + db)
             for code, q in tc.items():
                 bud[code] += q
 
     sys.setrecursionlimit(100000)
-    dfs(0, 0, 0)
+    dfs(0, 0, 0, 0)
     # canonical output order: (-gross, combo_key) -- fully deterministic across processes
     top_sorted = sorted(((g, combo) for g, _, combo in top),
                         key=lambda x: (-x[0], combo_key(x[1])))
@@ -555,7 +593,7 @@ def vert_gross(ww, c):
     return int(get_word_score(r, ww, c, 0, 0, [i == 0 for i in range(len(ww))])[0])
 
 
-def oracle_beats_lb(word, mask, combo, vfloor, cap=120.0):
+def oracle_beats_lb(word, mask, combo, vfloor, cap=120.0, fix_grid=None):
     """SOUND per-combo decision: does ANY legal setup board with exactly these verticals REALIZE
     a total > LB (= main_const + vfloor)?  Replaces the unsound 'oracle_feasible SAT -> witness
     the returned grid -> if <= LB continue' flow (a DIFFERENT grid for the same combo can score
@@ -572,7 +610,11 @@ def oracle_beats_lb(word, mask, combo, vfloor, cap=120.0):
     (masks containing 0,7,14) and LB >= UB-26; the driver asserts this.
 
     Returns (status, grid): 'UNSAT' = no grid beats LB (SAFE), 'SAT' = grid found (witness it),
-    'UNKNOWN' = cap hit."""
+    'UNKNOWN' = cap hit.
+
+    fix_grid: (GATE/CANARY use) a full final board grid; every setup cell (rows >=1) is FIXED to
+    it, turning the solve into pure propagation -- validates that a known-legal board SATISFIES
+    the model (over-constraint check) without paying a hard SAT search."""
     tmpl, cells = _oracle_template(word, mask)
     m = cp_model.CpModel()
     m.proto.CopyFrom(tmpl.proto)
@@ -601,6 +643,14 @@ def oracle_beats_lb(word, mask, combo, vfloor, cap=120.0):
         return 'UNSAT', None                     # nominal itself can't beat LB
     if pen_terms:
         m.add(sum(pen_terms) <= slack)
+    if fix_grid is not None:                     # canary mode: pin the whole setup board
+        for y in range(1, H):
+            for x in range(W):
+                code = fix_grid[y][x]
+                if code:
+                    fix(cells[(x, y)].letter[code], 1)
+                else:
+                    fix(cells[(x, y)].active, 0)
     s = cp_model.CpSolver()
     s.parameters.num_search_workers = int(os.environ.get('CPSAT_WORKERS', '8'))
     s.parameters.max_time_in_seconds = cap

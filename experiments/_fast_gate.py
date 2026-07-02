@@ -55,14 +55,20 @@ def enum(mask, lb):
 
 
 # ---- 1. canary ------------------------------------------------------------------------------
+# fix_grid: pin the KNOWN 2008 board's setup into the model -> pure propagation.  Validates the
+# v2 model (pins + penalty + automata + flow + bag) ACCEPTS a known-legal >LB board (the
+# false-UNSAT / over-constraint check) without paying a hard SAT search (June: 1182s).
 MASK_C = (0, 3, 7, 8, 11, 12, 14)
+spec_c = json.load(open(f'{ROOT}/experiments/results/turns/N15_best_2008.json'))
 combo_c = board_combo(f'{ROOT}/experiments/results/turns/N15_best_2008.json', MASK_C)
 mc_c = T.main_const(WORD, MASK_C)
 print(f"canary combo: { {c: ''.join(chr(96+x) for x in ww) if ww else None for c, ww in combo_c.items()} }",
       flush=True)
 t0 = time.time()
-st, grid = T.oracle_beats_lb(WORD, MASK_C, combo_c, 2007 - mc_c, cap=1200.0)
-print(f"canary oracle_beats_lb(vfloor={2007-mc_c}) = {st}  ({time.time()-t0:.1f}s)", flush=True)
+st, grid = T.oracle_beats_lb(WORD, MASK_C, combo_c, 2007 - mc_c, cap=600.0,
+                             fix_grid=spec_c['grid'])
+print(f"canary oracle_beats_lb(vfloor={2007-mc_c}, fix_grid) = {st}  ({time.time()-t0:.1f}s)",
+      flush=True)
 if st != 'SAT':
     print("!!! GATE FAIL: canary not SAT (false-UNSAT risk)"); sys.exit(1)
 ok, vt, rep = T.verify_board(WORD, MASK_C, grid)
