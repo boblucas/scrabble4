@@ -48,23 +48,100 @@ UB_TURNBLANK_FLOOR = UB_ANALYTIC - 26
 # ---------------------------------------------------------------------------
 # Worker: decide a single combo.  Runs in a child process; CPSAT_WORKERS=1.
 # ---------------------------------------------------------------------------
-def _worker_init(word, mask, vfloor, cap):
-    global _W, _MASK, _VF, _CAP
+def _worker_init(word, mask, vfloor, cap, basefile=None, bcols=None):
+    global _W, _MASK, _VF, _CAP, _PIN, _BCOLS, _NLE
     _W, _MASK, _VF, _CAP = word, mask, vfloor, cap
+    _PIN, _BCOLS, _NLE = None, bcols, 0
     os.environ['CPSAT_WORKERS'] = '1'
     os.environ.setdefault('RESERVE', '1')
-    T._oracle_template(word, mask)       # build the shared template once per worker process
+    if basefile and os.environ.get('ORACLE_ENGINE', 'pin') != 'cpsat':
+        _PIN = _spawn_pin(basefile)
+    else:
+        T._oracle_template(word, mask)   # CP-SAT-only worker: build the template up front
+
+
+XFILL_BIN = os.environ.get('XFILL_BIN',
+                           f'{ROOT}/experiments/xfill_rs/target/release/xfill')
+
+
+def _spawn_pin(basefile):
+    import subprocess
+    return subprocess.Popen([XFILL_BIN, '--pinbatch', basefile, '--emit'],
+                            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, text=True, bufsize=1)
+
+
+def _pin_decide(key, combo):
+    """One combo through the Rust engine.  Returns (verdict, grid) with verdict in
+    SAT/UNSAT/TO/ERROR; grid only on SAT (reconstructed full board, row 0 = main word)."""
+    toks = []
+    for c in _BCOLS:
+        ww = combo.get(c)
+        toks.append('-' if not ww or len(ww) <= 1 else ','.join(str(x) for x in ww[1:]))
+    _PIN.stdin.write(f"{key} {_VF} {' '.join(toks)}\n"); _PIN.stdin.flush()
+    res = None
+    board = None
+    while True:
+        line = _PIN.stdout.readline()
+        if not line:
+            return 'ERROR', None                      # engine died
+        if line.startswith('RES '):
+            res = line.split(None, 2)[2].strip()
+            if res.startswith('MAX'):
+                nxt = _PIN.stdout.readline()
+                if nxt.startswith('BOARD'):
+                    board = [int(x) for x in nxt.split()[2:]]
+            break
+    if res.startswith('LE'):
+        return 'UNSAT', None
+    if res.startswith('MAX'):
+        mt = T.r.alphabet.to_tup(_W)
+        H = W = T.W
+        grid = [[0] * W for _ in range(H)]
+        for x in range(W):
+            grid[0][x] = int(mt[x])
+        if board and len(board) == W * H:
+            for y in range(1, H):
+                for x in range(W):
+                    grid[y][x] = int(board[y * W + x])
+        return 'SAT', grid
+    if res.startswith('TO'):
+        return 'TO', None
+    return 'ERROR', None                              # NOCAND/BADLINE = miscoordination, loud
 
 
 def _decide(arg):
-    """arg = (key, gross, combo_dict).  Returns (key, gross, verdict, grid_or_None, secs, err)."""
+    """arg = (key, gross, combo_dict).  Returns (key, gross, verdict, grid_or_None, secs, err, eng).
+
+    Engine: Rust --pinbatch first (~ms refutations; gated by _pin_gate.py: 4000/4000 UNSAT
+    agreement vs CP-SAT, TO/never-LE on the known-SAT canaries).  TO/engine-death falls back to
+    the CP-SAT oracle (cap=_CAP).  Every ORACLE_AUDIT-th pin-UNSAT is double-solved by CP-SAT as
+    a continuous cross-engine audit; a disagreement is a LOUD ERROR (never silently recorded)."""
     key, gross, combo = arg
     t0 = time.time()
+    audit_n = int(os.environ.get('ORACLE_AUDIT', '1000'))
+    global _NLE
     try:
+        if _PIN is not None:
+            st, grid = _pin_decide(key, combo)
+            if st == 'UNSAT':
+                _NLE += 1
+                if audit_n and _NLE % audit_n == 0:
+                    st2, _ = T.oracle_beats_lb(_W, _MASK, combo, _VF, cap=_CAP)
+                    if st2 == 'SAT':
+                        return (key, gross, 'ERROR', None, time.time() - t0,
+                                f'AUDIT MISMATCH: pin=UNSAT cpsat=SAT key={key}', 'audit')
+                return (key, gross, 'UNSAT', None, time.time() - t0, None, 'pin')
+            if st == 'SAT':
+                return (key, gross, 'SAT', grid, time.time() - t0, None, 'pin')
+            # TO or engine trouble -> exact CP-SAT fallback
+            st, grid = T.oracle_beats_lb(_W, _MASK, combo, _VF, cap=_CAP)
+            return (key, gross, st, grid if st == 'SAT' else None, time.time() - t0, None,
+                    'cpsat-fb')
         st, grid = T.oracle_beats_lb(_W, _MASK, combo, _VF, cap=_CAP)
+        return (key, gross, st, grid if st == 'SAT' else None, time.time() - t0, None, 'cpsat')
     except Exception as e:                       # never let a worker crash kill the pool
-        return (key, gross, 'ERROR', None, time.time() - t0, repr(e))
-    return (key, gross, st, grid if st == 'SAT' else None, time.time() - t0, None)
+        return (key, gross, 'ERROR', None, time.time() - t0, repr(e), '?')
 
 
 def load_ledger(path):
@@ -137,8 +214,17 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
     new_lb = None; new_grid = None
     undecided = n_unknown + n_err
     t1 = time.time()
+    # Rust pinbatch engine (default): build the base file once; each worker owns one child.
+    basefile = bcols = None
+    if os.environ.get('ORACLE_ENGINE', 'pin') != 'cpsat':
+        from n15_varmax_certify import build_unit_base
+        basefile, _, _ = build_unit_base(word, mask, LEDGER_DIR)
+        bcols = [int(l.split()[1]) for l in open(basefile) if l.startswith('BCOL')]
+        print(f"# engine=pinbatch base={basefile} PINWALL={os.environ.get('PINWALL', '5')}s "
+              f"audit=1/{os.environ.get('ORACLE_AUDIT', '1000')}", flush=True)
     ctx = mp.get_context('spawn')
-    pool = ctx.Pool(processes=workers, initializer=_worker_init, initargs=(word, mask, vfloor, cap))
+    pool = ctx.Pool(processes=workers, initializer=_worker_init,
+                    initargs=(word, mask, vfloor, cap, basefile, bcols))
     try:
         pids = [p.pid for p in pool._pool]
         with open(pidfile, 'w') as pf:
@@ -149,7 +235,12 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
     tested = 0
     lf = open(ledger_path, 'a', buffering=1)
     try:
-        for (key, gross, verdict, grid, secs, err) in pool.imap_unordered(_decide, work, chunksize=1):
+        # chunksize: ~ms pin decisions make per-item IPC the bottleneck; 32 amortizes it.  On a
+        # NEW-LB break the in-flight chunks' results are lost (stay undecided) -- the follow-up
+        # run at the higher LB re-decides them (known, sound; see memory note).
+        chunk = 32 if basefile else 1
+        for (key, gross, verdict, grid, secs, err, eng) in pool.imap_unordered(_decide, work,
+                                                                              chunksize=chunk):
             tested += 1
             if verdict == 'SAT':
                 # witness FIRST, then record: a witness-rejected SAT is a MODEL BUG and must land
@@ -179,7 +270,8 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
                     print(f"  [MODEL-WITNESS MISMATCH] key={key} SAT but {fail} -- "
                           f"INVESTIGATE (mask stays OPEN)", flush=True)
                 continue
-            rec = {'key': key, 'gross': gross, 'verdict': verdict, 'secs': round(secs, 1)}
+            rec = {'key': key, 'gross': gross, 'verdict': verdict, 'secs': round(secs, 3),
+                   'eng': eng}
             if err:
                 rec['err'] = err
             lf.write(json.dumps(rec) + '\n')
