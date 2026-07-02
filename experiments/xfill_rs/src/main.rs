@@ -45,6 +45,13 @@ struct Inst {
     varmax: bool,              // VARIABLE-LENGTH mode: scoring columns choose their own vertical length
                                // in one search (stub cells may be EMPTY = word ended above).  See
                                // inst_var_from_base.  Default false = byte-identical fixed-length engine.
+    pinned: bool,              // PINNED-COMBO mode (--pinbatch): every scoring column has EXACTLY ONE
+                               // candidate (the combo's vertical) and cells BELOW the pinned word
+                               // (rows len+1..h) are legal BRIDGE cells (a separate lower run in a
+                               // scoring column is a legal setup -- matches the v2 CP-SAT oracle and
+                               // witness_check).  Skips arc_consistency (its adjacent-join assumes
+                               // definitely-empty below-stub flanks, invalid under the widening).
+                               // Default false = byte-identical legacy engine.
 }
 
 #[inline] fn bit(l: u8) -> u32 { 1u32 << (l - 1) }
@@ -194,7 +201,7 @@ fn build_inst(w: usize, h: usize, alpha: usize, blanks: i64, reserve: i64, count
         .map(|gs| gs.iter().cloned().max().unwrap_or(0)).collect();
     Inst { w, h, alpha, blanks, reserve, counts, scores, grid0, kind, scol_of, scoring_cols, scoring_len,
            scoring_words, scoring_gross, scoring_best, scoring_wm,
-           cell_mask, can_active, can_empty, varmax: false }
+           cell_mask, can_active, can_empty, varmax: false, pinned: false }
 }
 
 // ---- BASE FILE: per-main-word data shared by ALL length-vectors (the --batchvec scale path) ----
@@ -358,6 +365,45 @@ fn inst_from_base(b: &Base, lvec: &[usize]) -> Option<Inst> {
     Some(build_inst(b.w, b.h, b.alpha, b.blanks, b.reserve, b.counts.clone(), b.scores.clone(),
                     &b.preplaced, &b.nonscoring,
                     b.bcols.clone(), lvec.to_vec(), b.bwm.clone(), words, gross))
+}
+
+// ===== PINNED-COMBO ASSEMBLY (--pinbatch) ======================================================
+// One instance per COMBO: each scoring column is pinned to exactly one vertical (or the bare
+// tile).  picks[ci] = None => bare (len 1, gross 0); Some((stub, gross)) => that word.
+//
+// RULE WIDENING vs the legacy fixed/varmax models: cells BELOW the pinned word (rows len+1..h)
+// become ordinary BRIDGE cells -- a SEPARATE lower vertical run in a scoring column is a legal
+// setup position (witness_check accepts it; the v2 CP-SAT oracle models it).  Row `len` stays
+// forced-empty: it terminates the SCORED run (the pinned combo's identity).  Without this
+// widening an LE verdict would ignore legal boards and be UNSOUND as a certificate.
+fn inst_pinned_from_base(b: &Base, picks: &[Option<(Vec<u8>, i64)>]) -> Inst {
+    let ncols = b.bcols.len();
+    let mut words: Vec<Vec<Vec<u8>>> = Vec::with_capacity(ncols);
+    let mut gross: Vec<Vec<i64>> = Vec::with_capacity(ncols);
+    let mut lvec: Vec<usize> = Vec::with_capacity(ncols);
+    for ci in 0..ncols {
+        match &picks[ci] {
+            None => { words.push(vec![Vec::new()]); gross.push(vec![0]); lvec.push(1); }
+            Some((stub, g)) => {
+                words.push(vec![stub.clone()]); gross.push(vec![*g]); lvec.push(stub.len() + 1);
+            }
+        }
+    }
+    let mut inst = build_inst(b.w, b.h, b.alpha, b.blanks, b.reserve, b.counts.clone(),
+                              b.scores.clone(), &b.preplaced, &b.nonscoring,
+                              b.bcols.clone(), lvec, b.bwm.clone(), words, gross);
+    inst.pinned = true;
+    let all_mask: u32 = if inst.alpha >= 26 { 0x03ff_ffff } else { (1u32 << inst.alpha) - 1 };
+    for si in 0..inst.scoring_cols.len() {
+        let col = inst.scoring_cols[si];
+        let len = inst.scoring_len[si];
+        for r in (len + 1)..inst.h {
+            let id = idx(col, r, inst.w);
+            inst.kind[id] = 2; inst.scol_of[id] = -1; inst.grid0[id] = -1;
+            inst.cell_mask[id] = all_mask; inst.can_active[id] = true; inst.can_empty[id] = true;
+        }
+    }
+    inst
 }
 
 impl Inst {
@@ -1294,6 +1340,14 @@ impl<'a> Solver<'a> {
                 let on_stub = overflow - bridge[c];     // must blank this many STUB cells of code c
                 if on_stub > 0 {
                     let costs = &mut stub_costs[c];
+                    if on_stub as usize > costs.len() {
+                        // Overflow exceeds bridge+stub capacity for this code: a blank would have to
+                        // sit on a PREPLACED main-word cell, forfeiting val * WM(main) >= 27 realized
+                        // points -- more than any slack we certify at (driver asserts LB >= UB-26).
+                        // Treat as never-improving.  (Legacy modes never reached this: their
+                        // candidate/vector generation kept overflow within stub capacity.)
+                        return i64::MAX / 4;
+                    }
                     costs.sort_unstable();
                     penalty += costs[..on_stub as usize].iter().sum::<i64>();
                 }
@@ -1663,6 +1717,67 @@ fn main() {
         }
         return;
     }
+    // ---- PINBATCH MODE: `xfill --pinbatch BASEFILE [--emit]` ------------------------------------
+    // Per-COMBO decision engine for the N=15 oracle: reads combo lines from STDIN, decides each
+    // with --maxscore semantics against the line's floor, streams verdicts to STDOUT.
+    //   line:    <key> <floor> <tok_0> ... <tok_{ncols-1}>      (ncols = base BCOL count, in order)
+    //   tok:     '-' (bare tile, no vertical)  or  'c1,c2,...' (the STUB codes, rows 1..len-1)
+    //   output:  RES <key> <verdict-line>   (+ BOARD <key> <codes...> when --emit and best>floor)
+    // The word's gross is LOOKED UP in the base (same get_word_score authority as the enumerator);
+    // an unknown (col,stub) -> `RES <key> NOCAND` (loud miscoordination guard, never a guess).
+    // Wall per combo: env PINWALL seconds (default 5) -> TO (caller falls back to CP-SAT).
+    if let Some(bi) = args.iter().position(|a| a == "--pinbatch") {
+        let base = parse_base(&args[bi + 1]);
+        let emit = args.iter().any(|a| a == "--emit");
+        let wall: f64 = std::env::var("PINWALL").ok().and_then(|s| s.parse().ok()).unwrap_or(5.0);
+        let td = std::time::Instant::now();
+        let dict = load_dict(&base.dict_path, base.hmax);
+        eprintln!("dict loaded: {} words, {} prefixes, {:.2}s",
+                  dict.words.len(), dict.prefixes.len(), td.elapsed().as_secs_f64());
+        let ncols = base.bcols.len();
+        // (len, stub) -> gross lookup per column
+        let mut glut: Vec<std::collections::HashMap<Vec<u8>, i64>> = vec![Default::default(); ncols];
+        for ci in 0..ncols {
+            for (_l, (ws, gs)) in base.bylen[ci].iter() {
+                for (wi, w) in ws.iter().enumerate() { glut[ci].insert(w.clone(), gs[wi]); }
+            }
+        }
+        use std::io::{BufRead as _, Write as _};
+        let stdin = std::io::stdin();
+        for line in stdin.lock().lines() {
+            let line = match line { Ok(l) => l, Err(_) => break };
+            let toks: Vec<&str> = line.split_whitespace().collect();
+            if toks.len() != ncols + 2 { if !line.trim().is_empty() {
+                println!("RES {} BADLINE", toks.first().unwrap_or(&"?")); } continue; }
+            let key = toks[0];
+            let floor: i64 = match toks[1].parse() { Ok(f) => f, Err(_) => {
+                println!("RES {} BADLINE", key); continue; } };
+            let mut picks: Vec<Option<(Vec<u8>, i64)>> = Vec::with_capacity(ncols);
+            let mut bad = false;
+            for ci in 0..ncols {
+                let t = toks[2 + ci];
+                if t == "-" { picks.push(None); continue; }
+                let stub: Vec<u8> = t.split(',').filter_map(|s| s.parse().ok()).collect();
+                match glut[ci].get(&stub) {
+                    Some(&g) => picks.push(Some((stub, g))),
+                    None => { bad = true; break; }
+                }
+            }
+            if bad { println!("RES {} NOCAND", key); std::io::stdout().flush().ok(); continue; }
+            let mut inst = inst_pinned_from_base(&base, &picks);
+            let (res, board) = solve_inst(&mut inst, &dict, true, floor, Some(wall));
+            println!("RES {} {}", key, res);
+            if emit {
+                if let Some(bg) = board {
+                    print!("BOARD {}", key);
+                    for &g in &bg { print!(" {}", if g > 0 { g } else { 0 }); }
+                    println!();
+                }
+            }
+            std::io::stdout().flush().ok();
+        }
+        return;
+    }
     // ---- VARMAX MODE: `xfill --varmax BASEFILE --maxscore FLOOR` --------------------------------
     // VARIABLE-LENGTH score maximization over a BASE file: ONE search in which each scoring column
     // chooses BOTH its vertical length (1..maxlen, from the base) AND its word.  Equivalent to running
@@ -1750,7 +1865,7 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
     // Sound, global; collapses the full-height adjacent-block hard tail. Opt out with NOAC=1 for A/B.
     // VARMAX: SKIPPED -- its forced-2-letter-word join assumes FIXED column lengths (definitely_empty
     // flanks).  With variable lengths a flanking stub cell is not provably empty, so the join is unsound.
-    if !inst.varmax && std::env::var("NOAC").is_err() {
+    if !inst.varmax && !inst.pinned && std::env::var("NOAC").is_err() {
         let tac = std::time::Instant::now();
         let unsat = inst.arc_consistency(dict);
         eprintln!("arc-consistency: {} surviving words/col, {:.3}s{}",
