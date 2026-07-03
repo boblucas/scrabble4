@@ -1,0 +1,13 @@
+N=15 MAX TURN = 2010 -- PROVEN (2026-07-03)
+Witness: experiments/results/turns/N15_best_2010.json (geschenkcheques, witness_check OK)
+Masks (word geschenkcheques, all at LB=2010, v2 sound pipeline):
+  (0,3,7,8,11,12,14): EXACTLY 2010 (witness achieves; band complete + sibling audit)
+  (0,3,7,9,11,12,14): CERTIFIED <=2010 (6,706,022 combos, ledger geschenkcheques_0379111214_lb2010_v2.jsonl)
+  (0,3,7,8,11,13,14): CERTIFIED <=2010 (3,063,175 combos, ledger geschenkcheques_0378111314_lb2010_v2.jsonl)
+  (0,3,7,9,11,13,14): CERTIFIED <=2010 (282,299,680 combos, STREAMING certs in stream_0379111314_lb2010/:
+      shard_*.txt + verdict_*.txt + hard_verdicts.jsonl (39,339 CP-SAT re-decisions, all UNSAT)
+      + COVERAGE-OK (sorted key-set equality); driver.log + finish_monster.log)
+  All other 25 threat words + geschenkcheques non-{3,11} masks: analytic certificates <=2007 < 2010.
+Engines: xfill --pinbatch (gated: 4000/4000 A/B vs CP-SAT, ~14000x) + CP-SAT oracle_beats_lb
+(score-aware, blank-penalty exact) + witness_check as final arbiter. Blank-aware band enum.
+NOTE: stream shard/verdict/key files (~60GB) are kept on disk, NOT in git.

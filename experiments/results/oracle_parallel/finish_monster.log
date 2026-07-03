@@ -1,0 +1,24 @@
+hard=39339 done=2490 remaining=36849
+  2000/36849 (20.4/s, ~29min left) undecided=0
+  4000/36849 (22.7/s, ~24min left) undecided=0
+  6000/36849 (23.5/s, ~22min left) undecided=0
+  8000/36849 (23.8/s, ~20min left) undecided=0
+  10000/36849 (24.1/s, ~19min left) undecided=0
+  12000/36849 (24.3/s, ~17min left) undecided=0
+  14000/36849 (24.5/s, ~16min left) undecided=0
+  16000/36849 (24.6/s, ~14min left) undecided=0
+  18000/36849 (24.6/s, ~13min left) undecided=0
+  20000/36849 (24.6/s, ~11min left) undecided=0
+  22000/36849 (24.7/s, ~10min left) undecided=0
+  24000/36849 (24.8/s, ~9min left) undecided=0
+  26000/36849 (24.8/s, ~7min left) undecided=0
+  28000/36849 (24.8/s, ~6min left) undecided=0
+  30000/36849 (24.8/s, ~5min left) undecided=0
+  32000/36849 (24.8/s, ~3min left) undecided=0
+  34000/36849 (24.8/s, ~2min left) undecided=0
+  36000/36849 (24.8/s, ~1min left) undecided=0
+residue done: undecided=0 new_lb=None
+coverage check ...
+COVERAGE-OK
+hard UNSAT total: 39339 (need >= 39339 unique)
+=== VERDICT: mask (0, 3, 7, 9, 11, 13, 14) CERTIFIED <= 2010 (282299680 band combos, complete) ===
