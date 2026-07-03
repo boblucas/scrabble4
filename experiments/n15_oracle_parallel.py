@@ -160,7 +160,8 @@ def load_ledger(path):
     return done
 
 
-def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
+def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False,
+             collect_top=50_000_000):
     mc = T.main_const(word, mask)
     vfloor = lb - mc
     assert lb >= UB_TURNBLANK_FLOOR, \
@@ -176,7 +177,7 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
     print(f"# enumerating BLANK-AWARE band (nominal - deficit > {vfloor}) ...", flush=True)
     t0 = time.time()
     res = T.enumerate_above_blanks(word, mask, avail, vfloor, blank_budget=2,
-                                   collect_top=50_000_000)
+                                   collect_top=collect_top)
     if res['capped']:
         print(f"!! enumeration CAPPED (incomplete) -- cannot certify this mask", flush=True)
     combos = res['top']                      # canonical order: (-gross, combo_key)
@@ -299,6 +300,11 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False):
     if undecided:
         print(f"!! {undecided} undecided -> mask OPEN", flush=True)
         return {'mask': mask, 'verdict': 'OPEN', 'undecided': undecided, 'count': res['count']}
+    if res['count'] != len(combos):
+        print(f"!! band TRUNCATED ({len(combos)} of {res['count']} tested) -> PROBE ONLY, "
+              f"mask stays OPEN (re-run with --collect >= {res['count']})", flush=True)
+        return {'mask': mask, 'verdict': 'OPEN', 'reason': 'band truncated (collect_top)',
+                'count': res['count'], 'tested_band': len(combos)}
     print(f"mask {mask} at LB={lb}: {res['count']} band combos ALL SAFE (no grid beats {lb})",
           flush=True)
     print(f"VERDICT: CERTIFIED <= {lb}", flush=True)
@@ -314,13 +320,15 @@ def main():
     ap.add_argument('--workers', type=int, default=20)
     ap.add_argument('--recheck', action='store_true')
     ap.add_argument('--nosave', action='store_true')
+    ap.add_argument('--collect', type=int, default=50_000_000,
+                    help='collect_top for the band enum; must be >= band count to certify')
     a = ap.parse_args()
     mask = tuple(int(x) for x in a.mask.split(','))
     os.environ.setdefault('RESERVE', '1')
     print(f"# [v2] word={a.word} mask={mask} LB={a.lb} reserve={os.environ['RESERVE']} "
           f"cap={a.cap} workers={a.workers}", flush=True)
     out = run_mask(a.word, mask, a.lb, a.cap, a.workers, save=not a.nosave,
-                   recheck_unknown=a.recheck)
+                   recheck_unknown=a.recheck, collect_top=a.collect)
     print(json.dumps({**out, 'mask': list(out['mask'])}), flush=True)
 
 
