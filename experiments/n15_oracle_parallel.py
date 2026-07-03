@@ -184,7 +184,9 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False,
     print(f"# {res['count']} combos in band (capped={res['capped']}), collected {len(combos)}; "
           f"enum {time.time()-t0:.0f}s; {len(done)} already in ledger", flush=True)
     if res['count'] != len(combos):
-        print(f"!! WARNING: count {res['count']} != collected {len(combos)} -- collect_top too small",
+        print(f"!! count {res['count']} != collected {len(combos)} -- collect_top too small; "
+              f"deciding the collected TOP slice only, verdict will be OPEN (partial coverage "
+              f"is NEVER a certificate; use the streaming shard path for over-cap bands)",
               flush=True)
 
     # work list: skip content-keys already decided (UNSAT).  SAT would have ended the run.

@@ -403,7 +403,7 @@ def combo_key(combo):
     return '|'.join(parts)
 
 
-def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0):
+def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0, stream=None):
     """BLANK-AWARE complete band enumeration. Like enumerate_above_fast, but a combo whose tails
     exceed `avail` on some letters may still be placeable using <=blank_budget blanks (a blank
     stands in for any letter but SCORES 0).
@@ -473,7 +473,11 @@ def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0
                 if cur - pen <= vfloor:
                     return
             state['count'] += 1
-            if collect_top:
+            if stream is not None:
+                # STREAMING mode (over-cap bands): hand every in-band combo to the caller as it
+                # is found -- no materialization, no cap, complete coverage by construction.
+                stream(cur, {order[i]: pick[i] for i in range(n)})
+            elif collect_top:
                 combo = {order[i]: pick[i] for i in range(n)}
                 if len(top) < collect_top:
                     tie[0] += 1; heapq.heappush(top, (cur, tie[0], combo))
