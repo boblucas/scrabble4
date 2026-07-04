@@ -39,8 +39,8 @@ from collections import Counter
 from scrabble import construct_rules, get_word_score
 
 ROOT = '/home/bob/programming/scrabble4'
-B = '15'; HMAX = 8
-r = construct_rules('dutch', B)
+B = '15'; HMAX = int(os.environ.get("N15_HMAX", "15"))   # TRUE RULES default; 8 reproduces the legacy variant
+r = construct_rules(os.environ.get('N15_LANG', 'dutch'), B)
 W = H = r.W
 val = {chr(96 + i): r.scores[i] for i in range(1, 27)}
 wm = [int(x) for x in np.array(r.word_multiplier)[0]]

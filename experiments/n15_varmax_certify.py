@@ -38,7 +38,7 @@ ROOT = '/home/bob/programming/scrabble4'
 B = '15'; W = H = 15; HMAX = 8
 BIN = os.path.join(ROOT, 'experiments/xfill_rs/target/release/xfill_varmax')
 
-r = construct_rules('dutch', B)
+r = construct_rules(os.environ.get('N15_LANG', 'dutch'), B)
 val = {chr(96 + i): r.scores[i] for i in range(1, 27)}
 wm = [int(x) for x in np.array(r.word_multiplier)[0]]
 lm = [int(x) for x in np.array(r.letter_multiplier)[0]]
@@ -106,7 +106,7 @@ def run_witness(word, mask, grid, claimed_total):
     turn = turn_str(word, mask)
     spec = {'board': B, 'main_word': word, 'turn_str': turn, 'require_center': True,
             'scale': False, 'reserve': 1, 'claimed_total': claimed_total, 'grid': grid}
-    rules = construct_rules('dutch', B)
+    rules = construct_rules(os.environ.get('N15_LANG', 'dutch'), B)
     rules.reserve = 1
     Wr, Hr = rules.W, rules.H
     mask_b = [turn[x].isupper() for x in range(Wr)]

@@ -20,7 +20,7 @@ from dawg import position_independent_row_automaton
 from solve import create_board, single_component, limit_letter_count
 from ortools.sat.python import cp_model
 
-HMAX = 8
+HMAX = int(os.environ.get("XHMAX", "8"))   # 8 = legacy variant cap; TRUE RULES: run-length <= board (set XHMAX=15 for N=15)
 TESTDIR = 'experiments/xtests'
 
 # Lexicon bucketed by (first-letter, length) -> list of valid candidate-vertical words, built ONCE
@@ -43,7 +43,7 @@ _RULES_CACHE = {}
 def _cached_rules(board):
     r = _RULES_CACHE.get(board)
     if r is None:
-        r = construct_rules('dutch', board)
+        r = construct_rules(os.environ.get('N15_LANG', 'dutch'), board)
         _RULES_CACHE[board] = r
     return r
 
@@ -118,7 +118,7 @@ def build_instance(board, main, turn, Lvec, scale=True, reserve=0):
         # RESERVE: tiles the opponent must hold (>=1 when we play) -> total setup tiles <=
         # sum(counts)+blanks-reserve.  0 = off (legacy/byte-identical).  See xfill add_letter.
         'reserve': reserve,
-        'dict_path': f'experiments/xtests/dict_{board}.txt',     # shared <=HMAX word list (codes)
+        'dict_path': os.environ.get('XDICT', f'experiments/xtests/dict_{board}.txt'),  # shared word list
     }
     meta = dict(board=board, main=main, turn=turn, Lvec=Lvec, rules=rules,
                 scoring=scoring, pre=pre, counts=counts, blanks=blanks, mt=mt)
@@ -349,7 +349,7 @@ def build_base(board, main, turn, scale=True, reserve=0):
         'preplaced': [[x, 0, mt[x]] for x in pre],
         'nonscoring_cols': pre,
         'reserve': reserve,
-        'dict_path': f'experiments/xtests/dict_{board}.txt',
+        'dict_path': os.environ.get('XDICT', f'experiments/xtests/dict_{board}.txt'),
         'cols': cols,
     }
 

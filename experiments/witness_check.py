@@ -207,7 +207,7 @@ def _main():
         sys.exit(__doc__)
     spec = json.load(open(sys.argv[1]))
     board, scale = spec['board'], spec.get('scale', True)
-    rules = construct_rules('dutch', board)
+    rules = construct_rules(os.environ.get('N15_LANG', 'dutch'), board)
     W, H = rules.W, rules.H
     turn_str = spec['turn_str']
     mask = [turn_str[x].isupper() for x in range(W)]
