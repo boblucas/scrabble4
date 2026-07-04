@@ -1,0 +1,15 @@
+=== geschenkcheques (0,3,7,8,11,12,14) ===
+  canary: TO 375 (sound)
+    [enum] 50M nodes, 67903 in band
+  band sample: count=78138 capped=True collected=50000
+  A/B 60 combos: mism=0; pin median=0.1ms cpsat median=2.0s
+=== flauwekulexcuus (0,3,6,7,11,13,14) ===
+  band sample: count=0 capped=False collected=0
+Traceback (most recent call last):
+  File "/home/bob/programming/scrabble4/experiments/_pin_gate_2026.py", line 129, in <module>
+    allf += gate_mask('flauwekulexcuus', (0, 3, 6, 7, 11, 13, 14))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/bob/programming/scrabble4/experiments/_pin_gate_2026.py", line 116, in gate_mask
+    print(f"  A/B {len(picks)} combos: mism={len(mism)}; pin median={tp[len(tp)//2]*1000:.1f}ms "
+                                                                     ~~^^^^^^^^^^^^
+IndexError: list index out of range

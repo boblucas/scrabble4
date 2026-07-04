@@ -403,7 +403,8 @@ def combo_key(combo):
     return '|'.join(parts)
 
 
-def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0, stream=None):
+def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0, stream=None,
+                           node_budget=None):
     """BLANK-AWARE complete band enumeration. Like enumerate_above_fast, but a combo whose tails
     exceed `avail` on some letters may still be placeable using <=blank_budget blanks (a blank
     stands in for any letter but SCORES 0).
@@ -452,6 +453,9 @@ def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0
     def dfs(k, cur, curadj, used_b):
         # cur = nominal gross so far; curadj = nominal - true-deficit penaltyLB so far
         state['nodes'] += 1
+        if node_budget and state['nodes'] >= node_budget:
+            state['capped'] = True                  # SAMPLING only -- capped=True is not a cert
+            return
         if state['nodes'] % 50_000_000 == 0 and time.time() - tprint[0] > 60:
             tprint[0] = time.time()
             print(f"    [enum] {state['nodes']/1e6:.0f}M nodes, {state['count']} in band",
@@ -506,6 +510,8 @@ def enumerate_above_blanks(w, mask, avail, vfloor, blank_budget=2, collect_top=0
             dfs(k + 1, cur + g, curadj + g - pen, used_b + db)
             for code, q in tc.items():
                 bud[code] += q
+            if state['capped']:
+                return
 
     sys.setrecursionlimit(100000)
     dfs(0, 0, 0, 0)

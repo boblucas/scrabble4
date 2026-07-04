@@ -164,8 +164,9 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False,
              collect_top=50_000_000):
     mc = T.main_const(word, mask)
     vfloor = lb - mc
-    assert lb >= UB_TURNBLANK_FLOOR, \
-        f"lb {lb} < {UB_TURNBLANK_FLOOR}: turn-blank exclusion argument fails, model unsound here"
+    ubm = int(os.environ.get('UB_MASK', UB_ANALYTIC))    # per-mask analytic UB (caller-supplied)
+    assert lb >= ubm - 26, \
+        f"lb {lb} < UB_mask {ubm} - 26: turn-blank exclusion fails -- use the TB-extended oracle"
     assert all(c in mask for c in (0, 7, 14)), "27-pt turn-blank argument needs the x27 main"
     avail, _ = T.build_avail(word, mask, int(os.environ.get('RESERVE', '1')))
 
@@ -221,7 +222,9 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False,
     basefile = bcols = None
     if os.environ.get('ORACLE_ENGINE', 'pin') != 'cpsat':
         from n15_varmax_certify import build_unit_base
-        basefile, _, _ = build_unit_base(word, mask, LEDGER_DIR)
+        bdir = os.path.join(LEDGER_DIR, f'bases_{os.environ.get("N15_LANG", "dutch")}', word)
+        os.makedirs(bdir, exist_ok=True)
+        basefile, _, _ = build_unit_base(word, mask, bdir)
         bcols = [int(l.split()[1]) for l in open(basefile) if l.startswith('BCOL')]
         print(f"# engine=pinbatch base={basefile} PINWALL={os.environ.get('PINWALL', '5')}s "
               f"audit=1/{os.environ.get('ORACLE_AUDIT', '1000')}", flush=True)
