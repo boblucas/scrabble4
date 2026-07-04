@@ -1,0 +1,24 @@
+# lang=dutch2026 HMAX=15 LB=2100
+# maxtail pass: 0s  (e.g. maxtail[s]=35)
+# 118709 15-letter words
+  20000/118709 (1158/s) survivors=6
+  40000/118709 (1335/s) survivors=9
+  60000/118709 (1446/s) survivors=12
+  80000/118709 (1517/s) survivors=15
+  100000/118709 (1564/s) survivors=15
+# SWEEP DONE: 17 survivors (cheap UB > 2100) -> experiments/results/n15_2026_sweep_open.txt
+    croquemboucheje  cheapUB=2229
+    geschenkcheques  cheapUB=2212
+    jacquetkostuums  cheapUB=2198
+    croquetmatchjes  cheapUB=2181
+    verzamelcheques  cheapUB=2174
+    alfahydroxyzuur  cheapUB=2171
+    deuxchevauxtjes  cheapUB=2165
+    vluchtreflexjes  cheapUB=2159
+    jacquardweefsel  cheapUB=2153
+    playbackshowtje  cheapUB=2145
+    mytylschooltjes  cheapUB=2141
+    flauwekulexcuus  cheapUB=2140
+    circuscomedytje  cheapUB=2136
+    cultuurchequeje  cheapUB=2133
+    jacquardmachine  cheapUB=2125
