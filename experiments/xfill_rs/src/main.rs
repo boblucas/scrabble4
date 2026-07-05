@@ -1717,6 +1717,181 @@ fn main() {
         }
         return;
     }
+    // ---- PINENUM MODE: `xfill --pinenum BASE --floor F --mainletters c,c,.. --shards N --outdir D`
+    // Rust port of Python enumerate_above_blanks (n15_twolevel.py) in STREAMING form: the complete
+    // blank-aware band (nominal - deficit-penaltyLB > floor, <=2 blanks, leaf-exact min-wm recheck)
+    // written round-robin as pinbatch lines `<key> <floor> <toks>` into shard files.  Semantics
+    // must match the Python EXACTLY (gate: key-set equality on known bands).  mainletters = the
+    // main word's letter CODES at the scoring columns (bcol order) -- needed for the content key.
+    if let Some(bi) = args.iter().position(|a| a == "--pinenum") {
+        let base = parse_base(&args[bi + 1]);
+        let getf = |name: &str| args.iter().position(|a| a == name).map(|i| args[i + 1].clone());
+        let floor: i64 = getf("--floor").expect("--floor").parse().unwrap();
+        let mains: Vec<u8> = getf("--mainletters").expect("--mainletters")
+            .split(',').map(|t| t.parse().unwrap()).collect();
+        let nshard: usize = getf("--shards").map(|s| s.parse().unwrap()).unwrap_or(20);
+        let outdir = getf("--outdir").expect("--outdir");
+        let blank_budget: i64 = base.blanks.min(2);
+        let ncols = base.bcols.len();
+        assert_eq!(mains.len(), ncols);
+        // avail = base counts CLAMPED at 0 (mirrors build_avail)
+        let avail: Vec<i64> = base.counts.iter().map(|&n| n.max(0)).collect();
+        // options per column: (gross, tail counts, stub, adj_gross); bare tile = (0, {}, [], 0)
+        struct Opt { g: i64, stub: Vec<u8>, ct: Vec<(u8, i64)>, gadj: i64 }
+        let mut cols: Vec<(usize, Vec<Opt>)> = Vec::new();
+        for ci in 0..ncols {
+            let mut opts: Vec<Opt> = vec![Opt { g: 0, stub: Vec::new(), ct: Vec::new(), gadj: 0 }];
+            for (_l, (ws, gs)) in base.bylen[ci].iter() {
+                for (wi, w) in ws.iter().enumerate() {
+                    if w.is_empty() { continue; }
+                    let mut cnt = vec![0i64; base.alpha + 1];
+                    for &ch in w { cnt[ch as usize] += 1; }
+                    let mut ct: Vec<(u8, i64)> = Vec::new();
+                    let mut sb = 0i64;                          // standalone penalty vs full avail
+                    let mut nb = 0i64;                          // standalone blanks needed
+                    for ch in 1..=base.alpha {
+                        if cnt[ch] > 0 {
+                            ct.push((ch as u8, cnt[ch]));
+                            let short = cnt[ch] - avail[ch];
+                            if short > 0 { sb += base.scores[ch] * short; nb += short; }
+                        }
+                    }
+                    if nb > blank_budget { continue; }          // never placeable
+                    opts.push(Opt { g: gs[wi], stub: w.clone(), ct, gadj: gs[wi] - sb });
+                }
+            }
+            // desc by adj_gross, deterministic tiebreak on stub
+            opts.sort_by(|a, b| b.gadj.cmp(&a.gadj).then(a.stub.cmp(&b.stub)));
+            cols.push((ci, opts));
+        }
+        // column order: desc by top adj_gross, tiebreak col index (matches Python coldata.sort)
+        cols.sort_by(|a, b| b.1[0].gadj.cmp(&a.1[0].gadj).then(a.0.cmp(&b.0)));
+        let order: Vec<usize> = cols.iter().map(|c| c.0).collect();
+        let optl: Vec<&Vec<Opt>> = cols.iter().map(|c| &c.1).collect();
+        let mut sufmax = vec![0i64; ncols + 1];
+        for k in (0..ncols).rev() { sufmax[k] = sufmax[k + 1] + optl[k][0].gadj; }
+        // key needs SORTED column order: map order-index -> (col, main letter)
+        let colof: Vec<usize> = order.iter().map(|&ci| base.bcols[ci]).collect();
+        let mainof: Vec<u8> = order.iter().map(|&ci| mains[ci]).collect();
+        let wmof: Vec<i64> = order.iter().map(|&ci| base.bwm[ci]).collect();
+        use std::io::Write as _;
+        let mut shards: Vec<std::io::BufWriter<fs::File>> = (0..nshard)
+            .map(|i| std::io::BufWriter::with_capacity(1 << 20,
+                 fs::File::create(format!("{}/shard_{:02}.txt", outdir, i)).unwrap()))
+            .collect();
+        let mut bud: Vec<i64> = avail.clone();
+        let mut pick: Vec<usize> = vec![0; ncols];              // applied option INDEX per depth
+        let mut count: u64 = 0; let mut nodes: u64 = 0;
+        let mut oi = vec![0usize; ncols + 1];                   // next option index per depth
+        let mut curs = vec![0i64; ncols + 1];
+        let mut adjs = vec![0i64; ncols + 1];
+        let mut ubs = vec![0i64; ncols + 1];
+        // key columns in SORTED board order; toks in BCOL order (pinbatch input contract)
+        let mut keyorder: Vec<usize> = (0..ncols).collect();
+        keyorder.sort_by_key(|&i| colof[i]);
+        let mut inv = vec![0usize; ncols];                      // bcol index ci -> depth index
+        for (i, &ci) in order.iter().enumerate() { inv[ci] = i; }
+        let mut k: i64 = 0;
+        let mut returning = false;                              // just came back from depth k+1
+        loop {
+            if k < 0 { break; }
+            let d = k as usize;
+            if d == ncols {
+                nodes += 1;
+                // leaf-exact min-wm penalty recheck (only when deficits exist)
+                let mut accept = true;
+                if curs[d] != adjs[d] {
+                    let mut pen = 0i64;
+                    for ch in 1..=base.alpha {
+                        let deficit = -bud[ch];
+                        if deficit > 0 {
+                            let mut mw = i64::MAX;
+                            for i in 0..ncols {
+                                let o = &optl[i][pick[i]];
+                                if o.stub.iter().any(|&c| c as usize == ch) && wmof[i] < mw {
+                                    mw = wmof[i];
+                                }
+                            }
+                            if mw == i64::MAX { mw = 1; }
+                            pen += deficit * base.scores[ch] * mw;
+                        }
+                    }
+                    if curs[d] - pen <= floor { accept = false; }
+                }
+                if accept {
+                    count += 1;
+                    let mut line = String::new();
+                    for (n, &i) in keyorder.iter().enumerate() {
+                        if n > 0 { line.push('|'); }
+                        let o = &optl[i][pick[i]];
+                        line.push_str(&colof[i].to_string()); line.push(':');
+                        if o.stub.is_empty() { line.push('-'); }
+                        else {
+                            line.push((96 + mainof[i]) as char);
+                            for &c in &o.stub { line.push((96 + c) as char); }
+                        }
+                    }
+                    line.push(' '); line.push_str(&floor.to_string());
+                    for ci in 0..ncols {
+                        let o = &optl[inv[ci]][pick[inv[ci]]];
+                        line.push(' ');
+                        if o.stub.is_empty() { line.push('-'); }
+                        else {
+                            for (j, &c) in o.stub.iter().enumerate() {
+                                if j > 0 { line.push(','); }
+                                line.push_str(&c.to_string());
+                            }
+                        }
+                    }
+                    line.push('\n');
+                    shards[(count as usize - 1) % nshard].write_all(line.as_bytes()).unwrap();
+                }
+                k -= 1;
+                returning = true;
+                continue;
+            }
+            if returning {
+                // back from the subtree under pick[d]: undo its bag draw before the next option
+                let o = &optl[d][pick[d]];
+                for &(ch, q) in &o.ct { bud[ch as usize] += q; }
+                returning = false;
+            }
+            // try next option at depth d
+            let mut advanced = false;
+            while oi[d] < optl[d].len() {
+                let idx = oi[d]; oi[d] += 1;
+                let o = &optl[d][idx];
+                if adjs[d] + o.gadj + sufmax[d + 1] <= floor { oi[d] = optl[d].len(); break; }
+                let mut db = 0i64; let mut pen = 0i64; let mut ok = true;
+                for &(ch, q) in &o.ct {
+                    let short = q - bud[ch as usize].max(0);
+                    if short > 0 {
+                        db += short; pen += base.scores[ch as usize] * short;
+                        if ubs[d] + db > blank_budget { ok = false; break; }
+                    }
+                }
+                if !ok { continue; }
+                if adjs[d] + o.g - pen + sufmax[d + 1] <= floor { continue; }
+                for &(ch, q) in &o.ct { bud[ch as usize] -= q; }
+                pick[d] = idx;
+                curs[d + 1] = curs[d] + o.g;
+                adjs[d + 1] = adjs[d] + o.g - pen;
+                ubs[d + 1] = ubs[d] + db;
+                oi[d + 1] = 0;
+                k += 1;
+                nodes += 1;
+                advanced = true;
+                break;
+            }
+            if !advanced {
+                k -= 1;
+                returning = true;                    // parent must undo ITS pick next
+            }
+        }
+        for s in shards.iter_mut() { s.flush().unwrap(); }
+        println!("PINENUM count={} nodes={} floor={} shards={}", count, nodes, floor, nshard);
+        return;
+    }
     // ---- PINBATCH MODE: `xfill --pinbatch BASEFILE [--emit]` ------------------------------------
     // Per-COMBO decision engine for the N=15 oracle: reads combo lines from STDIN, decides each
     // with --maxscore semantics against the line's floor, streams verdicts to STDOUT.
