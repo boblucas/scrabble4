@@ -565,6 +565,109 @@ def _oracle_template(word, mask):
     return tm
 
 
+_TB_TMPL = {}
+def _oracle_template_tb(word, mask):
+    """TURN-BLANK-AWARE template: like _oracle_template but adds tb[c] (turn tile at newly col c
+    is a BLANK).  Effects: (i) bag credit -- the real letter mt[c] is not drawn by the turn, so
+    setup non-blank usage of that code may exceed the base avail by Sum tb over cols holding it;
+    (ii) the global blank budget covers setup blanks + turn blanks.  The SCORE cost of tb[c]
+    (>= 27*val: main word x27 + the vertical's row-0 letter) is charged per-combo in
+    oracle_beats_lb_tb's penalty constraint.  Needed ONLY for combos with nominal > LB + 27
+    (below that a turn-blank board can never beat LB; driver asserts)."""
+    from solve import create_board, single_component_flow
+    key = (word, tuple(mask))
+    tm = _TB_TMPL.get(key)
+    if tm is not None:
+        return tm
+    mt = r.alphabet.to_tup(word)
+    newly = set(mask)
+    pre = [x for x in range(W) if x not in newly]
+    CENTER = (W // 2, H // 2)
+    aut = _aut_le(HMAX)
+    m = cp_model.CpModel(); m.prefix = 'o'
+    cells = create_board(m, [aut] * H, [aut] * W, alphabet_size=len(r.abc))
+    for x in pre:
+        m.add(cells[(x, 0)].letter[mt[x]] == 1)
+        m.add(cells[(x, 0)].blank == 0)          # row-0 pre blank: costs 27*val, never beats LB
+    for x in newly:
+        m.add(cells[(x, 0)].active == 0)
+    m.add(cells[CENTER].active == 1)
+    single_component_flow(m, cells, CENTER)
+    newly_ct = Counter(mt[c] for c in mask)
+    base, blanks = scale_counts()
+    tb = {c: m.new_bool_var(f'tb{c}') for c in mask}
+    # TB-aware per-letter budget: non-blank setup usage <= avail + (turn blanks holding this code)
+    for code in base:
+        avail_c = base[code] - newly_ct.get(code, 0)
+        terms = []
+        for cell in cells.values():
+            v = m.new_bool_var(f'tbl_{cell.x}_{cell.y}_{code}')
+            m.add(v == 0).only_enforce_if(cell.blank)
+            m.add(v == cells[(cell.x, cell.y)].letter[code]).only_enforce_if(~cell.blank)
+            terms.append(v)
+        credit = sum(tb[c] for c in mask if mt[c] == code)
+        m.add(sum(terms) <= avail_c + credit)
+    m.add(sum(cell.blank for cell in cells.values()) + sum(tb.values()) <= blanks)
+    RESERVE = int(os.environ.get('RESERVE', '1'))
+    total_cap = sum(base.values()) + blanks - RESERVE - 7
+    m.add(sum(cell.active for cell in cells.values()) <= total_cap)
+    tm = (m, cells, tb)
+    _TB_TMPL[key] = tm
+    return tm
+
+
+def oracle_beats_lb_tb(word, mask, combo, vfloor, cap=120.0):
+    """TURN-BLANK-COMPLETE per-combo decision: does ANY grid with these verticals -- INCLUDING
+    grids where some of the 7 played tiles are blanks -- realize a total > LB?  Used for the
+    band slice with nominal > LB + 27 (elsewhere turn blanks cannot beat LB and the standard
+    oracle_beats_lb is complete).  tb[c] cost: main word loses val*lm[c]*27; if the combo has a
+    vertical at c, its row-0 letter (val*lm[c]) times wm[c] is lost too.  Setup tail blanks are
+    charged val*wm[c] as in oracle_beats_lb.  Total penalty <= nominal - vfloor - 1."""
+    tmpl, cells, tb = _oracle_template_tb(word, mask)
+    m = cp_model.CpModel()
+    m.proto.CopyFrom(tmpl.proto)
+
+    def fix(var, v):
+        dom = m.proto.variables[var.index].domain
+        del dom[:]
+        dom.extend([v, v])
+
+    mt = r.alphabet.to_tup(word)
+    nominal = 0
+    pen_terms = []
+    for c in mask:
+        ww = combo.get(c)
+        tbcost = val[chr(96 + mt[c])] * lm[c] * 27
+        if ww is None:
+            fix(cells[(c, 1)].active, 0)
+        else:
+            L = len(ww)
+            nominal += vert_gross(ww, c)
+            tbcost += val[chr(96 + mt[c])] * lm[c] * wm[c]
+            for y in range(1, L):
+                fix(cells[(c, y)].letter[ww[y]], 1)
+                pen_terms.append(val[chr(96 + ww[y])] * wm[c] * cells[(c, y)].blank)
+            if L < H:
+                fix(cells[(c, L)].active, 0)
+        pen_terms.append(tbcost * tb[c])
+    slack = nominal - vfloor - 1
+    if slack < 0:
+        return 'UNSAT', None
+    m.add(sum(pen_terms) <= slack)
+    s = cp_model.CpSolver()
+    s.parameters.num_search_workers = int(os.environ.get('CPSAT_WORKERS', '8'))
+    s.parameters.max_time_in_seconds = cap
+    st = s.Solve(m)
+    if st == cp_model.INFEASIBLE:
+        return 'UNSAT', None
+    if st in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        grid = [[int(s.value(cells[(x, y)].letter_int)) for x in range(W)] for y in range(H)]
+        for x in range(W):
+            grid[0][x] = int(mt[x])
+        return 'SAT', grid
+    return 'UNKNOWN', None
+
+
 def oracle_feasible_fast(word, mask, combo, cap=120.0):
     """Semantically identical to oracle_feasible(conn_maxlen=None) but ~10x faster: reuses the
     cached template model (92% of oracle_feasible's per-combo cost is rebuilding it) and applies
