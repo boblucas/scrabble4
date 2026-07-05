@@ -1,0 +1,35 @@
+# Tier-1 blacklist (user-approved 2026-07-05): letter-name / abbreviation / size-code fragments
+# that are not credible words. Removed from the lexicon for ALL roles (main, setup, vertical, bridge).
+qpl
+qtje
+qef
+qals
+xcl
+xpf
+xcd
+xtc
+xof
+xxxl
+xxxs
+xxs
+xbenen
+# batch 2 (user-approved 2026-07-05): q/y abbreviation-class fragments
+qto
+qso
+qre
+qis
+qid
+qar
+qei
+qal
+quen
+quia
+ywca
+ylx
+ycd
+ymol
+ymer
+ylm
+ytl
+yuc
+ytje
