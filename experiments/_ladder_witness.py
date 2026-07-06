@@ -3,12 +3,12 @@
 import sys, os, json, glob
 sys.path.insert(0, '/home/bob/programming/scrabble4')
 sys.path.insert(0, '/home/bob/programming/scrabble4/experiments')
-os.environ.setdefault('N15_LANG', 'dutch2026')
+os.environ.setdefault('N15_LANG', os.environ.get('N15_LANG', 'dutch2026'))
 os.environ.setdefault('N15_HMAX', '15')
 import n15_twolevel as T
 from n15_varmax_certify import reconstruct_board
 
-WORD = 'geschenkcheques'
+WORD = sys.argv[4] if len(sys.argv) > 4 else 'geschenkcheques'
 mask = tuple(int(x) for x in sys.argv[1].split(','))
 sd = sys.argv[2]
 lb = int(sys.argv[3])
