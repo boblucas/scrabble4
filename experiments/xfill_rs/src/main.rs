@@ -1734,7 +1734,8 @@ fn main() {
         let mains: Vec<u8> = getf("--mainletters").expect("--mainletters")
             .split(',').map(|t| t.parse().unwrap()).collect();
         let nshard: usize = getf("--shards").map(|s| s.parse().unwrap()).unwrap_or(20);
-        let outdir = getf("--outdir").expect("--outdir");
+        let onlyshard: Option<usize> = getf("--onlyshard").map(|s| s.parse().unwrap());
+        let outdir = getf("--outdir").expect("--outdir");   // '-' + --onlyshard => stdout PIPE
         let blank_budget: i64 = base.blanks.min(2);
         let ncols = base.bcols.len();
         assert_eq!(mains.len(), ncols);
@@ -1779,10 +1780,16 @@ fn main() {
         let mainof: Vec<u8> = order.iter().map(|&ci| mains[ci]).collect();
         let wmof: Vec<i64> = order.iter().map(|&ci| base.bwm[ci]).collect();
         use std::io::Write as _;
-        let mut shards: Vec<std::io::BufWriter<fs::File>> = (0..nshard)
-            .map(|i| std::io::BufWriter::with_capacity(1 << 20,
-                 fs::File::create(format!("{}/shard_{:02}.txt", outdir, i)).unwrap()))
-            .collect();
+        enum Out { Files(Vec<std::io::BufWriter<fs::File>>), Pipe(std::io::BufWriter<std::io::Stdout>) }
+        let mut out = if outdir == "-" {
+            assert!(onlyshard.is_some(), "--outdir - vereist --onlyshard");
+            Out::Pipe(std::io::BufWriter::with_capacity(1 << 20, std::io::stdout()))
+        } else {
+            Out::Files((0..nshard)
+                .map(|i| std::io::BufWriter::with_capacity(1 << 20,
+                     fs::File::create(format!("{}/shard_{:02}.txt", outdir, i)).unwrap()))
+                .collect())
+        };
         let mut bud: Vec<i64> = avail.clone();
         let mut pick: Vec<usize> = vec![0; ncols];              // applied option INDEX per depth
         let mut count: u64 = 0; let mut nodes: u64 = 0;
@@ -1848,7 +1855,11 @@ fn main() {
                         }
                     }
                     line.push('\n');
-                    shards[(count as usize - 1) % nshard].write_all(line.as_bytes()).unwrap();
+                    let sh = (count as usize - 1) % nshard;
+                    match &mut out {
+                        Out::Pipe(w) => { if Some(sh) == onlyshard { w.write_all(line.as_bytes()).unwrap(); } }
+                        Out::Files(v) => { v[sh].write_all(line.as_bytes()).unwrap(); }
+                    }
                 }
                 k -= 1;
                 returning = true;
@@ -1892,8 +1903,12 @@ fn main() {
                 returning = true;                    // parent must undo ITS pick next
             }
         }
-        for s in shards.iter_mut() { s.flush().unwrap(); }
-        println!("PINENUM count={} nodes={} floor={} shards={}", count, nodes, floor, nshard);
+        match &mut out {
+            Out::Pipe(w) => { w.flush().unwrap(); }
+            Out::Files(v) => { for s in v.iter_mut() { s.flush().unwrap(); } }
+        }
+        eprintln!("PINENUM count={} nodes={} floor={} shards={}", count, nodes, floor, nshard);
+        if outdir != "-" { println!("PINENUM count={} nodes={} floor={} shards={}", count, nodes, floor, nshard); }
         return;
     }
     // ---- PINBATCH MODE: `xfill --pinbatch BASEFILE [--emit]` ------------------------------------
