@@ -940,7 +940,7 @@ def verify_board(word, mask, grid):
     import witness_check as wc
     turn = ''.join(ch.upper() if i in set(mask) else ch.lower() for i, ch in enumerate(word))
     mask_b = [turn[x].isupper() for x in range(W)]
-    r2 = construct_rules('dutch', B)
+    r2 = construct_rules(os.environ.get('N15_LANG', 'dutch'), B)
     f = (W * W) / (15 * 15)
     mc = Counter(r2.alphabet.to_tup(word))
     r2.counts = Counter({c: max(round(n * f), mc[c], 1) for c, n in r2.counts.items()})
