@@ -691,7 +691,10 @@ struct Solver<'a> {
     // (row >= its len) pushes nothing.  DFS stack discipline guarantees correct LIFO restore.
     inc_undo: Vec<(usize, Vec<u32>)>,
     inc_undo_pool: Vec<Vec<u32>>,    // reuse removed-index buffers to avoid per-place allocation
-    knap_calls: u64, knap_prunes: u64,             // diagnostics
+    knap_calls: u64, knap_prunes: u64,
+    lorder: Vec<i16>,           // bridge-cell letter try-order; PINSHUF=<seed> permutes it (pure
+                                // search ORDER: LE/UNSAT truth unchanged -- full exhaustion either
+                                // way; only TO-vs-found can flip, and MAX stays witness-gated)             // diagnostics
     // ----- PROFILING (gated on env XFILL_PROF=1; zero-cost when off: the `prof` flag is checked once
     // per knap_ub call, and the Instant::now() pair is skipped entirely when prof==false) -----
     prof: bool,
@@ -1454,7 +1457,8 @@ impl<'a> Solver<'a> {
             self.grid[id] = 0;
             if self.can_still_connect() && self.closed_runs_ok(x, y) && self.dfs(id + 1) { return true; }
             self.grid[id] = -1;
-            for l in 1..=self.inst.alpha as i16 {
+            for li in 0..self.lorder.len() {
+                let l = self.lorder[li];
                 if !self.place_ok(x, y, l as u8) { continue; }
                 if !self.add_letter(l as usize) { self.rm_letter(l as usize); continue; }
                 self.grid[id] = l;
@@ -2144,6 +2148,18 @@ fn solve_inst(inst: &mut Inst, dict: &Dict, maxscore: bool, floor: i64,
         col_consistent: (0..ncols).map(|si| (0..inst.scoring_words[si].len() as u32).collect()).collect(),
         inc_undo: Vec::new(), inc_undo_pool: Vec::new(),
         knap_calls: 0, knap_prunes: 0,
+        lorder: {
+            let mut v: Vec<i16> = (1..=inst.alpha as i16).collect();
+            if let Some(seed) = std::env::var("PINSHUF").ok().and_then(|x| x.parse::<u64>().ok()) {
+                let mut st = seed.wrapping_mul(2685821657736338717).max(1);
+                for i in (1..v.len()).rev() {
+                    st ^= st << 13; st ^= st >> 7; st ^= st << 17;
+                    let j = (st % (i as u64 + 1)) as usize;
+                    v.swap(i, j);
+                }
+            }
+            v
+        },
         prof: std::env::var("XFILL_PROF").is_ok(),
         prof_knap_rebuild_ns: 0, prof_knap_rec_ns: 0, prof_knap_rec_calls: 0 };
     let t = std::time::Instant::now();

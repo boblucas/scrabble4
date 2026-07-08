@@ -30,7 +30,7 @@ def _decide(arg):
         combo[int(c)] = None if w == '-' else tuple(ord(ch) - 96 for ch in w)
     t0 = time.time()
     try:
-        st, grid = _T.oracle_beats_lb(WORD, MASK, combo, floor, cap=1200.0)
+        st, grid = _T.oracle_beats_lb(WORD, MASK, combo, floor, cap=float(os.environ.get("RES_CAP", "1200")))
     except Exception as e:
         return key, floor, 'ERROR', repr(e), time.time() - t0, None
     return key, floor, st, None, time.time() - t0, grid if st == 'SAT' else None
