@@ -66,11 +66,19 @@ def main():
         n = 0
         for key, fl, st, err, secs, grid in pool.imap_unordered(_decide, work, chunksize=1):
             n += 1
-            lf.write(json.dumps({'key': key, 'floor': fl, 'verdict': st,
-                                 'secs': round(secs, 1)}) + '\n')
             if st == 'SAT':
+                # witness EERST; een verworpen SAT is een MODEL-MISMATCH (retrybaar, nooit
+                # stilletjes 'beslist' -- de 2026-07-08 qattenden/uw-mismatch les)
                 ok, vt, rep = T.verify_board(WORD, MASK, grid)
-                print(f"SAT {key} witness ok={ok} vt={vt}", flush=True)
+                fail = None if ok else (rep.get('fail') if isinstance(rep, dict) else str(rep))
+                print(f"SAT {key} witness ok={ok} vt={vt} fail={fail}", flush=True)
+                lf.write(json.dumps({'key': key, 'floor': fl,
+                                     'verdict': 'SAT' if ok and vt > 2000 else 'MISMATCH',
+                                     'vt': vt, 'fail': fail, 'secs': round(secs, 1)}) + '\n')
+            else:
+                lf.write(json.dumps({'key': key, 'floor': fl, 'verdict': st,
+                                     'secs': round(secs, 1)}) + '\n')
+            if st == 'SAT':
                 if ok and (best is None or vt > best):
                     blob = {'board': T.B, 'main_word': WORD,
                             'turn_str': ''.join(ch.upper() if i in set(MASK) else ch.lower()
