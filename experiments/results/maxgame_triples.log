@@ -1,0 +1,54 @@
+# 118709 15-letter woorden
+# cheap-bound top-4000 gekozen; exacte legaliteit op deze subset
+# rij0/14: 3728, rij7: 3990
+
+top-15 rij0/14 (x27):
+   1724  geschenkcheques
+   1697  flauwekulexcuus
+   1643  jacquardmachine
+   1643  chequeformulier
+   1616  cultuurchequeje
+   1616  bouwcuratrixjes
+   1589  wetenschapsquiz
+   1589  quichebuffetjes
+   1589  dyscalculischen
+   1589  craqueleachtigs
+   1589  cliquetsystemen
+   1589  chequebedragjes
+   1589  babyglimlachjes
+   1562  vluchtreflexjes
+   1562  textielcyclusje
+
+top-15 rij7 (x9, center pre-placed):
+    608  geschenkcheques
+    599  vluchtreflexjes
+    599  flauwekulexcuus
+    599  deuxchevauxtjes
+    590  verzamelcheques
+    581  playbackshowtje
+    581  mytylschooltjes
+    581  jacquardmachine
+    581  chequeformulier
+    572  polysyllabische
+    572  jacquetkostuums
+    572  cultuurchequeje
+    572  bouwcuratrixjes
+    563  wetenschapsquiz
+    563  webcommunitytje
+
+# 5868 zak-compatibele triples; top-15 (3-woord backbone-score):
+   3876 (blanks 2)  r0=geschenkcheques(1724) r14=bouwcuratrixjes(1616) r7=polymyalgietjes(536)
+   3840 (blanks 2)  r0=chequeformulier(1643) r14=bouwcuratrixjes(1616) r7=playbackshowtje(581)
+   3822 (blanks 2)  r0=geschenkcheques(1724) r14=aliquotvleugels(1562) r7=woestijnlynxjes(536)
+   3813 (blanks 2)  r0=chequeformulier(1643) r14=bouwcuratrixjes(1616) r7=lewylichaampjes(554)
+   3804 (blanks 2)  r0=chequeformulier(1643) r14=bouwcuratrixjes(1616) r7=polyhybridetjes(545)
+   3795 (blanks 2)  r0=chequeformulier(1643) r14=bouwcuratrixjes(1616) r7=polymyalgietjes(536)
+   3795 (blanks 2)  r0=chequeformulier(1643) r14=bouwcuratrixjes(1616) r7=polyhydridetjes(536)
+   3795 (blanks 2)  r0=bouwcuratrixjes(1616) r14=babyglimlachjes(1589) r7=verzamelcheques(590)
+   3786 (blanks 2)  r0=geschenkcheques(1724) r14=woestijnlynxjes(1508) r7=aliquotvleugels(554)
+   3786 (blanks 2)  r0=chequeformulier(1643) r14=jacquardweefsel(1562) r7=playbackshowtje(581)
+   3786 (blanks 2)  r0=bouwcuratrixjes(1616) r14=wetenschapsquiz(1589) r7=playbackshowtje(581)
+   3786 (blanks 2)  r0=bouwcuratrixjes(1616) r14=wetenschapsquiz(1589) r7=mytylschooltjes(581)
+   3786 (blanks 2)  r0=bouwcuratrixjes(1616) r14=craqueleachtigs(1589) r7=playbackshowtje(581)
+   3786 (blanks 2)  r0=bouwcuratrixjes(1616) r14=cliquetsystemen(1589) r7=playbackshowtje(581)
+   3777 (blanks 2)  r0=geschenkcheques(1724) r14=proxyservertjes(1481) r7=bouwcuratrixjes(572)
