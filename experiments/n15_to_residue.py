@@ -19,7 +19,11 @@ def _init():
     import n15_twolevel as T
     global _T
     _T = T
-    T._oracle_template(WORD, MASK)
+    if os.environ.get('TMPL_CACHE'):
+        import n15_tmpl_cache
+        n15_tmpl_cache.install(WORD, MASK)      # laad 639MB-proto van disk ipv Python-bouw
+    else:
+        T._oracle_template(WORD, MASK)
 
 
 def _decide(arg):
