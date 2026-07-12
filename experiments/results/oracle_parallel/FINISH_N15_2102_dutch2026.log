@@ -1,0 +1,14 @@
+N=15 MAX TURN = 2102 -- BEWEZEN OPTIMUM (dutch2026, TRUE RULES, HMAX=15) -- 2026-07-12
+Witness: experiments/results/turns/N15_best_2102.json (geschenkcheques x27, qaTTenden 2 blanks; WITNESS OK)
+Dekking:
+  - Globale sound sweep alle 118.709 15-letterwoorden (n15_word_sweep) -> 4 bedreigende woorden.
+  - flauwekulexcuus(13)/jacquardmachine(4)/chequeformulier(2) maskers: banden LEEG (complete enum).
+  - geschenkcheques 4 {3,11}-maskers @ vloer 378 (=2102):
+      (8,12): EXACT 2102 (35,2M + 94,9k residu, undecided=0)
+      (9,12): 1,32B @378 + 107,5M @385 (pipe, MAX=0) + residu UNSAT + laneB TB CERTIFIED
+      (8,13): 236M @378 + 17,5M @385 (MAX=0) + residu UNSAT + laneB TB CERTIFIED (5.330)
+      (9,13): 8,06B @378 + 643M @385 (MAX=0) + residu UNSAT + laneB TB CERTIFIED (22.642)
+  - Finale residu: 23.715 unieke pipe-TO-keys alle UNSAT (final_residue_2102.jsonl).
+Engines: xfill --pinenum (Rust enum, key-set-gegate) + --pinbatch (gegate ~14000x) via pipes,
+CP-SAT oracle_beats_lb (score/blank-bewust) + TB-variant, witness_check als scheidsrechter.
+Artefacten: pipe_*/verdict_*.gz + ledgers + bases (PROVENANCE) + logs; beleid README_ARTIFACTS.md.
