@@ -52,7 +52,7 @@ def main():
                 pass
     work = []
     for fl in FLOORS:
-        for vf in glob.glob(f'{D}/f{fl}/verdict_*.txt') + glob.glob(f'{D}/f{fl}/verdict_*.txt.gz'):
+        for vf in glob.glob(f'{D}/f{fl}/verdict_*.txt') + glob.glob(f'{D}/f{fl}/verdict_*.gz'):
             op = gzip.open if vf.endswith('.gz') else open
             for line in op(vf, 'rt'):
                 if line.startswith('RES ') and ' TO ' in line:
