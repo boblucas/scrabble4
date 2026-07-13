@@ -1,0 +1,7 @@
+na fase A: zetten=1 tegels=7
+  ronde 1: zetten=7 tegels=38 zak-rest=62
+  ronde 2: zetten=20 tegels=83 zak-rest=17
+  ronde 3: zetten=27 tegels=94 zak-rest=6
+  ronde 4: zetten=31 tegels=100 zak-rest=0
+
+ECHT SPEL: 31 zetten, score=1133 ok=True (OK)
