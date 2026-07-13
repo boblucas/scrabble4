@@ -98,6 +98,10 @@ def enrich(seed):
             for y in rows_pri:
                 res = try_place(grid, used, bag, w, random.randint(0, max(0, 15-ln)), y, 1)
                 if res: total_new += len(res); placed_this += 1; break
+            else:
+                for x in random.sample(range(15), 8):
+                    res = try_place(grid, used, bag, w, x, random.randint(0, max(0, 15-ln)), 0)
+                    if res: total_new += len(res); placed_this += 1; break
             if placed_this > 6: break
     nt = sum(1 for y in range(H) for x in range(W) if grid[y][x])
     # LB
@@ -109,7 +113,7 @@ def enrich(seed):
 
 
 best = (0, 0, None)
-for seed in range(40):
+for seed in range(120):
     lb, nt, grid = enrich(seed)
     if lb > best[0]:
         best = (lb, nt, grid)
