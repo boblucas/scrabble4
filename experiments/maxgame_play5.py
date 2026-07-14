@@ -163,6 +163,8 @@ def play(word, x, y, h, final=False):
                         if not isw(pair): return False
                         oy = 2*my-cy
                         if 0 <= oy < 15 and grid[oy][mx]: return False
+                        ny2 = cy+(cy-my)
+                        if 0 <= ny2 < 15 and grid[ny2][mx]: return False
             new.append((cx, cy)); need[ch] += 1; byc.setdefault(ch, []).append((cx, cy))
     if not new or len(new) > 7: return False
     if moves:
@@ -224,20 +226,65 @@ steps = [
 steps.append((R7[12]+sp8w[12-sp8x], 12, 7, 0) if sp8v == 'A' else (R7[13]+sp8w[13-sp8x], 13, 7, 0))
 fails = [(w, x, y, h) for (w, x, y, h) in steps if not play(w, x, y, h)]
 print(f"keten-fails: {fails}", flush=True)
-wl = [w for w in words if 2 <= len(w) <= 8]; random.shuffle(wl); wl = wl[:120000]
-for rnd in range(25):
+LM = r.letter_multiplier; WM = r.word_multiplier
+def est_score(w, x, y, h):
+    dx, dy = (1, 0) if h else (0, 1)
+    if x < 0 or y < 0 or x+dx*(len(w)-1) > 14 or y+dy*(len(w)-1) > 14: return -1
+    s = 0; wm = 1; nnew = 0; cross = 0
+    for i, ch in enumerate(w):
+        cx, cy = x+i*dx, y+i*dy
+        if grid[cy][cx]:
+            if grid[cy][cx] != cba[ch]: return -1
+            s += val[ch]; continue
+        lm = int(LM[cy][cx]); wmc = int(WM[cy][cx])
+        s += val[ch]*lm; wm *= wmc; nnew += 1
+        # kruiswoord-schatting loodrecht
+        cs = 0
+        for d in (-1, 1):
+            k = 1
+            while True:
+                ox, oy = cx+dy*d*k, cy+dx*d*k
+                if 0 <= ox < 15 and 0 <= oy < 15 and grid[oy][ox]:
+                    cs += val[chr(96+grid[oy][ox])]; k += 1
+                else: break
+        if cs: cross += (cs + val[ch]*lm) * wmc
+    if nnew == 0 or nnew > 7: return -1
+    return s*wm + cross + (50 if nnew == 7 else 0)
+let2w = {}
+for w in words:
+    if 2 <= len(w) <= 8:
+        for ch in set(w): let2w.setdefault(ch, []).append(w)
+for ch in let2w:
+    let2w[ch].sort(key=lambda w: -(sum(val[c] for c in w) + len(w)))
+    let2w[ch] = let2w[ch][:9000]
+for rnd in range(40):
     anchors = [(x, y) for y in range(15) for x in range(15) if grid[y][x]]
-    random.shuffle(anchors); prog = False
-    for (ax, ay) in anchors[:70]:
+    random.shuffle(anchors)
+    cands = []
+    for (ax, ay) in anchors[:45]:
         achr = chr(96+grid[ay][ax])
-        for w in wl[:25000]:
-            if achr not in w: continue
-            done = False
+        for w in let2w.get(achr, [])[:2500]:
             for i, ch in enumerate(w):
                 if ch != achr: continue
-                if play(w, ax-i, ay, 1) or play(w, ax, ay-i, 0): done = True; break
-            if done: prog = True; break
-    if not prog: break
+                for (px, py, h) in ((ax-i, ay, 1), (ax, ay-i, 0)):
+                    e = est_score(w, px, py, h)
+                    if e > 0: cands.append((e, w, px, py, h))
+    cands.sort(key=lambda t: (-t[0], -len(t[1])))
+    played = False
+    for (e, w, px, py, h) in cands[:2000]:
+        if play(w, px, py, h): played = True; break
+    if not played:
+        # fallback: eerste-de-beste over alle woorden (dekt gaten die de top-schatting mist)
+        for (ax, ay) in anchors[:70]:
+            achr = chr(96+grid[ay][ax])
+            for w in let2w.get(achr, []):
+                done = False
+                for i, ch in enumerate(w):
+                    if ch != achr: continue
+                    if play(w, ax-i, ay, 1) or play(w, ax, ay-i, 0): done = True; break
+                if done: played = True; break
+            if played: break
+    if not played: break
 s7 = play(R7, 0, 7, 1, final=True)
 s0 = play(R0, 0, 0, 1, final=True)
 s14 = play(R14, 0, 14, 1, final=True)
