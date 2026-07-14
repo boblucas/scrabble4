@@ -22,6 +22,7 @@ for w in words:
     if len(w) == 8: C8.setdefault((w[0], w[7]), []).append(w)
 byl = {L: [w for w in words if len(w) == L] for L in (2, 3, 4, 5, 6)}
 bag0 = Counter({chr(96+c): r.counts[c] for c in r.counts})
+LM0 = r.letter_multiplier; WM0 = r.word_multiplier
 M014 = (0, 3, 7, 11, 12, 13, 14)
 
 def plan_for_triple(R0, R7, R14):
@@ -211,7 +212,9 @@ def run_one(R0, R7, R14, plan):
             return False
         for ch, n in need.items():
             o2 = max(0, used[ch]+n-bag0[ch]); used[ch] += n
-            for k in range(o2): blankcells.add(byc[ch][k]); blanks_left -= 1
+            if o2:
+                cells = sorted(byc[ch], key=lambda c: int(LM0[c[1]][c[0]])*int(WM0[c[1]][c[0]]))
+                for k in range(o2): blankcells.add(cells[k]); blanks_left -= 1
         moves.append(new)
         return True
 
