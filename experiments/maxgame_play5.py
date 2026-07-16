@@ -254,10 +254,6 @@ def run_one(R0, R7, R14, plan):
                         cs += val[chr(96+grid[oy][ox])]; k += 1
                     else: break
             if cs: cross += (cs + val[ch]*lm) * wmc
-            # FLANK-BOUNTY: cel naast lege maskercel -> kruiswoord telt bij slotzet met masker-WM
-            for my, wd in ((0, R0), (7, R7), (14, R14)):
-                if abs(cy-my) == 1 and (cx, my) in MASKC and not grid[my][cx]:
-                    cross += int(WM0[my][cx]) * (val[wd[cx]] + val[ch]*lm)
         if nnew == 0 or nnew > 7: return -1
         return s*wm + cross + (50 if nnew == 7 else 0)
     let2w = {}
@@ -295,22 +291,6 @@ def run_one(R0, R7, R14, plan):
                     if done: played = True; break
                 if played: break
         if not played: break
-    # FLANK-PASS: leg gericht kruiswoord-voer naast waardevolle lege maskercellen
-    shortw = sorted((w for w in words if 2 <= len(w) <= 5),
-                    key=lambda w: -sum(val[c] for c in w))[:20000]
-    flanks = sorted(((int(WM0[my][mx])*3 + int(LM0[my][mx]))*val[(R0 if my == 0 else R7 if my == 7 else R14)[mx]], mx, my)
-                    for (mx, my) in MASKC)
-    for _fv, mx, my in reversed(flanks):
-        for fy in (my-1, my+1):
-            if not (0 <= fy < 15) or grid[fy][mx]: continue
-            done = False
-            for w in shortw:
-                for off in range(len(w)):
-                    y0 = fy - off
-                    if y0 <= my <= y0+len(w)-1: continue
-                    if play(w, mx, y0, 0): done = True; break
-                if done: break
-    
     s7 = play(R7, 0, 7, 1, final=True)
     s0 = play(R0, 0, 0, 1, final=True)
     s14 = play(R14, 0, 14, 1, final=True)
