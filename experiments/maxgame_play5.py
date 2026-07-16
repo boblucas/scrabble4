@@ -303,6 +303,11 @@ def run_one(R0, R7, R14, plan):
     return tot, ok2, out
 
 NTRY = int(os.environ.get('MGTRIPLES', '6'))
+only = os.environ.get('MGONLY')
+if only:
+    ws = set(only.split(','))
+    triples = [t for t in triples if {t[1], t[2], t[3]} == ws]
+    print(f"# MGONLY: {len(triples)} varianten", flush=True)
 found = []
 for k, (sc, w0, w7, w14) in enumerate(triples[:6000]):
     p = plan_for_triple(w0, w7, w14)
