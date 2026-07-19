@@ -43,3 +43,23 @@ letterkoppeling (multiset ≤ 2×zak), premium-both-directions-verfijning, woord
 1. U0 (dit script) → 2. letterkoppeling + stagebudget-verfijning → 3. frame-noodzakelijkheid:
 spel met ≤1 ×27 ≤ 1751 + 617 + rest-UB' < LB ⟹ optimum gebruikt het frame → 4. klasse-sluiting
 binnen het frame (triple exact, vulfase via CP-SAT + reachability-certificaat).
+
+## Status UB-ladder (2026-07-19, avond)
+V0 20243 → V1 (Lagrange+woordsom-caps) 13718 → V2 (st≤cellen, scherpere caps) 12633 →
+**V3 (analytisch frontier + ketensom + zakwaarde/richting + TWS-cases) = 10806 — STAAND**.
+V3b/c (gezamenlijk stagebudget 202 + delta≤7) verliezen per saldo door de waarde-bucketing
+(verbruik afgerond omlaag): 11031/11141 — de fijnmazige 2D-V3 wint.
+
+**Asymptoot-analyse:** de lijn-relaxatie bevat al: ketensom (Σ stage-bases ≤ 295/lijn),
+woordsom-caps per lengte, cel- en waardebudget per richting, TWS-case-analyse, st≤cellen.
+De resterende ~6.9k boven de LB zit in het ontbreken van GEOMETRISCHE consistentie
+(kruis-stages verlangen echte loodrechte zetten op gedeelde cellen; niet elke lijn kan
+tegelijk een diepe keten dragen). Dat is niet meer met budget-koppelingen te vangen.
+
+**Routes naar scherper:**
+(a) Begrensde exacte ILP: de 6 TWS-lijnen + hun kruisende lijnen celgewijs exact in CP-SAT,
+    rest via V3-boekhouding — verwacht ~7-8k, onzeker.
+(b) KLASSE-SLUITING (aanbevolen): conditioneel resultaat "gegeven het frame + anker-skelet is
+    de vul+mop-up-fase ≤ X" via CP-SAT op het concrete bord (kleine ruimte!), plus
+    triple-optimaliteit (al empirisch geveegd) ⟹ optimaliteit binnen de frame-klasse,
+    analoog aan de ≤8-variant-2010 vóór de echte 2102.

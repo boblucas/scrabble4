@@ -27,17 +27,20 @@ def line_scores(lms, wms, wbig_override=None):
     LME = sum((lms[c]-1)*10 for c in range(15) if lms[c] > 1)
     for L in range(2, 16):
         mw = mwsd.get(L, 0)
-        for v in range(2, mw+1, 4):
+        for v in range(2, mw+1, 2):
             big = prem*(v + min(LME, 2*v))
             rest_budget = max(0, CS.get(L, 0) - v)
             kmax = CH.get(L, 1)
             restv = 0; got = 0
-            out[(L, v, 1)] = big
+            # zet legt <=7 tegels: interval L>7 vereist minstens ceil(L/7) stages
+            import math
+            minst = max(1, math.ceil(L/7))
+            if minst == 1: out[(L, v, 1)] = big
             for j in range(2, kmax+1):
                 b = min(mwsd.get(L-j+1, 0), v, rest_budget-got)
                 if b <= 0: break
                 restv += b; got += b
-                out[(L, v, j)] = big + restv
+                if j >= minst: out[(L, v, j)] = big + restv
     return out
 
 def knap(fronts, cellbud=101, valbud=BAGV, stagebud=202):
