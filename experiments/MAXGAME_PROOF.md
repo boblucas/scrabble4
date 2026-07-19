@@ -63,3 +63,11 @@ tegelijk een diepe keten dragen). Dat is niet meer met budget-koppelingen te van
     de vul+mop-up-fase ≤ X" via CP-SAT op het concrete bord (kleine ruimte!), plus
     triple-optimaliteit (al empirisch geveegd) ⟹ optimaliteit binnen de frame-klasse,
     analoog aan de ≤8-variant-2010 vóór de echte 2102.
+
+## Klasse-sluiting: decompositie gemeten (2026-07-19)
+Recordspel 3930 = **skelet 3728** (keten+slotzetten, deterministisch, score_game-geverifieerd)
++ **202 vulfase** (7 zetjes; slotzet-boost door vullercellen = 0 hier).  Klasse-optimum =
+3728 + maxfill(skelet).  maxfill is een KLEIN probleem: ~15 resttegels op een vast bord van
+~86 cellen; te begrenzen via exhaustieve zoektocht/CP-SAT incl. flank-kruisboost bij de
+slotzetten (vullercel naast masker-TWS-cel telt x3 in de slotzet).  NB: klasse-bound moet ook
+vullers vóór de slotzetten dekken (maskerdiscipline + kruisboost-term).
