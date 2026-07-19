@@ -35,6 +35,7 @@ def score_game(grid, moves, blankcells=None):
     geplaatste cellen.  blankcells: set van (x,y) die blanks zijn.  Returns (totaal, per_move, ok, msg)."""
     blankcells = blankcells or set()
     placed_so_far = [[False]*W for _ in range(H)]
+    curgrid = [[0]*W for _ in range(H)]   # bordstand NA elke zet — runs/legaliteit per tussenstand
     bagremain = Counter({c: r.counts[c] for c in r.counts}); blanksleft = r.blank_count
     total = 0; per = []
     for t, cells in enumerate(moves):
@@ -57,18 +58,19 @@ def score_game(grid, moves, blankcells=None):
         # markeer geplaatst
         for (x, y) in cells:
             placed_so_far[y][x] = True
+            curgrid[y][x] = grid[y][x]
         # gevormde woorden: het hoofdwoord (langste run door de nieuwe cellen in de zet-richting)
         # + kruiswoorden loodrecht door elke nieuwe cel.  Verzamel unieke runs >=2 met >=1 nieuwe cel.
         seen = set(); mscore = 0
         for (x, y) in cells:
             for h in (1, 0):
-                run = runs_through(grid, x, y, h)
+                run = runs_through(curgrid, x, y, h)   # TUSSENSTAND, niet eindbord
                 if len(run) < 2: continue
                 key = (run[0], h, len(run))
                 if key in seen: continue
                 if not any(c in cset for c in run): continue   # geen nieuwe cel -> al bestaand woord
                 seen.add(key)
-                word = tuple(grid[cy][cx] for (cx, cy) in run)
+                word = tuple(curgrid[cy][cx] for (cx, cy) in run)
                 if word not in lk:
                     return 0, per, False, f"zet {t+1}: illegaal woord {''.join(chr(96+c) for c in word)}"
                 placed = [ (cx,cy) in cset for (cx,cy) in run ]
@@ -77,6 +79,11 @@ def score_game(grid, moves, blankcells=None):
                 sc, _ = get_word_score(r, list(word), x0, y0, h, placed, blanks)
                 mscore += sc
         per.append(mscore); total += mscore
+    # dekking: elke eindbord-cel moet door een zet geplaatst zijn
+    for y in range(H):
+        for x in range(W):
+            if bool(grid[y][x]) != bool(curgrid[y][x]):
+                return total, per, False, f"cel ({x},{y}) in eindbord maar niet in zetten (of andersom)"
     # zak-check
     if any(v < 0 for v in bagremain.values()) or blanksleft < 0:
         neg = {chr(96+c): v for c,v in bagremain.items() if v<0}
