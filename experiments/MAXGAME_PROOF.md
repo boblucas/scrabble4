@@ -80,3 +80,18 @@ slotzet-kruisboost gedekt (kolompatronen door maskercellen dragen WM mee).
 maxfill-UB = 596 (rijen 262 + kolommen 334); skelet 3728 exact -> klasse-optimum <= 4324.
 Bereikt: 3930.  Aanscherproute: kruis-hoofdstage-consistentie (kruisstage vergt loodrechte
 hoofdzet), zetbudget (<=20 vulzetten is ruim: <=NREST), lijn-interacties.
+
+## Eliminatieladder naar bewezen optimum (plan, 2026-07-19 avond — bob's voorstel)
+Waarneming: alle top-spellen delen triple (flauwekulexcuus/babyzwemmertjes/zelfbeschikking) én
+brugkolommen (6,8,5,10); skelet 3718-3733, vul 205-231.  Ladder:
+1. **Skelet-optimum exact** gegeven (triple, kolommen): CP-SAT/B&B over brug/span/sp8-woorden
+   met gedeeld zakbudget (kleine ruimte) -> hard getal S*.
+2. **maxfill-UB op S*-skelet** (fillbound, aanscherpen met kruisstage-consistentie) -> klasse-
+   optimum in [LB, S* + fillUB].
+3. **Rival-eliminatie**: per rivaliserende (triple, kolommen)-klasse een sound UB =
+   skelet-UB(rival, exact of analytisch) + generieke fillUB; alles < LB is BEWEZEN uitgesloten.
+   Triviale drempel: backbone < LB - (keten+fill-UB ~1200) valt direct af; de 3400-3615-band
+   krijgt per-rival exacte solves (zelfde machinerie, ~tientallen kleine problemen).
+4. Herhaal over kolomkeuzes binnen de triple (klein aantal combinaties).
+Eindresultaat: "LB = optimum binnen het 2x27+x9-frame" op stellingen 1+2 na volledig bewezen —
+en het frame zelf is al de unieke maximale multiplierstructuur.
