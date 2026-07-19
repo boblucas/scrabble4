@@ -71,3 +71,12 @@ Recordspel 3930 = **skelet 3728** (keten+slotzetten, deterministisch, score_game
 ~86 cellen; te begrenzen via exhaustieve zoektocht/CP-SAT incl. flank-kruisboost bij de
 slotzetten (vullercel naast masker-TWS-cel telt x3 in de slotzet).  NB: klasse-bound moet ook
 vullers vóór de slotzetten dekken (maskerdiscipline + kruisboost-term).
+
+## Klasse-sluiting v1 (2026-07-19): skelet-klasse-bracket [3930, 4324]
+maxgame_fillbound.py: elke vul/mop-up-stage = woord op één lijn passend op het skelet-patroon,
+vulcellen uit de restzak (20 legbaar na reserve); per lijn g(m)-knapsack (herhaalbare stages,
+elk >=1 verse vulcel), budgetten PER RICHTING <=20 (een vulcel is vers op rij- en kolomlijn);
+slotzet-kruisboost gedekt (kolompatronen door maskercellen dragen WM mee).
+maxfill-UB = 596 (rijen 262 + kolommen 334); skelet 3728 exact -> klasse-optimum <= 4324.
+Bereikt: 3930.  Aanscherproute: kruis-hoofdstage-consistentie (kruisstage vergt loodrechte
+hoofdzet), zetbudget (<=20 vulzetten is ruim: <=NREST), lijn-interacties.
