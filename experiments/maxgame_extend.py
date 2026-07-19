@@ -131,3 +131,8 @@ if ok:
     out['total'] = int(tot)
     o = sys.argv[1].replace('.json', '_ext.json')
     json.dump(out, open(o, 'w')); print("->", o)
+    B = 'experiments/results/maxgame_BEST.json'
+    prev = json.load(open(B)).get('total', 0) if os.path.exists(B) else 0
+    if int(tot) > prev:
+        json.dump(out, open(B, 'w'))
+        print(f"*** NIEUW RECORD {int(tot)} (was {prev}) ***")

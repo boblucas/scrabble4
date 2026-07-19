@@ -312,30 +312,6 @@ def run_one(R0, R7, R14, plan):
     s7 = play(R7, 0, 7, 1, final=True)
     s0 = play(R0, 0, 0, 1, final=True)
     s14 = play(R14, 0, 14, 1, final=True)
-    # MOP-UP: resttegels naspelen (reserve: >=1 tegel blijft over)
-    TT = sum(bag0.values()) + r.blank_count
-    for _ in range(12):
-        placed = sum(1 for yy in range(15) for xx in range(15) if grid[yy][xx])
-        if placed >= TT - 1: break
-        anchors_m = [(x, y) for y in range(15) for x in range(15) if grid[y][x]]
-        random.shuffle(anchors_m)
-        mc = []
-        for (ax, ay) in anchors_m[:60]:
-            achr = chr(96+grid[ay][ax])
-            for w in let2w.get(achr, [])[:3000]:
-                for i, ch in enumerate(w):
-                    if ch != achr: continue
-                    for (px, py, h) in ((ax-i, ay, 1), (ax, ay-i, 0)):
-                        e = est_score(w, px, py, h)
-                        if e > 0: mc.append((e, w, px, py, h))
-        mc.sort(key=lambda t: -t[0])
-        done = False
-        for (e, w, px, py, h) in mc[:800]:
-            dx2, dy2 = (1, 0) if h else (0, 1)
-            nn = sum(1 for j in range(len(w)) if not grid[py+j*dy2][px+j*dx2])
-            if placed + nn > TT - 1: continue
-            if play(w, px, py, h): done = True; break
-        if not done: break
     nt = sum(1 for y in range(15) for x in range(15) if grid[y][x])
     tot, per, ok2, msg = MG.score_game([row[:] for row in grid], moves, blankcells)
     print(f"SPEL: zetten={len(moves)} tegels={nt} score={tot} ok={ok2} ({msg}) slot=({s7},{s0},{s14})", flush=True)
