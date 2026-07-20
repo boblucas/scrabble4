@@ -281,3 +281,9 @@ solver: 499 getest, 0 sluiten. 482 R7-faalt (geen 7-window binnen masker), 17 R7
 (17 verschillende triples, zelfde falen). nb-sweep (korte openingen, jouw idee) draait parallel voor de
 482 zonder 7-window. CAVEAT blijft: solver-fail = bewijsmateriaal, niet bewijs. PRAKTISCH: geen van de
 top-500 verslaat 3963 constructief -> record staat robuust.
+
+## No-bingo-sweep KLAAR (2026-07-20, bob's idee): top-500, 0 sluiten
+Opening 2-7 tegels door center (verliest +50 bingo maar ontsluit R7-woorden zonder 7-window). Top-500
+(200 unieke na dedup/masker), 0 sluiten. Zelfde muren: R7-faalt of R0/R14-connectiviteit. Bevestigt dat
+de bingo-eis niet de bottleneck was; de R0/R14-anker-connectiviteit blijft de universele muur, ook zonder
+bingo. ext2-sweep (rank 1000-5000, bingo) draait nog. Record 3963 staat.
