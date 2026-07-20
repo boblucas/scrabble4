@@ -204,3 +204,12 @@ zelfbeschikking = 2989 (+351!). Beide per-rij prepareerbaar. ECHTE blocker = de 
 (maxgame_play5.py plan_for_triple) heeft een HARDGECODEERD masker M014=(0,3,7,11,12,13,14) dat NIET
 matcht met geschenkcheques' masker (col 8 vers, 12/13 anders). Generalisatie van de builder naar
 per-triple-maskers is de openstaande taak -> potentieel ~4200-4300 als de 2D-bruggen sluiten.
+
+## geschenkcheques-triple: choreografie-HAALBAAR, connectiviteit resterend (2026-07-20)
+maxgame_geschenk.py: opening zwemmer + bruggen up6=nadrukte/up9=hernoeme/dn8=mierzoet plaatsen
+probleemloos; maskers M0={0,3,7,8,11,12,14} (es/hen/he/e) en M14={0,1,3,5,7,11,14} (u/c/r/tri/je)
+legaal. RESTEREND: hoek-subwoorden (es@1-2, e@13, R14-randen) hebben verticale connector-woorden
+nodig (span/ladder). = connectiviteitsprobleem, GEEN onmogelijkheid. Potentieel als skelet sluit:
+anker-completes ~1724+1616+527-150blanco ~3700 (vs record 3215, +485); +opening+bruggen+fill(~660)
+-> ~4360, sprong ~+400 over 3963. VOLGENDE: span/ladder-generalisatie (verbind hoek-subwoorden via
+korte verticale woorden naar de brugkolommen) -> echte LB-doorbraak verwacht.
