@@ -264,3 +264,12 @@ noodzakelijke vw. bestaat (alles al gefilterd; sound UB<3963 bestaat niet voor h
 bouwbaarheid weerleggen = enorme zoekruimte). Opening-window = sterk PRAKTISCH filter (~15/40 met
 window makkelijker bouwbaar). Productieve zet: solver draaien op window-kandidaten (opening
 generaliseren) om closing-triple te vinden = echte LB. Rigoureuze top-down-eliminatie niet haalbaar.
+
+## Top-down solver-sweep (2026-07-20, bob's aanpak): top-38 viable, 0 sluiten
+maxgame_solvesweep.py + gegeneraliseerde solver (opening-window + plank-backtracking R7, generieke
+R0/R14-connector). Resultaat top-38: 0 sluiten. 35× R7-faalt (geen opening-window of R7-pre-cel
+onverbindbaar), 3× R7-bouwt-maar-R0/R14-faalt (#15/16 vluchtreflexjes/chequeformulier mu-conflict;
+#18 bouwcuratrixjes/geschenkcheques/citytrippertjes = hoogste-kern near-miss). CAVEAT: solver-fail =
+bewijsMATERIAAL, geen bewijs (verticale opening niet geïmplementeerd; R0/R14-connector niet uitputtend).
+PRAKTISCH: geen van top-38 verslaat 3963 constructief -> record staat. Near-misses (#15,16,18) =
+plek voor uitputtender R0/R14-solver.

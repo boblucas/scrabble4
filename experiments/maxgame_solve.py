@@ -96,13 +96,63 @@ def preruns(w, mask):
         out.append(list(range(pre[i], pre[j]+1))); i = j+1
     return out
 
-# ---- vaste R7-kant: opening + teee + je + completie ----
+# ---- gegeneraliseerde R7-kant: opening-window + plank+connector per pre-cel (backtracking) ----
+def connect_r7_run(run):
+    """probeer de R7-pre-run te verbinden; yield True als geplaatst (grid gemuteerd). Backtrackt zelf niet
+    over meerdere opties -> caller doet dat via snapshot. Retourneert lijst van (snapshot-na) opties?
+    Simpeler: generator van succesvolle plaatsingen."""
+    wr=''.join(R7[c] for c in run)
+    opencols=OPEN[0]
+    base=snap()
+    # (a) grenst aan opening
+    if (run[0]-1 in opencols or run[-1]+1 in opencols):
+        st=snap()
+        if play(wr, run[0], 7, 1): yield snap()
+        restore(st)
+    # (b) plank rij8 + connector
+    for c in run:
+        for sstart in sorted(opencols):
+            lo,hi=min(sstart,c),max(sstart,c); Lp=hi-lo+1
+            if Lp<2 or Lp>7: continue
+            for shelf in byl.get(Lp,[]):
+                bad=False
+                for t,col in enumerate(range(lo,hi+1)):
+                    if grid[7][col] and not isw(chr(96+grid[7][col])+shelf[t]): bad=True; break
+                if bad: continue
+                st=snap()
+                if not play(shelf, lo, 8, 1): restore(st); continue
+                cn=R7[c]+chr(96+grid[8][c])
+                if isw(cn) and play(cn, c, 7, 0):
+                    if len(run)==1 or all(grid[7][cc] for cc in run) or play(wr,run[0],7,1):
+                        yield snap()
+                restore(st)
+    restore(base)
+
+OPEN=[None]
 def build_r7():
-    if not play(C7, 4, 7, 1): return False
-    if not play('teee', 9, 8, 1): return False
-    if not play('je', 12, 7, 0): return False
-    if not play(R7, 0, 7, 1, final=True): return False
-    return True
+    ks=[k for k in range(1,8) if isw(R7[k:k+7])]
+    for k in ks:
+        st=snap()
+        if not play(R7[k:k+7], k, 7, 1): restore(st); continue
+        opencols=set(range(k,k+7)); OPEN[0]=opencols
+        pre=sorted(c for c in range(15) if c not in M7 and c not in opencols)
+        runs=[]; i=0
+        while i<len(pre):
+            j=i
+            while j+1<len(pre) and pre[j+1]==pre[j]+1: j+=1
+            runs.append(pre[i:j+1]); i=j+1
+        def rec(idx):
+            if idx==len(runs):
+                st2=snap()
+                if play(R7,0,7,1,final=True): return True
+                restore(st2); return False
+            for snapshot in connect_r7_run(runs[idx]):
+                restore(snapshot)
+                if rec(idx+1): return True
+            return False
+        if rec(0): return True
+        restore(st)
+    return False
 
 # ---- generieke pre-run-verbinding: probeer brug / verticale connector / span ----
 def connect_prerun(row, run, is_top):
