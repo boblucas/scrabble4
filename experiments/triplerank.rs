@@ -7,7 +7,7 @@ use std::io::{BufRead, BufReader, Write, BufWriter};
 const A: usize = 26;
 
 #[derive(Clone)]
-struct W { word: String, s27: i64, s9: i64, opn: i64, cnt: [u8; A] }
+struct W { word: String, s27: i64, s9: i64, opn: i64, v0: i64, v14: i64, cnt: [u8; A] }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -24,44 +24,45 @@ fn main() {
         if i == 0 { continue; }
         let l = line.unwrap();
         let p: Vec<&str> = l.split('\t').collect();
-        if p.len() < 4 + A { continue; }
+        if p.len() < 6 + A { continue; }
         let mut cnt = [0u8; A];
-        for k in 0..A { cnt[k] = p[4 + k].parse().unwrap(); }
+        for k in 0..A { cnt[k] = p[6 + k].parse().unwrap(); }
         ws.push(W { word: p[0].to_string(), s27: p[1].parse().unwrap(),
-                    s9: p[2].parse().unwrap(), opn: p[3].parse().unwrap(), cnt });
+                    s9: p[2].parse().unwrap(), opn: p[3].parse().unwrap(),
+                    v0: p[4].parse().unwrap(), v14: p[5].parse().unwrap(), cnt });
     }
     eprintln!("woorden geladen: {}", ws.len());
 
     // R0/R14-kandidaten: s27>0, gesorteerd desc; R7: s9>0 gesorteerd op s9+open desc
-    let mut r27: Vec<&W> = ws.iter().filter(|w| w.s27 > 0).collect();
-    r27.sort_by(|a, b| b.s27.cmp(&a.s27));
+    let mut r0: Vec<&W> = ws.iter().filter(|w| w.v0 > 0).collect();
+    r0.sort_by(|a, b| b.v0.cmp(&a.v0));
+    let mut r14v: Vec<&W> = ws.iter().filter(|w| w.v14 > 0).collect();
+    r14v.sort_by(|a, b| b.v14.cmp(&a.v14));
     let mut r7: Vec<&W> = ws.iter().filter(|w| w.s9 > 0).collect();
     r7.sort_by(|a, b| (b.s9 + b.opn).cmp(&(a.s9 + a.opn)));
-    // cutoffs (ruim): score gedomineerd door top-s27; klein genoeg voor volledige enum
-    let NC = r27.len().min(4000);
-    let MC = r7.len().min(4000);
-    eprintln!("r27={} (cut {}), r7={} (cut {})", r27.len(), NC, r7.len(), MC);
+    let nc0 = r0.len().min(3000); let nc14 = r14v.len().min(3000); let mc = r7.len().min(3000);
+    eprintln!("muur-veilig r0={} (cut {}), r14={} (cut {}), r7={} (cut {})",
+              r0.len(), nc0, r14v.len(), nc14, r7.len(), mc);
 
     // per-letter val (a..z) voor blankpenalty
     let valarr: [i64; A] = [1,3,5,2,1,4,3,4,1,4,3,3,3,1,1,3,10,2,2,2,4,4,5,8,8,4]; // dutch2026 waarden
 
-    let mut heap: Vec<(i64, usize, usize, usize, i64, i64)> = Vec::new(); // (score,ai,bi,ci,blanks,pen)
+    let mut heap: Vec<(i64, usize, usize, usize, i64, i64)> = Vec::new(); // (score,a0,b14,c7,blanks,pen)
     let mut worst = i64::MIN;
 
-    for ci in 0..MC {
+    for ci in 0..mc {
         let c = r7[ci];
         let s9o = c.s9 + c.opn;
-        // vroege stop: zelfs 2x beste s27 + s9o kan de heap niet meer halen
-        if heap.len() >= topn && r27[0].s27 * 2 + s9o - 400 < worst { /* geen break: s9o daalt, dus continue kan nog? nee ci-sorted desc */ break; }
-        for ai in 0..NC {
-            let a = r27[ai];
-            if heap.len() >= topn && a.s27 + r27[0].s27 + s9o < worst { break; }
-            for bi in ai..NC {
-                let b = r27[bi];
-                let core = a.s27 + b.s27 + s9o;
+        if heap.len() >= topn && r0[0].v0 + r14v[0].v14 + s9o < worst { break; }
+        for ai in 0..nc0 {
+            let a = r0[ai];
+            if heap.len() >= topn && a.v0 + r14v[0].v14 + s9o < worst { break; }
+            if std::ptr::eq(a, c) { continue; }
+            for bi in 0..nc14 {
+                let b = r14v[bi];
+                let core = a.v0 + b.v14 + s9o;
                 if heap.len() >= topn && core < worst { break; }
-                if std::ptr::eq(a, c) || std::ptr::eq(b, c) { continue; }
-                // bag + blancos + penalty
+                if std::ptr::eq(b, c) || std::ptr::eq(a, b) { continue; }
                 let mut over_tot = 0i64; let mut pen = 0i64; let mut feasible = true;
                 for k in 0..A {
                     let need = a.cnt[k] as i64 + b.cnt[k] as i64 + c.cnt[k] as i64;
@@ -69,7 +70,6 @@ fn main() {
                     if ov > 0 {
                         over_tot += ov;
                         if over_tot > blanks { feasible = false; break; }
-                        // blank op goedkoopste woord dat letter k bevat: x9 als in R7, anders x27
                         let wm = if c.cnt[k] > 0 { 9 } else { 27 };
                         pen += valarr[k] * wm * ov;
                     }
@@ -89,13 +89,13 @@ fn main() {
     }
     heap.sort_by(|x, y| y.0.cmp(&x.0));
     let mut out = BufWriter::new(File::create("experiments/results/maxgame_triplerank.tsv").unwrap());
-    writeln!(out, "rank\tscore\tR0\tR14\tR7\tA_s27\tB_s27\tC_s9\tD_open\tblanks\tpenalty").unwrap();
+    writeln!(out, "rank\tscore\tR0\tR14\tR7\tv0\tv14\tC_s9\tD_open\tblanks\tpenalty").unwrap();
     for (i, (sc, ai, bi, ci, bl, pen)) in heap.iter().enumerate() {
-        let a = r27[*ai]; let b = r27[*bi]; let c = r7[*ci];
+        let a = r0[*ai]; let b = r14v[*bi]; let c = r7[*ci];
         writeln!(out, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}", i+1, sc, a.word, b.word, c.word,
-                 a.s27, b.s27, c.s9, c.opn, bl, pen).unwrap();
-        if i < topn { println!("{:>3} {:>6} {:<16}{:<16}{:<16} A{:>5} B{:>5} C{:>4} D{:>4} bl{} pen{}",
-                 i+1, sc, a.word, b.word, c.word, a.s27, b.s27, c.s9, c.opn, bl, pen); }
+                 a.v0, b.v14, c.s9, c.opn, bl, pen).unwrap();
+        if i < topn { println!("{:>3} {:>6} {:<16}{:<16}{:<16} v0{:>5} v14{:>5} C{:>4} D{:>4} bl{} pen{}",
+                 i+1, sc, a.word, b.word, c.word, a.v0, b.v14, c.s9, c.opn, bl, pen); }
     }
     eprintln!("top-{} -> maxgame_triplerank.tsv", heap.len());
 }

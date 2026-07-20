@@ -225,3 +225,13 @@ die een gesloten verbonden legaal skelet geven; anders bewijs geen. Rust hergebr
 xfill_rs. Python valideert alleen de Rust-oplossing tegen score_game (1x). Compute-eerlijk.
 NB: misschien vermijdt een ANDER top-core-R14 (bv vluchtreflexjes, rank 13) de c/j-muren -> eerst
 per-triple een goedkope 'muur-check' (heeft elk pre-cel-nodige letter een niet-lege before/after?).
+
+## Viability-gefilterde ranking (2026-07-20, Rust): rol-asymmetrie + eliminatie
+Precompute v2: per woord beste MUUR-VEILIGE x27 voor rol R0 (after-∅-check: q,x) en R14 (before-∅:
+c,j,q,v,y,z). ~2500 woorden NIET-viable als R14 (onfixbare before-muur). KERNCORRECTIE: bouwcuratrixjes
+IS viable als R0 (boven; c@4/j@12 verbinden naar beneden) maar NIET als R14. Rol bepaalt de muur.
+Top muur-veilige triples: #1 bouwcuratrixjes(R0)/geschenkcheques(R14)/playoffticketje (3884, 2 bl);
+#15 vluchtreflexjes/chequeformulier/babyzwemmertjes (3852, 0 blancos, R7 bewezen sluitbaar) = veiligste
+target. NB viability = NODZAKELIJK-heuristiek (losse pre-cel-connector), nog niet bewezen VOLDOENDE
+(echte span/brug-geometrie moet sluiten). Volgende: de daadwerkelijke sluiting (span/brug-CSP) op de
+top-viable target(s) -> echte LB-doorbraak richting ~4200-4300.
