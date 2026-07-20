@@ -170,3 +170,11 @@ VERDEDIGBAAR EINDRESULTAAT (analoog aan max-turn): LB 3963 (onvoorwaardelijk, sc
 globale bracket [3963,10806] + 2 bewezen structuurstellingen + empirische dominantie eigen klasse
 over rivalen (sweep: rivalen <=3734). Globaal BEWEZEN optimum: buiten praktisch bereik.
 CPU: 4 mining-workers (staart) + 2 fillexact (anytime-LB) blijven laag doortikken.
+
+## Empirische bevestiging: naïeve per-slot-UB ONGELDIG (2026-07-20, tegenvoorbeeld)
+score_game decompositie-consistent: Σ per-zet = skelet-totaal (3721, geverifieerd). MAAR de 4
+bruggen scoren in het echte skelet 65/70/71/78 (=284) door KRUISWOORDEN met de ankerrijen;
+kruiswoordloze zetscore gaf 35-46 (=158). Naïeve slot-som choreografie ~387 < werkelijk 506 =>
+GEEN bovengrens (concreet tegenvoorbeeld). Definitief: sound per-slot-UB vergt kruiswoord-termen
+=> slots koppelen via buurletters => separabiliteit onbruikbaar. Skelet-UB blijft open; skelet-LB
+3738 solide. Flip-flop gesloten met tegenvoorbeeld i.p.v. argument.
