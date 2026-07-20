@@ -194,3 +194,13 @@ levert LEADS: hoogste-kern-MET-sluitbare-choreografie. Concreet upgrade-lead: ra
 chequeformulier/vluchtreflexjes/babyzwemmertjes kern 3852, 0 blancos, R7=babyzwemmertjes (BEWEZEN
 sluitbaar) -> als chequeformulier/vluchtreflexjes-choreografie sluit: ~4100+ mogelijk.
 Top-100 in maxgame_triplerank.tsv.
+
+## CORRECTIE (2026-07-20, bob-caught): geschenkcheques IS prepareerbaar (es/hen/he/e)
+Mijn "geschenkcheques/bouwcuratrixjes choreografie-geblokkeerd (che/ou/cur)" was FOUT — dat sloeg op
+één specifiek masker. Beste x27-masker geschenkcheques = {0,3,7,8,11,12,14} met pre-runs es/hen/he/e
+(alle woorden); bouwcuratrixjes = {0,1,3,5,7,11,14} met u/c/r/tri/je. Ranker s27=1724/1616 bevestigde
+dit al. ANKER-BASIS geschenkcheques+bouwcuratrixjes = 3340 vs record-triplet flauwekulexcuus+
+zelfbeschikking = 2989 (+351!). Beide per-rij prepareerbaar. ECHTE blocker = de builder
+(maxgame_play5.py plan_for_triple) heeft een HARDGECODEERD masker M014=(0,3,7,11,12,13,14) dat NIET
+matcht met geschenkcheques' masker (col 8 vers, 12/13 anders). Generalisatie van de builder naar
+per-triple-maskers is de openstaande taak -> potentieel ~4200-4300 als de 2D-bruggen sluiten.
