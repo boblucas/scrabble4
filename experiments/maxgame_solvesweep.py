@@ -37,10 +37,17 @@ for row in rows:
     seen.add(key)
     _,m0=best_mask(R0,after_ok); _,m14=best_mask(R14,before_ok)
     if not m0 or not m14: continue
-    env=dict(os.environ, MGR0=R0, MGR14=R14, MGR7=R7, MGM0=str(m0), MGM14=str(m14))
+    bm7=None;bs7=-1
+    for e in combinations([c for c in range(15) if c not in (0,14,7)],5):
+        m=set((0,14))|set(e); rr=prl_runs(R7,m)
+        if not all(len(s2)==1 or isw(R7[s2[0]:s2[-1]+1]) for s2 in rr): continue
+        sc=9*(sum(val[c] for c in R7)+sum(val[R7[cc]] for cc in (3,11) if cc in m))+50
+        if sc>bs7: bs7=sc;bm7=tuple(sorted(m))
+    if not bm7: continue
+    env=dict(os.environ, MGR0=R0, MGR14=R14, MGR7=R7, MGM0=str(m0), MGM14=str(m14), MGM7=str(bm7))
     try:
         out=subprocess.run(['.venv/bin/python','experiments/maxgame_solve.py'],env=env,
-                           capture_output=True,text=True,timeout=100).stdout
+                           capture_output=True,text=True,timeout=35).stdout
     except Exception: continue
     line=[l for l in out.splitlines() if l.startswith('solve:')]
     tag=line[0] if line else out.strip()[:80]

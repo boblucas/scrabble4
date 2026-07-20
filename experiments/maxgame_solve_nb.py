@@ -21,7 +21,7 @@ C7 = R7[4:11]
 import ast
 M0 = ast.literal_eval(os.environ.get('MGM0', '(0,6,7,8,9,11,14)'))
 M14 = ast.literal_eval(os.environ.get('MGM14', '(0,3,5,7,8,11,14)'))
-M7 = (0, 1, 2, 3, 11, 13, 14)
+M7 = ast.literal_eval(os.environ.get('MGM7', '(0,1,2,3,11,13,14)'))
 
 grid = [[0]*15 for _ in range(15)]
 moves = []; used = Counter(); blankcells = set(); blanks_left = r.blank_count
@@ -135,7 +135,7 @@ def build_r7():
     for Ln in range(7,1,-1):
         for a in range(max(0,7-Ln+1), min(7,15-Ln)+1):
             b=a+Ln
-            if a<=7<b and isw(R7[a:b]): cands.append((a,b))
+            if a<=7<b and isw(R7[a:b]) and all(c not in M7 for c in range(a,b)): cands.append((a,b))
     for (a,b) in cands:
         st=snap()
         if not play(R7[a:b], a, 7, 1): restore(st); continue

@@ -21,7 +21,7 @@ C7 = R7[4:11]
 import ast
 M0 = ast.literal_eval(os.environ.get('MGM0', '(0,6,7,8,9,11,14)'))
 M14 = ast.literal_eval(os.environ.get('MGM14', '(0,3,5,7,8,11,14)'))
-M7 = (0, 1, 2, 3, 11, 13, 14)
+M7 = ast.literal_eval(os.environ.get('MGM7', '(0,1,2,3,11,13,14)'))
 
 grid = [[0]*15 for _ in range(15)]
 moves = []; used = Counter(); blankcells = set(); blanks_left = r.blank_count
@@ -130,7 +130,7 @@ def connect_r7_run(run):
 
 OPEN=[None]
 def build_r7():
-    ks=[k for k in range(1,8) if isw(R7[k:k+7])]
+    ks=[k for k in range(1,8) if isw(R7[k:k+7]) and all(c not in M7 for c in range(k,k+7))]
     for k in ks:
         st=snap()
         if not play(R7[k:k+7], k, 7, 1): restore(st); continue
