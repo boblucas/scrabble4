@@ -273,3 +273,11 @@ onverbindbaar), 3× R7-bouwt-maar-R0/R14-faalt (#15/16 vluchtreflexjes/chequefor
 bewijsMATERIAAL, geen bewijs (verticale opening niet geïmplementeerd; R0/R14-connector niet uitputtend).
 PRAKTISCH: geen van top-38 verslaat 3963 constructief -> record staat. Near-misses (#15,16,18) =
 plek voor uitputtender R0/R14-solver.
+
+## Bingo-sweep VOLLEDIG (2026-07-20): top-500 viable, 0 sluiten (M7 gefixt)
+Na M7-fix (x9-masker per R7-woord i.p.v. hardgecodeerd) volledige top-500-sweep met diepe backtracking-
+solver: 499 getest, 0 sluiten. 482 R7-faalt (geen 7-window binnen masker), 17 R7-bouwt-maar-R0/R14-faalt
+(hoogste #96 bouwcuratrixjes/geschenkcheques 3814). R0/R14-anker-pre-run-verbinding = universele muur
+(17 verschillende triples, zelfde falen). nb-sweep (korte openingen, jouw idee) draait parallel voor de
+482 zonder 7-window. CAVEAT blijft: solver-fail = bewijsmateriaal, niet bewijs. PRAKTISCH: geen van de
+top-500 verslaat 3963 constructief -> record staat robuust.
