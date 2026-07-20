@@ -255,3 +255,12 @@ machinerie generaliseren naar willekeurige middenwoorden (elk eigen zone-conflic
 onzekere opbrengst. STAND: LB 3963 bewezen; viable-ranking + muur-check + algemene solver = correcte
 infrastructuur; realisatie van een LB-sprong vergt R7-generalisatie (open). Loop gestopt (bevestigt
 anders hetzelfde). Mining-vloot draait parallel door op 3963.
+
+## Top-down eliminatie: opening-window-check ONSOUND (2026-07-20, bob's idee getest+weerlegd)
+Poging: R7 heeft geldige horizontale opening-window (7-substring door center) nodig -> elimineert
+schijnbaar 18/38 top-triples. MAAR ONSOUND: opening mag VERTICAAL door center (kol 7), levert (7,7),
+R7 eromheen gebouwd met prep. Dus geen horizontale window sluit niet uit. Geen goedkope sound
+noodzakelijke vw. bestaat (alles al gefilterd; sound UB<3963 bestaat niet voor hoge-kern-triples;
+bouwbaarheid weerleggen = enorme zoekruimte). Opening-window = sterk PRAKTISCH filter (~15/40 met
+window makkelijker bouwbaar). Productieve zet: solver draaien op window-kandidaten (opening
+generaliseren) om closing-triple te vinden = echte LB. Rigoureuze top-down-eliminatie niet haalbaar.
