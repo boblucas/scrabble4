@@ -11,12 +11,21 @@ import maxgame_score as MG
 r = MG.r; cba = r.alphabet.cba
 val = {ch: r.scores[cba[ch]] for ch in 'abcdefghijklmnopqrstuvwxyz'}
 LM = r.letter_multiplier; WM = r.word_multiplier
-d = json.load(open('experiments/results/maxgame_BEST.json'))
-G = d['grid']; bl = {tuple(b) for b in d['blanks']}
-moves = [[tuple(c) for c in mv] for mv in d['moves']]
-finals = [i for i, mv in enumerate(moves) if len(mv) == 7 and len({c[1] for c in mv}) == 1
-          and mv[0][1] in (0, 7, 14) and i >= 15]
-skelcells = {c for i in list(range(15))+finals for c in moves[i]}
+BB = os.environ.get('MGBACKBONE')
+if BB:
+    w0, w7, w14 = BB.split(',')
+    G = [[0]*15 for _ in range(15)]
+    for c in range(15):
+        G[0][c] = cba[w0[c]]; G[7][c] = cba[w7[c]]; G[14][c] = cba[w14[c]]
+    bl = set()
+    skelcells = {(c, y) for c in range(15) for y in (0, 7, 14)}
+else:
+    d = json.load(open('experiments/results/maxgame_BEST.json'))
+    G = d['grid']; bl = {tuple(b) for b in d['blanks']}
+    moves = [[tuple(c) for c in mv] for mv in d['moves']]
+    finals = [i for i, mv in enumerate(moves) if len(mv) == 7 and len({c[1] for c in mv}) == 1
+              and mv[0][1] in (0, 7, 14) and i >= 15]
+    skelcells = {c for i in list(range(15))+finals for c in moves[i]}
 bag0 = Counter({chr(96+c): r.counts[c] for c in r.counts})
 used = Counter()
 for (x, y) in skelcells:

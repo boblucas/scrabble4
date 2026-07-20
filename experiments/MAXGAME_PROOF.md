@@ -106,3 +106,11 @@ patroongebaseerd per rival zoals fillbound) + vul-UB. Sets uit de sweep haalden 
 reduceert de overlevers tot de 3400-3615-band (~14 sets) voor per-rival exacte behandeling.
 Grove per-zet-bounds (brug ≤ 250 enz.) zijn TE los (extra-UB ~2200, elimineert niets) — de
 patroon-machinerie van maxgame_fillbound.py is de juiste basis. BOUWEN: volgende cyclus.
+
+## Universele extra-UB: TE LOS (2026-07-20)
+Backbone-only fillbound (56 vrije tegels): extra-UB = 1872 ⟹ elimineert alleen backbone < 2091
+(geen van de 22 planbare sets).  Massa-eliminatie via universele bound is DOOD; de route is
+PER-RIVAL: (a) skelmax per rival-triple (S*_rival), (b) fillbound op dat skelet (~600), (c)
+S*_rival + fillUB < record ⟹ uitgesloten.  Rivalen-sweep haalde totaal ≤ 3734; als per-rival
+S*+fillUB ≤ ~3960 uitkomt sneuvelen ze allemaal behalve de eigen klasse.  Automatiseerbaar met
+de bestaande machinerie (skelmax parametriseren op triple).
