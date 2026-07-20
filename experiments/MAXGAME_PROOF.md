@@ -114,3 +114,12 @@ PER-RIVAL: (a) skelmax per rival-triple (S*_rival), (b) fillbound op dat skelet 
 S*_rival + fillUB < record ⟹ uitgesloten.  Rivalen-sweep haalde totaal ≤ 3734; als per-rival
 S*+fillUB ≤ ~3960 uitkomt sneuvelen ze allemaal behalve de eigen klasse.  Automatiseerbaar met
 de bestaande machinerie (skelmax parametriseren op triple).
+
+## CORRECTIE eliminatieplan (2026-07-20, zelf-gevangen): skelmax is een LB-tool, GEEN UB
+skelmax(rival) vindt goede skeletten (stochastische ondergrens) en kan rivalen dus NIET
+uitsluiten.  Sound per-rival UB binnen de choreografie-klasse = backbone + Σ per-SLOT-maxima
+(elke van de 15 ketenslots heeft een eindige kandidatenlijst met statisch berekenbare
+zetscore-maxima op vaste posities: bruggen via C8-lijsten, spans via SPAN-indexen) + fill-UB
+(fillbound op backbone+slotcellen).  TE BOUWEN: slotmax-berekening in plan_for_triple-stijl
+(maximaliseer per slot i.p.v. eerste-haalbare; negeer zakbudget voor UB = relaxatie, sound).
+Eliminatie-claim wordt dan: "geen rival verslaat het record binnen de choreografie-klasse".
