@@ -110,14 +110,24 @@ L('R0 lucht', play('lucht', 1, 0, 1))
 L('R0 je', play('je', 12, 0, 1))
 
 # ---- R14-bruggen (dn, rijen 7-14) ----
-L('dn6 (f)', bridge_dn(6))
-L('dn9 (mu)', bridge_dn(9))
-L('dn2 (he)', bridge_dn(2))        # (2,14)=e connects he
-L('dn13 (ie)', bridge_dn(13))      # (13,14)=e connects ie
+L('dn2 (he)', bridge_dn(2))        # (2,14)=e connects he  (buiten teee 9-12)
+L('dn6 (f)', bridge_dn(6))         # (6,14)=f
+L('dn13 (ie)', bridge_dn(13))      # (13,14)=e connects ie  (buiten teee)
+# mu@9-10 zit in teee-zone -> span op rij 13 van dn6-brug (kol6) naar kol 10 verbindt mu
+def span_mu():
+    if not grid[13][6]: return None
+    start=chr(96+grid[13][6])                       # (6,13)=dn6-brug-letter
+    for w in byl[5]:                                # cols 6-10 rij 13
+        if w[0]!=start: continue
+        # (9,13)+(9,14)m en (10,13)+(10,14)u moeten verticaal woord vormen; (9,14)=m,(10,14)=u komen
+        # pas bij R14-completie. Nu alleen span leggen; verticale checks doet play() later niet (leeg).
+        if play(w,6,13,1): return w
+    return None
+L('mu-span', span_mu())
 # he: (2,14) via dn2 -> leg (1,14)='h': 'he' at (1,14)h
 L('R14 he', play('he', 1, 14, 1))
 # mu: (9,14) via dn9 -> leg (10,14)='u': mu at (9,14) is (9,14)m+(10,14)u; (9,14) ligt -> leg u? play 'mu'?
-L('R14 mu', play('mu', 9, 14, 1))
+L('R14 mu', play('mu', 9, 14, 1))   # (9,14)m+(10,14)u; haakt via span-cel (9,13)/(10,13) boven
 # ie: (13,14) via dn13 -> leg (12,14)='i': 'ie' at (12,14)h
 L('R14 ie', play('ie', 12, 14, 1))
 # u@4: geen brug -> span op rij 13 van kol 4 naar dn6-brug (kol 6). (6,13)=dn6[6]. woord cols 4-6 rij13
