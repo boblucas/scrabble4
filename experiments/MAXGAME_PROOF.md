@@ -213,3 +213,15 @@ nodig (span/ladder). = connectiviteitsprobleem, GEEN onmogelijkheid. Potentieel 
 anker-completes ~1724+1616+527-150blanco ~3700 (vs record 3215, +485); +opening+bruggen+fill(~660)
 -> ~4360, sprong ~+400 over 3963. VOLGENDE: span/ladder-generalisatie (verbind hoek-subwoorden via
 korte verticale woorden naar de brugkolommen) -> echte LB-doorbraak verwacht.
+
+## Connectiviteit = gekoppelde zoektocht (2026-07-20) -> Rust gerechtvaardigd
+maxgame_geschenk-analyse: hoek-subwoorden verbinden koppelt MASKER aan dict-muren. bouwcuratrixjes
+mask {0,1,3,5,7,11,14}: cellen c@4 en j@12 NIET verticaal verbindbaar (before('c')=before('j')=∅,
+zelfde muur als flauwekulexcuus-familie). Ze moeten VERS zijn (in de x27-completie) of in een
+verbindbare horizontale run. => maskerkeuze gekoppeld aan {legale pre-runs, dict-before/after-muren,
+brug-existentie, span-connectiviteit, zakbudget}. Dit is een CSP, niet triviale constructie ->
+RUST-solver: per triple, zoek (mask_R0, mask_R14, mask_R7, brugkolommen, connector/span-woorden)
+die een gesloten verbonden legaal skelet geven; anders bewijs geen. Rust hergebruikt DAWG uit
+xfill_rs. Python valideert alleen de Rust-oplossing tegen score_game (1x). Compute-eerlijk.
+NB: misschien vermijdt een ANDER top-core-R14 (bv vluchtreflexjes, rank 13) de c/j-muren -> eerst
+per-triple een goedkope 'muur-check' (heeft elk pre-cel-nodige letter een niet-lege before/after?).
