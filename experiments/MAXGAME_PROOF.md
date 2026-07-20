@@ -154,3 +154,19 @@ enum (10^12, separabiliteit gebroken door kruiswoorden) OF CP-SAT met kruiswoord
 STAND: skelet-waarde = 3738 (stochastisch, 3x geconvergeerd, betrouwbaar als LB; als UB
 onbewezen).  Het beter-afsluitbare spoor blijft de mop-up-DFS (eindige ruimte, geen coupling-
 subtiliteit).
+
+## Consolidatie (2026-07-20): waar de proof-sporen stranden
+Systematisch afgelopen; elk raakt een muur:
+- **Mining-LB**: 3963, ~2000 spellen; extreme-value: ~7000 spellen/verbetering, +1-5 pt. UITGEPUT.
+- **Globale UB**: lijn-relaxatie asymptoot 10806; geometrische consistentie niet met budget-
+  koppelingen te vangen. -> [3963, 10806].
+- **Skelet-UB**: separabiliteit gebroken door brug-kruiswoorden; per-slot-som ongeldig als UB.
+  Skelet-LB 3738 (3x geconvergeerd). Rigoureus = 10^12-enum of CP-SAT-met-kruisconstraints.
+- **Mop-up exact**: 892k voorberekende plaatsingen x diepte ~10 => niet uitputtend haalbaar;
+  anytime-DFS best ~207 (fillexact), greedy 237. -> mop-up-subklasse niet gesloten.
+- **Rival-eliminatie**: alle sound bounds te los (extra-UB 1416-1872 vs benodigd 348-618);
+  bewijs-grade vergt per-rival exhaustieve mini-campagne (22x, uren elk).
+VERDEDIGBAAR EINDRESULTAAT (analoog aan max-turn): LB 3963 (onvoorwaardelijk, score_game-OK) +
+globale bracket [3963,10806] + 2 bewezen structuurstellingen + empirische dominantie eigen klasse
+over rivalen (sweep: rivalen <=3734). Globaal BEWEZEN optimum: buiten praktisch bereik.
+CPU: 4 mining-workers (staart) + 2 fillexact (anytime-LB) blijven laag doortikken.
