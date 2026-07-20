@@ -178,3 +178,19 @@ kruiswoordloze zetscore gaf 35-46 (=158). Naïeve slot-som choreografie ~387 < w
 GEEN bovengrens (concreet tegenvoorbeeld). Definitief: sound per-slot-UB vergt kruiswoord-termen
 => slots koppelen via buurletters => separabiliteit onbruikbaar. Skelet-UB blijft open; skelet-LB
 3738 solide. Flip-flop gesloten met tegenvoorbeeld i.p.v. argument.
+
+## Triplet-ranking (2026-07-20, Rust-kernel): anker+opening-potentieel != full-game
+maxgame_precompute.py (per-woord beste x27/x9-completie + opening, gevalideerd als sound UB tegen
+score_game) + triplerank.rs (volle enum, blanco-penalty, bag=2 blancos). KERNBEVINDING:
+- Model-kern (A+B+C+D, beste masks, blanco-gecorrigeerd) van het RECORD-triplet
+  (flauwekulexcuus/babyzwemmertjes/zelfbeschikking) = 3636, staat op rank >20000 op kern.
+- Toch houdt het het record (3963) omdat de CHOREOGRAFIE (bruggen+subwoorden, +327..+660) sluit.
+- Top-kern: geschenkcheques+bouwcuratrixjes (bob's ORIGINELE backbone!) + x9-woord = 3884.
+CONCLUSIE (herkadering): anker+opening-potentieel is NIET de bottleneck — tienduizenden triplets
+verslaan het record-triplet op ruwe potentie (band 3641-3884). De bottleneck is 2D-CHOREOGRAFIE-
+prepareerbaarheid; geschenkcheques/bouwcuratrixjes zijn kern-optimaal maar choreografie-geblokkeerd
+(che/ou/cur-prep faalt). Deze ranking ELIMINEERT geen triplets (kern bound niet de full-game) maar
+levert LEADS: hoogste-kern-MET-sluitbare-choreografie. Concreet upgrade-lead: rank 13
+chequeformulier/vluchtreflexjes/babyzwemmertjes kern 3852, 0 blancos, R7=babyzwemmertjes (BEWEZEN
+sluitbaar) -> als chequeformulier/vluchtreflexjes-choreografie sluit: ~4100+ mogelijk.
+Top-100 in maxgame_triplerank.tsv.
