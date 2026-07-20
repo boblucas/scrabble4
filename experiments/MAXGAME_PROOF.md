@@ -143,3 +143,14 @@ per slot het exacte max-marginaal (replay 1 zet op leeg-plus-koppelbord) over zi
 gesommeerd, zak-gerelaxeerd (loosе zak => bijna tight).  Verwachting: S*_UB in [3738, ~3770] =>
 skelet nagenoeg gesloten.  Eigen-klasse-optimum = S* + maxfill; maxfill-DFS best 207 (niet
 uitputtend); samen empirisch record 3963. Bracket eigen klasse ~ [3963, 3738+596=4334].
+
+## CORRECTIE (2026-07-20, zelf-gevangen): separabele skelet-UB NIET rigoureus
+De per-slot-max-som (slotub.py, "4024") is ONGELDIG als UB: bruggen kruisen de ankerrijen en
+vormen kruiswoorden -> slots koppelen; losse maxima optellen onder-/dubbeltelt.  Zuivere skelet-
+score = Σ maximale runs op het eind-skeletbord (score_game).  Aangescherpte losse componenten
+(runs 43 EXACT want vaste anker-substrings wek/lex/bes/hik/la/el; span1 64, span13 34 met AF/BF)
+zijn indicatief maar niet optelbaar tot een sound bound.  RIGOUREUZE skelet-sluiting = exacte
+enum (10^12, separabiliteit gebroken door kruiswoorden) OF CP-SAT met kruiswoord-constraints.
+STAND: skelet-waarde = 3738 (stochastisch, 3x geconvergeerd, betrouwbaar als LB; als UB
+onbewezen).  Het beter-afsluitbare spoor blijft de mop-up-DFS (eindige ruimte, geen coupling-
+subtiliteit).
