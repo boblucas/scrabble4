@@ -154,81 +154,64 @@ def build_r7():
         restore(st)
     return False
 
-# ---- generieke pre-run-verbinding: probeer brug / verticale connector / span ----
+# ---- generieke pre-run-verbinding: GENERATOR van alle connectie-opties (snapshots) ----
 def connect_prerun(row, run, is_top):
-    """row=0(top,is_top)/14(bottom). run=lijst cols. Zet de pre-run-tegels + een verbinding.
-    Retourneert True als geplaatst+verbonden (grid gemuteerd) of False."""
     W = R0 if is_top else R14
-    word = ''.join(W[c] for c in run)
-    x0 = run[0]
-    # (a) sub-woord ligt al deels via bruggen? plaats het woord horizontaal (haakt aan bestaande cel)
-    st = snap()
-    if len(run) >= 2 and play(word, x0, row, 1):
-        return True
-    restore(st)
-    # (b) verticale brug op een run-kolom c die (c,7) kruist (bestaat na R7-completie)
-    for c in run:
+    word = ''.join(W[c] for c in run); x0 = run[0]
+    base = snap()
+    # (a) horizontaal sub-woord (haakt aan bestaande brug-cel)
+    if len(run) >= 2:
         st = snap()
-        top_letter = W[c]; cross = R7[c]
-        placed = False
-        for w8 in byl[8]:
-            if is_top and w8[0] == top_letter and w8[7] == cross and play(w8, c, 0, 0): placed = True; break
-            if not is_top and w8[0] == cross and w8[7] == top_letter and play(w8, c, 7, 0): placed = True; break
-        if placed:
-            # rest van de run horizontaal
-            if len(run) == 1: return True
-            if play(word, x0, row, 1): return True
+        if play(word, x0, row, 1): yield snap()
         restore(st)
-    # (c) verticale 2-connector: run-cel c met een woord er direct onder/boven naar bestaande tegel
+    # (b) verticale brug op run-kolom
     for c in run:
         st = snap()
-        ok = False
-        if is_top:  # connector omlaag vanaf (c,0): woord W[c]+? , (c,1) moet aanhaken -> zoek (c,1) buur
+        top_letter = W[c]; cross = R7[c]; placed = False
+        for w8 in byl[8]:
+            if is_top and w8[0]==top_letter and w8[7]==cross and play(w8, c, 0, 0): placed=True; break
+            if not is_top and w8[0]==cross and w8[7]==top_letter and play(w8, c, 7, 0): placed=True; break
+        if placed and (len(run)==1 or all(grid[row][cc] for cc in run) or play(word,x0,row,1)):
+            yield snap()
+        restore(st)
+    # (c) verticale 2-connector
+    for c in run:
+        st = snap(); ok=False
+        if is_top:
             for x in 'abcdefghijklmnopqrstuvwxyz':
-                if isw(W[c]+x) and play(W[c]+x, c, 0, 0):  # (c,0),(c,1)
-                    ok = True; break
+                if isw(W[c]+x) and play(W[c]+x, c, 0, 0): ok=True; break
         else:
             for x in 'abcdefghijklmnopqrstuvwxyz':
-                if isw(x+W[c]) and play(x+W[c], c, 13, 0):  # (c,13),(c,14)
-                    ok = True; break
-        if ok:
-            if len(run) == 1: return True
-            if play(word, x0, row, 1): return True
+                if isw(x+W[c]) and play(x+W[c], c, 13, 0): ok=True; break
+        if ok and (len(run)==1 or all(grid[row][cc] for cc in run) or play(word,x0,row,1)):
+            yield snap()
         restore(st)
-    # (d) horizontale span op rij 1 (top) / rij 13 (bottom) van run-cel naar een bestaande brug-cel
+    # (d) horizontale span rij1/rij13 naar bestaande cel
     sr = 1 if is_top else 13
     for c in run:
-        # zoek bestaande occupied cel op rij sr links/rechts (brug-cel) om naartoe te spannen
-        for bc in list(range(c-1, -1, -1)) + list(range(c+1, 15)):
+        for bc in list(range(c-1,-1,-1))+list(range(c+1,15)):
             if not grid[sr][bc]: continue
-            lo, hi = min(c, bc), max(c, bc)
-            L = hi - lo + 1
-            if L < 2 or L > 7: break
-            st = snap()
-            placed = False
-            for w in byl.get(L, []):
-                # eindcel bij brug moet matchen; vertikale 2-woorden met rij row waar bezet
-                if w[bc-lo] != chr(96+grid[sr][bc]): continue
-                bad = False
-                for k, col in enumerate(range(lo, hi+1)):
-                    if grid[row][col] and not (isw(w[k]+chr(96+grid[row][col])) if not is_top
-                                               else isw(chr(96+grid[row][col])+w[k])):
-                        bad = True; break
+            lo,hi=min(c,bc),max(c,bc); Lh=hi-lo+1
+            if Lh<2 or Lh>7: break
+            for w in byl.get(Lh,[]):
+                if w[bc-lo]!=chr(96+grid[sr][bc]): continue
+                bad=False
+                for kk,col in enumerate(range(lo,hi+1)):
+                    if grid[row][col] and not (isw(chr(96+grid[row][col])+w[kk]) if is_top
+                                               else isw(w[kk]+chr(96+grid[row][col]))): bad=True; break
                 if bad: continue
-                if play(w, lo, sr, 1): placed = True; break
-            if placed:
-                # nu de run-cel(len) zelf: (c,row) via de span eronder/erboven verbonden
-                if len(run) == 1:
-                    if grid[row][c]: return True
-                    # plaats de enkele tegel via een verticaal 2-woord met de span-cel
-                    if is_top and isw(W[c]+chr(96+grid[sr][c])) and play(W[c]+chr(96+grid[sr][c]), c, row, 0): return True
-                    if not is_top and isw(chr(96+grid[sr][c])+W[c]) and play(W[c], c, row, 1): return True
-                    if not is_top and play(W[c], c, row, 1): return True
-                else:
-                    if play(word, x0, row, 1): return True
-            restore(st)
+                st=snap()
+                if not play(w, lo, sr, 1): restore(st); continue
+                good=False
+                if len(run)==1:
+                    if grid[row][c]: good=True
+                    elif is_top and isw(W[c]+chr(96+grid[sr][c])) and play(W[c]+chr(96+grid[sr][c]),c,row,0): good=True
+                    elif not is_top and isw(chr(96+grid[sr][c])+W[c]) and play(W[c],c,row,1): good=True
+                elif play(word,x0,row,1): good=True
+                if good: yield snap()
+                restore(st)
             break
-    return False
+    restore(base)
 
 def solve():
     if not build_r7(): return None, "R7 faalt"
@@ -239,11 +222,11 @@ def solve():
     def bt(i):
         if i == len(allruns): return True
         row, run, top = allruns[i]
-        # als run al volledig ligt (via eerdere brug), skip
         if all(grid[row][c] for c in run): return bt(i+1)
-        st = snap()
-        if connect_prerun(row, run, top) and bt(i+1): return True
-        restore(st); return False
+        for snapshot in connect_prerun(row, run, top):
+            restore(snapshot)
+            if bt(i+1): return True
+        return False
     if not bt(0): return None, "pre-run-verbinding faalt"
     s0 = play(R0, 0, 0, 1, final=True)
     s14 = play(R14, 0, 14, 1, final=True)

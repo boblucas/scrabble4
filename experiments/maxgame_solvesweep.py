@@ -40,12 +40,12 @@ for row in rows:
     env=dict(os.environ, MGR0=R0, MGR14=R14, MGR7=R7, MGM0=str(m0), MGM14=str(m14))
     try:
         out=subprocess.run(['.venv/bin/python','experiments/maxgame_solve.py'],env=env,
-                           capture_output=True,text=True,timeout=90).stdout
+                           capture_output=True,text=True,timeout=100).stdout
     except Exception: continue
     line=[l for l in out.splitlines() if l.startswith('solve:')]
     tag=line[0] if line else out.strip()[:80]
     closed='SKELET SLUIT' in out
     print(f"#{rank} score{score} {R0}/{R14}: {tag} {'*** SLUIT ***' if closed else ''}",flush=True)
     tried+=1
-    if tried>=60: break
+    if tried>=500: break
 print("sweep klaar",flush=True)
