@@ -235,3 +235,12 @@ Top muur-veilige triples: #1 bouwcuratrixjes(R0)/geschenkcheques(R14)/playofftic
 target. NB viability = NODZAKELIJK-heuristiek (losse pre-cel-connector), nog niet bewezen VOLDOENDE
 (echte span/brug-geometrie moet sluiten). Volgende: de daadwerkelijke sluiting (span/brug-CSP) op de
 top-viable target(s) -> echte LB-doorbraak richting ~4200-4300.
+
+## Sluiting-route target vluchtreflexjes/chequeformulier/babyzwemmertjes: HAALBAAR (2026-07-20)
+Strategie "R7-eerst + verticale brug per pre-run": babyzwemmertjes volledig leggen (record-choreografie
+hergebruikbaar want zelfde R7-woord), dan elke pre-run van R0/R14 via 1 verticale brug verbinden.
+Verifieerd: alle pre-runs hebben verbindende brug BEHALVE R14 u@4 (z..u ∄) -> kleine span nodig.
+Tegelbudget ~83 (past in 100). Bruggen: R0 lucht@kol5(t..w,16)/e@kol10(e..r,128)/je@kol13(e..e,390);
+R14 he@kol2(1371)/f@kol6(e..f,17)/mu@kol9(e..m,36)/ie@kol13(e..e,390) + u@4-span. TE BOUWEN:
+maxgame_gen.py (R7-record-choreografie + R0/R14-bruggen + u@4-span + completes + fill), elke stap
+score_game-gevalideerd. Verwacht: eerste echte skelet-sluiting van een hoge-kern-triple -> LB-sprong.
