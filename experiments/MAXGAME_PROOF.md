@@ -133,3 +133,13 @@ CONSEQUENTIE: bewijs-grade rival-eliminatie vergt per rival een EXHAUSTIEVE mini
 (eindige planruimte + eindige vulruimte, zelfde machinerie als eigen klasse-sluiting) — doenbaar
 maar ~uren per rival x 22.  PRAGMATISCHE stand: empirische dominantie (sweep: rivalen ≤ 3734,
 eigen klasse 3963) + exacte sluiting van de EIGEN klasse eerst (skelet-B&B + snelle vul-DFS).
+
+## Skelet-S* status (2026-07-20): stochastisch geconvergeerd op 3738; exacte enum vergt separabiliteit
+Planruimte = up6(862) x up8(70) x dn5(573) x dn10(156) x span1(~28/brug) x span13 x sp8(9) ~ 10^12:
+naïeve enumeratie ONHAALBAAR.  MAAR skelet-score is SEPARABEL per slot (elke brug/span/sp8 is een
+eigen zet op disjuncte cellen; alleen koppelletter + zakbudget koppelen).  Drie onafhankelijke
+stochastische rondes (250-3000s) convergeren alle op S*_lb = 3737-3738.  SOUND S*-UB (te bouwen):
+per slot het exacte max-marginaal (replay 1 zet op leeg-plus-koppelbord) over zijn kandidatenlijst,
+gesommeerd, zak-gerelaxeerd (loosе zak => bijna tight).  Verwachting: S*_UB in [3738, ~3770] =>
+skelet nagenoeg gesloten.  Eigen-klasse-optimum = S* + maxfill; maxfill-DFS best 207 (niet
+uitputtend); samen empirisch record 3963. Bracket eigen klasse ~ [3963, 3738+596=4334].
