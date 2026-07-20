@@ -95,3 +95,14 @@ brugkolommen (6,8,5,10); skelet 3718-3733, vul 205-231.  Ladder:
 4. Herhaal over kolomkeuzes binnen de triple (klein aantal combinaties).
 Eindresultaat: "LB = optimum binnen het 2x27+x9-frame" op stellingen 1+2 na volledig bewezen —
 en het frame zelf is al de unieke maximale multiplierstructuur.
+
+## Rival-eliminatie: drempel-analyse (2026-07-20 nacht)
+Record 3963 op backbone 3516 ⟹ gerealiseerde EXTRA (ketens+slotzet-kruisen+vul) = 447.
+Rival met backbone B verslaat de LB alleen bij extra > 3963−B: 3615-familie > 348 (niet
+elimineerbaar zonder exacte solve), 3507 > 456, 3489 > 474, ..., 3345 > 618.
+BENODIGD voor massa-eliminatie: universele extra-UB (~550-650) = keten-UB (skelet−backbone,
+patroongebaseerd per rival zoals fillbound) + vul-UB. Sets uit de sweep haalden max 3734 TOTAAL
+(= extra ≤ ~250 gerealiseerd); een extra-UB ≤ 600 elimineert alle backbones < 3363 direct en
+reduceert de overlevers tot de 3400-3615-band (~14 sets) voor per-rival exacte behandeling.
+Grove per-zet-bounds (brug ≤ 250 enz.) zijn TE los (extra-UB ~2200, elimineert niets) — de
+patroon-machinerie van maxgame_fillbound.py is de juiste basis. BOUWEN: volgende cyclus.
