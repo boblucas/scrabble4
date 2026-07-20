@@ -123,3 +123,13 @@ zetscore-maxima op vaste posities: bruggen via C8-lijsten, spans via SPAN-indexe
 (fillbound op backbone+slotcellen).  TE BOUWEN: slotmax-berekening in plan_for_triple-stijl
 (maximaliseer per slot i.p.v. eerste-haalbare; negeer zakbudget voor UB = relaxatie, sound).
 Eliminatie-claim wordt dan: "geen rival verslaat het record binnen de choreografie-klasse".
+
+## Slotmax-haalbaarheidsanalyse (2026-07-20 ochtend): eliminatie op deze granulariteit ONHAALBAAR
+Voorcalculatie per-slot-UB: bruggen 4x~110 + center ~130 + smalls-exact ~250 = keten-UB ~820;
++ fill-UB 596 = extra-UB ~1416.  Eliminatie vereist extra-UB < 3963−backbone: zwakste set
+(3345) 618, sterkste rival (3615) 348.  Gat ~2-4x: per-slot-relaxatie kan dit NIET sluiten
+(fill-UB 596 vs gerealiseerd 237 is de grootste post; slot-som 820 vs ~500 de tweede).
+CONSEQUENTIE: bewijs-grade rival-eliminatie vergt per rival een EXHAUSTIEVE mini-campagne
+(eindige planruimte + eindige vulruimte, zelfde machinerie als eigen klasse-sluiting) — doenbaar
+maar ~uren per rival x 22.  PRAGMATISCHE stand: empirische dominantie (sweep: rivalen ≤ 3734,
+eigen klasse 3963) + exacte sluiting van de EIGEN klasse eerst (skelet-B&B + snelle vul-DFS).
