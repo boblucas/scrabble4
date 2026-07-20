@@ -244,3 +244,14 @@ Tegelbudget ~83 (past in 100). Bruggen: R0 lucht@kol5(t..w,16)/e@kol10(e..r,128)
 R14 he@kol2(1371)/f@kol6(e..f,17)/mu@kol9(e..m,36)/ie@kol13(e..e,390) + u@4-span. TE BOUWEN:
 maxgame_gen.py (R7-record-choreografie + R0/R14-bruggen + u@4-span + completes + fill), elke stap
 score_game-gevalideerd. Verwacht: eerste echte skelet-sluiting van een hoge-kern-triple -> LB-sprong.
+
+## Paper-lead erodeert onder geometrie (2026-07-20, eerlijk negatief)
+Sleutelbevinding: met babyzwemmertjes-R7 (enige gevalideerde R7-choreografie) forceert de teee-connector
+(cols 9-12 rij 8) dat teee-COMPATIBELE R14-woorden (pre-runs mijden 9-12) hooguit s27=1292 halen =
+GELIJK aan record-zelfbeschikking. De "+400 kern-potentie" uit de viable-ranking overleeft de
+geometrische compatibiliteit NIET voor babyzwemmertjes. Hoge-kern-triples (geschenkcheques/
+bouwcuratrixjes) hebben andere R7-woorden nodig (playoffticketje etc.) -> vereist R7-connector-
+machinerie generaliseren naar willekeurige middenwoorden (elk eigen zone-conflict) = substantieel,
+onzekere opbrengst. STAND: LB 3963 bewezen; viable-ranking + muur-check + algemene solver = correcte
+infrastructuur; realisatie van een LB-sprong vergt R7-generalisatie (open). Loop gestopt (bevestigt
+anders hetzelfde). Mining-vloot draait parallel door op 3963.
