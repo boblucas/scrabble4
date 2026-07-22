@@ -169,14 +169,21 @@ fn gen_moves(s:&Solver, st:&St, rng:&mut Rng)->Vec<(Vec<u8>,i32,i32,bool)>{
     out.truncate(500);
     out
 }
-fn build_backbone(s:&Solver, st:&mut St, rng:&mut Rng){
+fn wval(s:&Solver, w:&[u8])->i64{ w.iter().map(|&c| s.val[c as usize]).sum() }
+// sorteer kandidaten: hoog-waarde eerst met random jitter (behoud diversiteit) als VALBIAS aan
+fn order_words(s:&Solver, cs:&mut Vec<Vec<u8>>, rng:&mut Rng, valbias:bool){
+    if valbias { let mut keyed:Vec<(i64,Vec<u8>)>=cs.drain(..).map(|w|{ let k=wval(s,&w)*37 + (rng.below(37) as i64); (k,w) }).collect();
+        keyed.sort_by(|a,b| b.0.cmp(&a.0)); *cs=keyed.into_iter().map(|(_,w)|w).collect(); }
+    else { for i in (1..cs.len()).rev(){ let j=rng.below(i+1); cs.swap(i,j);} }
+}
+fn build_backbone(s:&Solver, st:&mut St, rng:&mut Rng, valbias:bool){
     let mut order:Vec<usize>=(0..15).collect();
     for i in (1..15).rev(){ let j=rng.below(i+1); order.swap(i,j); }
     for &c in &order { if !st.inm0[c] && st.g[1][c]==0 {
-        if let Some(v)=s.c8.get(&(s.r0[c],s.r7[c])){ let mut cs=v.clone(); for i in (1..cs.len()).rev(){let j=rng.below(i+1);cs.swap(i,j);} for w in &cs { if place(s,st,w,c as i32,0,false).is_some(){break;} } }
+        if let Some(v)=s.c8.get(&(s.r0[c],s.r7[c])){ let mut cs=v.clone(); order_words(s,&mut cs,rng,valbias); for w in &cs { if place(s,st,w,c as i32,0,false).is_some(){break;} } }
     }}
     for &c in &order { if !st.inm14[c] && st.g[13][c]==0 {
-        if let Some(v)=s.c8.get(&(s.r7[c],s.r14[c])){ let mut cs=v.clone(); for i in (1..cs.len()).rev(){let j=rng.below(i+1);cs.swap(i,j);} for w in &cs { if place(s,st,w,c as i32,7,false).is_some(){break;} } }
+        if let Some(v)=s.c8.get(&(s.r7[c],s.r14[c])){ let mut cs=v.clone(); order_words(s,&mut cs,rng,valbias); for w in &cs { if place(s,st,w,c as i32,7,false).is_some(){break;} } }
     }}
 }
 fn dfs(s:&Solver, st:&mut St, rng:&mut Rng, depth:i32, t0:&Instant, tl_ms:u128, best:&mut usize, bestb:&mut Option<[[u8;15];15]>)->bool{
@@ -194,7 +201,7 @@ fn dfs(s:&Solver, st:&mut St, rng:&mut Rng, depth:i32, t0:&Instant, tl_ms:u128, 
     }
     false
 }
-fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u128)->Option<[[u8;15];15]>{
+fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u128, valbias:bool)->Option<[[u8;15];15]>{
     let mut st=St{ g:[[0u8;15];15], free:[0i64;27], m0:m0.to_vec(),m7:m7.to_vec(),m14:m14.to_vec(),
         inm0:[false;15],inm7:[false;15],inm14:[false;15] };
     for &c in m0 {st.inm0[c]=true;} for &c in m7 {st.inm7[c]=true;} for &c in m14 {st.inm14[c]=true;}
@@ -205,14 +212,14 @@ fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u1
     let mut rng=Rng(seed.wrapping_mul(2862933555777941757).wrapping_add(3037000493));
     // opening: random len7 met w[3]==r7[7]
     let tgt=s.r7[7];
-    let mut ops:Vec<&Vec<u8>>=s.len7.iter().filter(|w| w[3]==tgt).collect();
-    for i in (1..ops.len()).rev(){ let j=rng.below(i+1); ops.swap(i,j); }
+    let mut ops:Vec<Vec<u8>>=s.len7.iter().filter(|w| w[3]==tgt).cloned().collect();
+    order_words(s,&mut ops,&mut rng,valbias);
     for w in ops {
         let mut nd=[0i64;27]; for &ch in w.iter(){nd[ch as usize]+=1;} nd[tgt as usize]-=1;
         let mut ok=true; for c in 1..27 { if st.free[c]<nd[c]{ok=false;break;} }
         if ok { for i in 0..7 { st.g[4+i][7]=w[i]; } for c in 1..27 { st.free[c]-=nd[c]; } break; }
     }
-    build_backbone(s,&mut st,&mut rng);
+    build_backbone(s,&mut st,&mut rng,valbias);
     let t0=Instant::now(); let mut best=999usize; let mut bestb=None;
     let closed=dfs(s,&mut st,&mut rng,0,&t0,tl_ms,&mut best,&mut bestb);
     if closed { Some(st.g) } else { None }
@@ -391,6 +398,7 @@ fn main(){
     let mut scarr=[0i64;27]; for i in 0..27 { scarr[i]=scv[i]; }
     let sco=Scorer{ lm, wm, sc:scarr, bonus:hb[1], hand:hb[0] as usize };
     let beam_w:usize=std::env::var("MGBEAMW").ok().and_then(|v|v.parse().ok()).unwrap_or(12);
+    let valbias:bool=std::env::var("RUST_VALBIAS").map(|v|v=="1").unwrap_or(false);
     let mut combo_idx=0;
     for line in lines {
         let parts:Vec<&str>=line.split_whitespace().collect();
@@ -398,7 +406,7 @@ fn main(){
         let m0=parse_csv(parts[0]); let m14=parse_csv(parts[1]); let m7=parse_csv(parts[2]);
         let salt:u64=std::env::var("SEED_SALT").ok().and_then(|v|v.parse().ok()).unwrap_or(0);
         for r in 0..nrest {
-            if let Some(g)=attempt(&s,&m0,&m14,&m7,(combo_idx as u64)*1_000_003 + r + 1 + salt.wrapping_mul(7919), tl_ms) {
+            if let Some(g)=attempt(&s,&m0,&m14,&m7,(combo_idx as u64)*1_000_003 + r + 1 + salt.wrapping_mul(7919), tl_ms, valbias) {
                 // reconstrueer VOL bord: vul masker-cellen met ankerletters
                 let mut full=g;
                 for &c in &m0 { full[0][c]=s.r0[c]; }
