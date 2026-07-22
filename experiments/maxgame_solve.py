@@ -79,6 +79,18 @@ def play(word, x, y, h, final=False):
             while y2 < 15 and grid[y2][xx]: y2 += 1
             if y2-yy >= 2 and not isw(''.join(chr(96+grid[k][xx]) for k in range(yy, y2))): okr = False
             yy = y2
+    if okr and not final:
+        # sluitende maskercel-check: elke lege maskercel met verticale buur -> gesimuleerde
+        # maskerletter moet een geldig verticaal woord vormen (anders is completie later onmogelijk)
+        for (mx, my) in MASKC:
+            if grid[my][mx]: continue
+            up=[]; yy=my-1
+            while yy>=0 and grid[yy][mx]: up.append(chr(96+grid[yy][mx])); yy-=1
+            dn=[]; yy=my+1
+            while yy<15 and grid[yy][mx]: dn.append(chr(96+grid[yy][mx])); yy+=1
+            if up or dn:
+                W2=(R0 if my==0 else R7 if my==7 else R14)[mx]
+                if not isw(''.join(reversed(up))+W2+''.join(dn)): okr=False; break
     if not okr:
         for (cx, cy) in new: grid[cy][cx] = 0
         return False

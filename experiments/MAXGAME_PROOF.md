@@ -331,3 +331,17 @@ een echte crossword-fill-solver met connectiviteit-geleiding (xfill-type met str
 SAMENVATTING mandaat: (1) NIET onmogelijk (statisch bord 4060-4069 bestaat + alle stukken). (2) Move-
 order-AANNAME sluiting: JA (+86..+95 over record). (3) Fully-reachable: onopgelost door mijn
 constructors; vergt geleidde crossword-solver. Reachable record blijft 3974 (mining).
+
+## DEFINITIEVE STAND top-10-mandaat (2026-07-22, na 7+ constructors)
+DIEPE KOPPELING gevonden = de kern-obstructie: pre-run-CONNECTIVITEIT vereist support-tegels, maar
+die interfereren met de MASKERCEL-cross-woord-constraint (mask-cel + verticale support-buur moet
+geldig woord vormen). ZONDER maskercel-check: #9 (telecomsavvyste) bouwt 19-zet-skelet maar finale
+x27-completie faalt (ongeldige mask-verticalen). MET check: connector kan geen support plaatsen (4
+zetten). Beide falen -> een reachable sluiting vergt een solver die connectiviteit + maskercellen
+GEZAMENLIJK optimaliseert (echte crossword-CSP-solver), voorbij 7 Python-constructors.
+EINDCONCLUSIE:
+- NIET onmogelijk: statisch bord 4060-4069 (+86..+95) bestaat; alle reachable-bouwstenen bestaan;
+  #9 haalt 19/21 zetten. Move-order-AANNAME sluiting = JA (bob's 4571-framework).
+- Fully-REACHABLE (score_game-move-sequence): NIET bereikt; diepe connectiviteit<->maskercel-koppeling
+  verslaat greedy/DFS. Vergt gezamenlijke crossword-solver (los bouwproject).
+- Reachable record blijft 3974 (mining).
