@@ -311,3 +311,10 @@ CONCLUSIE mandaat "top-10 sluiten of bewijzen dat het niet kan":
 - Move-order-AANNAME: top-10 #1 GESLOTEN op 4069 (+95 over reachable record 3974), bob's eigen
   4571-achtige framework.
 - Fully-REACHABLE (score_game-move-sequence): assemblage-CSP open; vergt Rust xfill-crossword-solver.
+
+## Reachable-constructie voortgang (2026-07-22): ontbrekende capaciteit = cross-check-bewuste plaatsing
+Alle stukken geverifieerd (opening/bruggen/support-rijen 14&12 van 15 dekkend/ladders). Greedy-
+constructors stranden op 2 zetten door connectiviteits-bootstrap: support-woorden op rij 1 mergen
+met opening-cel tot langere run die geldig moet zijn; per-run-greedy negeert dat. FIX-richting:
+opening op rijen 4-10 (weg van support-rijen 1/13), verbinden via rung-woorden op rij 4/10 + struts,
+support-rijen via cross-check-bewuste backtracking. = xfill-achtige row-fill. In aanbouw.
