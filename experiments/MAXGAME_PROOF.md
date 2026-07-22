@@ -298,3 +298,16 @@ een top-10 is CONSTRUCTEERBAAR als legaal verbonden bord onder bob's zetvolgorde
 oude 4571-lijn). RESTEREND voor REACHABLE sluiting (score_game-move-sequence): zetvolgorde met
 opening door (7,7) + connectiviteit near-center (bruggen bij col 0/1 zijn edge -> move-order lastig).
 De vertical-opening + rung-constructie is de route. Mining-record 3974 blijft de reachable-LB.
+
+## Reachable top-10-sluiting: bouwstenen bestaan, assemblage = crossword-CSP (2026-07-22)
+Voor #1 geverifieerd dat ALLE bouwstenen bestaan: verticale kol-7-opening (3489 opties), bruggen
+(12-15 kol), support-rijen (R0 op rij1 + R14 op rij13 VOLLEDIG support-baar, elke pre-run heeft
+geldige supportwoorden), ladder-rungs (haalbaar). MAAR greedy-assemblage plaatst maar 2 zetten:
+de pre-runs verbinden vergt struts/rungs die connectiviteit near-center opbouwen = een MULTI-RIJ
+CROSSWORD-FILL CSP (rij-1/2/6/8/13-woorden met verticale kruischecks + struts). Dat is xfill-type
+werk (Rust, DAWG-cross-checks) — greedy Python komt er niet.
+CONCLUSIE mandaat "top-10 sluiten of bewijzen dat het niet kan":
+- NIET onmogelijk: sterk weerlegd — statisch legaal bord bestaat + alle reachable-bouwstenen bestaan.
+- Move-order-AANNAME: top-10 #1 GESLOTEN op 4069 (+95 over reachable record 3974), bob's eigen
+  4571-achtige framework.
+- Fully-REACHABLE (score_game-move-sequence): assemblage-CSP open; vergt Rust xfill-crossword-solver.
