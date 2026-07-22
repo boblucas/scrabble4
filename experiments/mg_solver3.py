@@ -15,6 +15,14 @@ words=r.words_str;byl={}
 for w in words: byl.setdefault(len(w),[]).append(w)
 ALPH='abcdefghijklmnopqrstuvwxyz'
 val={ch:r.scores[cba[ch]] for ch in ALPH}
+VALBIAS=os.environ.get('MGVALBIAS','0')=='1'
+def wval(w): return sum(val[c] for c in w)
+def biasshuf(lst):
+    # hoog-waarde eerst met lichte randomisatie (behoud diversiteit): sorteer op -waarde, shuffle top helft
+    if not VALBIAS:
+        random.shuffle(lst); return lst
+    lst.sort(key=lambda w:-wval(w))
+    k=max(1,len(lst)//2); head=lst[:k]; random.shuffle(head); return head+lst[k:]
 after_ok={ch for ch in ALPH if any(isw(ch+x) for x in ALPH)}
 before_ok={ch for ch in ALPH if any(isw(x+ch) for x in ALPH)}
 byfirst={}; bylast={}
@@ -193,19 +201,19 @@ def stitch(free_row,mask):
         if L is None or Rr is None or not(2<=Rr-L<=7): continue
         if any(G[free_row][k] for k in range(L+1,Rr)): continue
         la=chr(96+G[free_row][L]);lb=chr(96+G[free_row][Rr])
-        cs=[w for w in byl.get(Rr-L+1,[]) if w[0]==la and w[-1]==lb];random.shuffle(cs)
+        cs=[w for w in byl.get(Rr-L+1,[]) if w[0]==la and w[-1]==lb];cs=biasshuf(cs)
         for w in cs:
             if place(w,L,free_row,1): break
 def build_backbone(M0,M14,M7):
     order=list(range(15));random.shuffle(order)
     for c in order:
         if c not in M0 and not G[1][c]:
-            cs=C8.get((R0[c],R7[c]),[])[:];random.shuffle(cs)
+            cs=biasshuf(C8.get((R0[c],R7[c]),[])[:])
             for w in cs:
                 if place(w,c,0,0): break
     for c in order:
         if c not in M14 and not G[13][c]:
-            cs=C8.get((R7[c],R14[c]),[])[:];random.shuffle(cs)
+            cs=biasshuf(C8.get((R7[c],R14[c]),[])[:])
             for w in cs:
                 if place(w,c,7,0): break
     # stitch de door-mask-opgesplitste ankersegmenten (optioneel; MGSTITCH=1)
@@ -224,7 +232,7 @@ def attempt(M0,M14,M7,seed):
     # reserveer echter tegels voor de VOLLEDIGE ankerrijen (masker-cellen worden later gelegd)
     for y,W in ANCH.items():
         for c in range(15): freebag[W[c]]-=1
-    opcands=[w for w in byl[7] if w[3]==R7[7]];random.shuffle(opcands)
+    opcands=[w for w in byl[7] if w[3]==R7[7]];opcands=biasshuf(opcands)
     for w in opcands:
         nd=Counter(w);nd[R7[7]]-=1
         if all(freebag[c]>=nd[c] for c in nd):

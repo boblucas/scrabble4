@@ -92,33 +92,56 @@ def candidates(pl):
                 if not(1<=len(new)<=7): continue
                 out.append((seg,new))
     return out
+BEAM=int(os.environ.get('MGBEAM','6'))
+def plkey(pl): return tuple(tuple(1 if v else 0 for v in row) for row in pl)
+def expand(state):
+    """state=(cum,pl,moves) -> lijst opvolgstates door 1 legale aanhakende zet."""
+    cum,pl,moves=state
+    out=[]
+    for seg,new in candidates(pl):
+        if not moves:
+            if (7,7) not in new: continue
+        else:
+            touch=any(pl[y][x] for (x,y) in seg) or any(
+                0<=x+dx<W and 0<=y+dy<H and pl[y+dy][x+dx]
+                for (x,y) in new for dx,dy in((1,0),(-1,0),(0,1),(0,-1)))
+            if not touch: continue
+        for (x,y) in new: pl[y][x]=True
+        leg=runs_legal(pl)
+        for (x,y) in new: pl[y][x]=False
+        if not leg: continue
+        mg=marginal(moves,new)
+        if mg is None: continue
+        npl=[row[:] for row in pl]
+        for (x,y) in new: npl[y][x]=True
+        out.append((cum+mg,npl,moves+[new]))
+    return out
 def solve_max():
-    pl=[[False]*W for _ in range(H)];moves=[];t0=time.time()
-    # eerste zet: door center (7,7)
-    while sum(sum(r_) for r_ in pl)<npre:
-        if time.time()-t0>500: return None,moves
-        best=None
-        for seg,new in candidates(pl):
-            if not moves:
-                if (7,7) not in new: continue
-            else:
-                touch=any(pl[y][x] for (x,y) in seg) or any(
-                    0<=x+dx<W and 0<=y+dy<H and pl[y+dy][x+dx]
-                    for (x,y) in new for dx,dy in((1,0),(-1,0),(0,1),(0,-1)))
-                if not touch: continue
-            for (x,y) in new: pl[y][x]=True
-            leg=runs_legal(pl)
-            for (x,y) in new: pl[y][x]=False
-            if not leg: continue
-            mg=marginal(moves,new)
-            if mg is None: continue
-            # voorkeur voor hoge marginale score; tie-break meer tegels
-            key=(mg,len(new))
-            if best is None or key>best[0]: best=(key,new)
-        if best is None: return False,moves
-        for (x,y) in best[1]: pl[y][x]=True
-        moves.append(best[1])
-    return True,moves
+    # BEAM-search: houd top-BEAM partiele decomposities (op cumulatieve prep-score), dedup op geplaatst-masker
+    pl0=[[False]*W for _ in range(H)]
+    beam=[(0,pl0,[])];t0=time.time();complete=[]
+    while beam:
+        if time.time()-t0>500: break
+        nxt={}
+        for st in beam:
+            if sum(sum(r_) for r_ in st[1])>=npre:
+                complete.append(st);continue
+            for ns in expand(st):
+                k=plkey(ns[1])
+                if k not in nxt or ns[0]>nxt[k][0]: nxt[k]=ns
+        if not nxt: break
+        cand=sorted(nxt.values(),key=lambda s:-s[0])
+        # verplaats voltooide eruit
+        beam=[]
+        for s in cand:
+            if sum(sum(r_) for r_ in s[1])>=npre: complete.append(s)
+            else: beam.append(s)
+        beam=beam[:BEAM]
+    if not complete:
+        # greedy-fallback: pak beste onvolledige (mag niet gebeuren)
+        return False,[]
+    best=max(complete,key=lambda s:s[0])
+    return True,best[2]
 ok,moves=solve_max()
 if not ok:
     print(f"MAXDECOMP {TAG}: pre-bord niet decomponeerbaar (ok={ok}, {len(moves)} zetten)",flush=True);sys.exit(0)
