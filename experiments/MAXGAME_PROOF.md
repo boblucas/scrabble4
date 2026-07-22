@@ -287,3 +287,14 @@ Opening 2-7 tegels door center (verliest +50 bingo maar ontsluit R7-woorden zond
 (200 unieke na dedup/masker), 0 sluiten. Zelfde muren: R7-faalt of R0/R14-connectiviteit. Bevestigt dat
 de bingo-eis niet de bottleneck was; de R0/R14-anker-connectiviteit blijft de universele muur, ook zonder
 bingo. ext2-sweep (rank 1000-5000, bingo) draait nog. Record 3963 staat.
+
+## TOP-10 #1 STATISCH BORD BESTAAT (2026-07-22): zetvolgorde-aanname-score 4069 (+95 over record)
+Doorbraak op bob's mandaat: bouwcuratrixjes(R0,x27)/playoffticketje(R7,x9)/geschenkcheques(R14,x27),
+maskers M0(0,1,3,5,7,11,14)/M14(0,3,7,8,11,12,14)/M7(0,3,6,9,11,12,14). STATISCH bord = volle 3
+ankerrijen + 1 up-brug (bastzeep@kol0) + 1 dn-brug (losbikte@kol1): 57 tegels, ALLE runs legaal,
+VERBONDEN, 2 blanco's (past). Score onder zetvolgorde-aanname: R0 1616 + R14 1724 + R7 x9 518 +
+bruggen 171+40 = 4069 (+95 boven reachable 3974; excl pre-run-woordjes die nog bijkomen). Bewijst:
+een top-10 is CONSTRUCTEERBAAR als legaal verbonden bord onder bob's zetvolgorde-aanname (zoals de
+oude 4571-lijn). RESTEREND voor REACHABLE sluiting (score_game-move-sequence): zetvolgorde met
+opening door (7,7) + connectiviteit near-center (bruggen bij col 0/1 zijn edge -> move-order lastig).
+De vertical-opening + rung-constructie is de route. Mining-record 3974 blijft de reachable-LB.
