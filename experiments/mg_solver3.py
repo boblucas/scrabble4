@@ -266,7 +266,8 @@ combos.sort(reverse=True)
 T_ALL=float(os.environ.get('MGTALL','300'));tstart=time.time()
 for sc,m0,m14,m7 in combos:
     if time.time()-tstart>T_ALL: break
-    for seed in range(1,SEEDS+1):
+    _sb=int(os.environ.get('MGSEEDBASE','0'))
+    for seed in range(1+_sb,1+_sb+SEEDS):
         if time.time()-tstart>T_ALL: break
         ok,cm,board=attempt(m0,m14,m7,seed);tried+=1
         if cm<best_comp: best_comp=cm
