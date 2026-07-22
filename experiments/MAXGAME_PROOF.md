@@ -318,3 +318,16 @@ constructors stranden op 2 zetten door connectiviteits-bootstrap: support-woorde
 met opening-cel tot langere run die geldig moet zijn; per-run-greedy negeert dat. FIX-richting:
 opening op rijen 4-10 (weg van support-rijen 1/13), verbinden via rung-woorden op rij 4/10 + struts,
 support-rijen via cross-check-bewuste backtracking. = xfill-achtige row-fill. In aanbouw.
+
+## Bouwbaarheids-inzicht + eerlijke stand reachable (2026-07-22)
+KERNINZICHT: verticale opening vult (7,7) eerst -> zijn rij-7-buren MOETEN maskercellen zijn (anders
+onplaatsbare partiele run, bv 'ti'). Bouwbaar M7 voor playoffticketje = (0,3,6,8,9,13,14), kost 9 pt
+(509 vs 518). Algemener: elke forced-early cel vereist mask-buren of geldige partiele runs =
+BOUWBAARHEIDS-constraint op maskers (nieuw, naast score+muur-veiligheid).
+EERLIJKE STAND: ondanks alle bouwstenen + bouwbare maskers stranden 6 Python-constructors op ~2 zetten.
+De connectiviteits-BOOTSTRAP (van opening near-center naar de verspreide pre-cellen) is een echt
+zoek-/geleidingsprobleem: gain-heuristiek beloont "toewerken naar pre-cel" niet, DFS flailt. Dit vergt
+een echte crossword-fill-solver met connectiviteit-geleiding (xfill-type met struts), niet greedy.
+SAMENVATTING mandaat: (1) NIET onmogelijk (statisch bord 4060-4069 bestaat + alle stukken). (2) Move-
+order-AANNAME sluiting: JA (+86..+95 over record). (3) Fully-reachable: onopgelost door mijn
+constructors; vergt geleidde crossword-solver. Reachable record blijft 3974 (mining).
