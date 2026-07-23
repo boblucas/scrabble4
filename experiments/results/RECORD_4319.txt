@@ -1,0 +1,66 @@
+MAXGAME BEREIKBAAR RECORD: 4319 punten
+triple: geschenkcheques / flexwerkstertje / polymelkzuurtje  (rij 0 x27 / rij 7 x9 / rij 14 x27)
+zetten: 40  tegels: 101  blanco: [(12, 2)]
+score_game: ok=True  prep=774 + finals=3545
+
+      0   1   2   3   4   5   6   7   8   9  10  11  12  13  14
+ 0   g   e   s   c   h   e   n   k   c   h   e   q   u   e   s
+ 1   .   .   i   .   .   r   .   .   o   e   d   .   i   .   .
+ 2   .   .   m   .   .   v   .   .   .   b   i   n   T   .   .
+ 3   .   .   m   .   .   a   .   .   .   .   t   .   z   .   .
+ 4   .   .   e   v   e   r   .   w   a   d   e   .   a   .   .
+ 5   .   .   n   .   .   e   .   e   .   .   n   .   a   .   .
+ 6   .   .   d   .   .   n   e   g   .   .   d   .   g   .   .
+ 7   f   l   e   x   w   e   r   k   s   t   e   r   t   j   e
+ 8   .   .   .   .   e   .   .   n   .   .   .   .   .   .   .
+ 9   .   .   .   .   n   .   .   i   .   .   .   .   .   .   .
+10   .   .   .   .   s   .   .   p   a   f   .   .   .   .   .
+11   .   .   .   .   b   .   .   t   .   o   .   .   .   .   .
+12   .   a   n   n   o   .   .   .   .   n   .   .   .   .   .
+13   o   s   .   .   o   .   .   .   .   d   .   .   .   .   .
+14   p   o   l   y   m   e   l   k   z   u   u   r   t   j   e
+
+(hoofdletter = blanco)
+
+zet  1:   84 pt [7t] wegknip bingo
+zet  2:    6 pt [1t] wa
+zet  3:    8 pt [1t] wad
+zet  4:   88 pt [7t] editend, wade bingo
+zet  5:    4 pt [1t] bi
+zet  6:    5 pt [1t] bin
+zet  7:   94 pt [7t] uitzaag, bint bingo
+zet  8:    5 pt [1t] eg
+zet  9:   73 pt [7t] ervaren, neg bingo
+zet 10:   14 pt [2t] ver
+zet 11:   88 pt [7t] simmend, ever bingo
+zet 12:   13 pt [1t] ervarene
+zet 13:    6 pt [1t] we
+zet 14:   84 pt [7t] wensboom bingo
+zet 15:   19 pt [1t] wegknipt
+zet 16:   16 pt [1t] uitzaagt
+zet 17:    4 pt [1t] pa
+zet 18:    8 pt [1t] paf
+zet 19:    8 pt [3t] fond
+zet 20:   12 pt [1t] fondu
+zet 21:   10 pt [2t] uur
+zet 22:   14 pt [1t] zuur
+zet 23:   14 pt [1t] simmende
+zet 24:   14 pt [1t] werk, er
+zet 25:    2 pt [1t] no
+zet 26:    8 pt [2t] anno
+zet 27:   12 pt [2t] os, as
+zet 28:   12 pt [2t] oed, eb
+zet 29:   11 pt [1t] editende
+zet 30:    4 pt [1t] me
+zet 31:    7 pt [1t] mel
+zet 32:    5 pt [1t] he
+zet 33:    6 pt [1t] hen
+zet 34:    6 pt [1t] co
+zet 35:    4 pt [1t] aso
+zet 36:    3 pt [1t] te
+zet 37:    3 pt [1t] es
+zet 38:  509 pt [7t] flexwerkstertje SLOTZET
+zet 39: 1732 pt [7t] geschenkcheques, heb SLOTZET
+zet 40: 1304 pt [7t] polymelkzuurtje, op SLOTZET
+
+TOTAAL: 4319
