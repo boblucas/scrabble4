@@ -441,6 +441,40 @@ fn main(){
     let sco=Scorer{ lm, wm, sc:scarr, bonus:hb[1], hand:hb[0] as usize };
     let beam_w:usize=std::env::var("MGBEAMW").ok().and_then(|v|v.parse().ok()).unwrap_or(12);
     let valbias:bool=std::env::var("RUST_VALBIAS").map(|v|v=="1").unwrap_or(false);
+    // DECOMP_ONLY-modus: stdin-regels (na header) = SCORED-regels van eerdere waves;
+    // her-decompose het bord met (grote) MGBEAMW en print nieuwe SCORED-regel.
+    if std::env::var("DECOMP_ONLY").map(|v|v=="1").unwrap_or(false) {
+        for line in lines {
+            let p:Vec<&str>=line.split_whitespace().collect();
+            if p.len()<8 || p[0]!="SCORED" { continue; }
+            let m0=parse_csv(p[4]); let m14=parse_csv(p[5]); let m7=parse_csv(p[6]);
+            let bs=p[7].as_bytes();
+            let mut full=[[0u8;15];15];
+            for y in 0..15 { for x in 0..15 { let ch=bs[y*15+x]; full[y][x]= if ch==b'`' {0} else {ch-b'a'+1}; } }
+            for &c in &m0 { full[0][c]=s.r0[c]; } for &c in &m7 { full[7][c]=s.r7[c]; } for &c in &m14 { full[14][c]=s.r14[c]; }
+            let mut maskset:HashSet<(usize,usize)>=HashSet::new();
+            for &c in &m0 { maskset.insert((c,0)); } for &c in &m7 { maskset.insert((c,7)); } for &c in &m14 { maskset.insert((c,14)); }
+            let blanks=assign_blanks(&sco,&full,&s.bag);
+            if let Some((prep,pmoves))=beam_decompose(&sco,&s,&full,&maskset,&blanks,beam_w) {
+                let mut finals=0i64; let mut okf=true;
+                for &(y,ms) in &[(7usize,&m7),(0usize,&m0),(14usize,&m14)] {
+                    let cells:Vec<(usize,usize)>=ms.iter().map(|&c|(c,y)).collect();
+                    let cset:HashSet<(usize,usize)>=cells.iter().cloned().collect();
+                    match move_score(&sco,&s,&full,&cells,&cset,&blanks){ Some(v)=>finals+=v, None=>{okf=false;} }
+                }
+                if okf {
+                    let total=prep+finals;
+                    let mut nb=String::new();
+                    for y in 0..15 { for x in 0..15 { nb.push(if maskset.contains(&(x,y)) {'`'} else {(b'a'-1+full[y][x]) as char}); } }
+                    let j=|m:&[usize]| m.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+                    let mvenc:String=pmoves.iter().map(|mv| mv.iter().map(|&(x,y)| format!("{}.{}",x,y)).collect::<Vec<_>>().join(",")).collect::<Vec<_>>().join(";");
+                    let blenc:String=blanks.iter().map(|&(x,y)| format!("{}.{}",x,y)).collect::<Vec<_>>().join(",");
+                    println!("SCORED {} {} {} {} {} {} {} MV {} BL {}", total, prep, finals, j(&m0), j(&m14), j(&m7), nb, mvenc, blenc);
+                }
+            }
+        }
+        return;
+    }
     let mut combo_idx=0;
     for line in lines {
         let parts:Vec<&str>=line.split_whitespace().collect();
