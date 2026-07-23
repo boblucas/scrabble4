@@ -8,7 +8,7 @@ export VALS=$(.venv/bin/python -c "import json;print(','.join(map(str,json.load(
 export BAG=$(.venv/bin/python -c "import json;print(','.join(map(str,json.load(open('$TMP/meta.json'))['bag'])))")
 RES=experiments/results/mg_triple_scan.log; : > "$RES"
 # tsv: rank score R0 R14 R7  -> we want R0 R7 R14
-tail -n +2 experiments/results/maxgame_triplerank.tsv | awk '!seen[$3" "$5" "$4]++' | head -"$NTRIP" | \
+tail -n +2 experiments/results/maxgame_triplerank.tsv | awk '!seen[$3" "$5" "$4]++' | awk -v s="${SKIP:-0}" 'NR>s' | head -"$NTRIP" | \
 while IFS=$'\t' read -r rank score R0 R14 R7 rest; do
   ( combos=$(.venv/bin/python experiments/mg_gen_combos.py "$R0" "$R7" "$R14" "$MAXC" 2>/dev/null)
     if [ -z "$combos" ]; then echo "#$rank $R0/$R7/$R14 core$score: geen maskers" >>"$RES"; exit; fi
