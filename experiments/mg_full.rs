@@ -222,7 +222,49 @@ fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u1
     build_backbone(s,&mut st,&mut rng,valbias);
     let t0=Instant::now(); let mut best=999usize; let mut bestb=None;
     let closed=dfs(s,&mut st,&mut rng,0,&t0,tl_ms,&mut best,&mut bestb);
-    if closed { Some(st.g) } else { None }
+    if closed {
+        if std::env::var("RUST_ENRICH").map(|v|v=="1").unwrap_or(false) { enrich(s,&mut st,&mut rng); }
+        Some(st.g)
+    } else { None }
+}
+// Verrijkingspas (bob's 7e-bingo-idee): na sluiting resterende zaktegels als LANGE stubs aan de
+// structuur hangen — voorkeur len-8 stub door 1 bestaande cel = 7 nieuwe tegels = bingo-lijn bij
+// decompositie. Valt terug naar kortere woorden; stopt als niets meer plaatsbaar.
+fn enrich(s:&Solver, st:&mut St, rng:&mut Rng){
+    const SAMP:usize=25;
+    for _round in 0..20 {
+        let mut placed_any=false;
+        'tier: for l in (2..=8u8).rev() {
+            // verzamel gesamplede kandidaten voor deze lengte-tier, gesorteerd op woordwaarde+jitter
+            let mut cands:Vec<(i64,Vec<u8>,i32,i32,bool)>=Vec::new();
+            for y in 0..15usize { for x in 0..15usize {
+                let ch=st.g[y][x]; if ch==0 { continue; }
+                if let Some(v)=s.byfirst.get(&(ch,l)) {
+                    for _ in 0..SAMP.min(v.len()) {
+                        let w=v[rng.below(v.len())].clone();
+                        let k=wval(s,&w)*13 + (rng.below(13) as i64);
+                        cands.push((k,w.clone(),x as i32,y as i32,false));   // stub omlaag
+                        cands.push((k,w,x as i32,y as i32,true));            // stub naar rechts
+                    }
+                }
+                if let Some(v)=s.bylast.get(&(ch,l)) {
+                    for _ in 0..SAMP.min(v.len()) {
+                        let w=v[rng.below(v.len())].clone();
+                        let k=wval(s,&w)*13 + (rng.below(13) as i64);
+                        cands.push((k,w.clone(),x as i32,y as i32-(l as i32)+1,false)); // stub omhoog
+                        cands.push((k,w,x as i32-(l as i32)+1,y as i32,true));          // stub naar links
+                    }
+                }
+            }}
+            cands.sort_by(|a,b| b.0.cmp(&a.0));
+            for (_,w,x,y,h) in cands {
+                if let Some(newc)=place(s,st,&w,x,y,h) {
+                    if newc.len()>=1 { placed_any=true; break 'tier; }
+                }
+            }
+        }
+        if !placed_any { break; }
+    }
 }
 fn load_words(path:&str)->Vec<Vec<u8>>{
     let f=std::fs::File::open(path).unwrap(); let r=io::BufReader::new(f);
