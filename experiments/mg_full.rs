@@ -34,7 +34,8 @@ impl Solver{
 
 // per-attempt mutabele staat
 struct St{ g:[[u8;15];15], free:[i64;27], m0:Vec<usize>, m7:Vec<usize>, m14:Vec<usize>,
-           inm0:[bool;15], inm7:[bool;15], inm14:[bool;15] }
+           inm0:[bool;15], inm7:[bool;15], inm14:[bool;15],
+           blanks:Vec<(usize,usize)>, ntiles:usize }
 
 fn is_free_row(y:usize)->bool{ (1..=6).contains(&y) || (8..=13).contains(&y) }
 
@@ -92,7 +93,7 @@ fn components(g:&[[u8;15];15])->Vec<Vec<(usize,usize)>>{
     comps
 }
 // place: geeft de nieuwe cellen terug (of None). h=true horizontaal.
-fn place(s:&Solver, st:&mut St, word:&[u8], x:i32, y:i32, h:bool)->Option<Vec<(usize,usize)>>{
+fn place(s:&Solver, st:&mut St, word:&[u8], x:i32, y:i32, h:bool, maxb:i64)->Option<Vec<(usize,usize)>>{
     let (dx,dy)=if h {(1i32,0i32)} else {(0,1)};
     let l=word.len() as i32;
     if x<0||y<0||x+dx*(l-1)>14||y+dy*(l-1)>14 { return None; }
@@ -112,16 +113,39 @@ fn place(s:&Solver, st:&mut St, word:&[u8], x:i32, y:i32, h:bool)->Option<Vec<(u
         }
     }
     if newc.is_empty() { return None; }
-    for c in 1..27 { if need[c]>st.free[c] { return None; } }
+    // blanco-wildcards: tekort-letters mogen door max maxb blanco's gedekt; bord-cap 101 tegels
+    // (reserve-regel: tegenstander houdt >=1 tegel) => pre-bord <= 80 (101 - 21 maskercellen).
+    let mut deficit=[0i64;27]; let mut dtot=0i64;
+    for c in 1..27 { let d=(need[c]-st.free[c].max(0)).max(0); if d>0 { deficit[c]=d; dtot+=d; } }
+    if dtot>maxb || (st.blanks.len() as i64)+dtot>2 { return None; }
+    if st.ntiles+newc.len()>80 { return None; }
+    let mut newblanks:Vec<(usize,usize)>=Vec::new();
+    if dtot>0 {
+        let mut left=deficit;
+        for i in (0..word.len()).rev() {
+            let cx=(x+dx*i as i32) as usize; let cy=(y+dy*i as i32) as usize;
+            if !newc.contains(&(cx,cy)) { continue; }
+            let ch=word[i] as usize;
+            if left[ch]>0 { left[ch]-=1; newblanks.push((cx,cy)); }
+        }
+    }
     for &(cx,cy) in &newc { let ch=word[ if h {cx as i32-x} else {cy as i32-y} as usize]; st.g[cy][cx]=ch; }
     if !(runs_valid(s,&st.g,&newc) && mask_vert_ok(s,st)) {
         for &(cx,cy) in &newc { st.g[cy][cx]=0; } return None;
     }
-    for c in 1..27 { st.free[c]-=need[c]; }
+    for c in 1..27 { st.free[c]-=need[c]-deficit[c]; }
+    st.ntiles+=newc.len();
+    for b in newblanks { st.blanks.push(b); }
     Some(newc)
 }
 fn unplace(st:&mut St, newc:&[(usize,usize)]){
-    for &(cx,cy) in newc { let ch=st.g[cy][cx] as usize; st.free[ch]+=1; st.g[cy][cx]=0; }
+    for &(cx,cy) in newc {
+        let ch=st.g[cy][cx] as usize;
+        if let Some(pos)=st.blanks.iter().position(|&b| b==(cx,cy)) { st.blanks.swap_remove(pos); }
+        else { st.free[ch]+=1; }
+        st.g[cy][cx]=0;
+    }
+    st.ntiles-=newc.len();
 }
 const MAXV:usize=40;
 fn connectors_for(s:&Solver, st:&St, tx:usize, ty:usize, rng:&mut Rng, out:&mut Vec<(Vec<u8>,i32,i32,bool)>){
@@ -180,10 +204,10 @@ fn build_backbone(s:&Solver, st:&mut St, rng:&mut Rng, valbias:bool){
     let mut order:Vec<usize>=(0..15).collect();
     for i in (1..15).rev(){ let j=rng.below(i+1); order.swap(i,j); }
     for &c in &order { if !st.inm0[c] && st.g[1][c]==0 {
-        if let Some(v)=s.c8.get(&(s.r0[c],s.r7[c])){ let mut cs=v.clone(); order_words(s,&mut cs,rng,valbias); for w in &cs { if place(s,st,w,c as i32,0,false).is_some(){break;} } }
+        if let Some(v)=s.c8.get(&(s.r0[c],s.r7[c])){ let mut cs=v.clone(); order_words(s,&mut cs,rng,valbias); for w in &cs { if place(s,st,w,c as i32,0,false,0).is_some(){break;} } }
     }}
     for &c in &order { if !st.inm14[c] && st.g[13][c]==0 {
-        if let Some(v)=s.c8.get(&(s.r7[c],s.r14[c])){ let mut cs=v.clone(); order_words(s,&mut cs,rng,valbias); for w in &cs { if place(s,st,w,c as i32,7,false).is_some(){break;} } }
+        if let Some(v)=s.c8.get(&(s.r7[c],s.r14[c])){ let mut cs=v.clone(); order_words(s,&mut cs,rng,valbias); for w in &cs { if place(s,st,w,c as i32,7,false,0).is_some(){break;} } }
     }}
 }
 fn dfs(s:&Solver, st:&mut St, rng:&mut Rng, depth:i32, t0:&Instant, tl_ms:u128, best:&mut usize, bestb:&mut Option<[[u8;15];15]>)->bool{
@@ -194,37 +218,52 @@ fn dfs(s:&Solver, st:&mut St, rng:&mut Rng, depth:i32, t0:&Instant, tl_ms:u128, 
     if depth>30 { return false; }
     let moves=gen_moves(s,st,rng);
     for (w,x,y,h) in moves {
-        if let Some(newc)=place(s,st,&w,x,y,h){
+        if let Some(newc)=place(s,st,&w,x,y,h,0){
             if dfs(s,st,rng,depth+1,t0,tl_ms,best,bestb){ return true; }
             unplace(st,&newc);
         }
     }
     false
 }
-fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u128, valbias:bool)->Option<[[u8;15];15]>{
+fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u128, valbias:bool,
+           pre:Option<(&[[u8;15];15],&Vec<(usize,usize)>)>)->Option<([[u8;15];15],Vec<(usize,usize)>)>{
     let mut st=St{ g:[[0u8;15];15], free:[0i64;27], m0:m0.to_vec(),m7:m7.to_vec(),m14:m14.to_vec(),
-        inm0:[false;15],inm7:[false;15],inm14:[false;15] };
+        inm0:[false;15],inm7:[false;15],inm14:[false;15], blanks:Vec::new(), ntiles:0 };
     for &c in m0 {st.inm0[c]=true;} for &c in m7 {st.inm7[c]=true;} for &c in m14 {st.inm14[c]=true;}
-    // pre-cellen
-    for c in 0..15 { if !st.inm0[c]{st.g[0][c]=s.r0[c];} if !st.inm7[c]{st.g[7][c]=s.r7[c];} if !st.inm14[c]{st.g[14][c]=s.r14[c];} }
     for c in 1..27 { st.free[c]=s.bag[c]; }
     for c in 0..15 { st.free[s.r0[c] as usize]-=1; st.free[s.r7[c] as usize]-=1; st.free[s.r14[c] as usize]-=1; }
+    if let Some((pg,pb))=pre {
+        // LNS: start vanaf behouden deelbord (incl. anker-pre-cellen); blanco's niet uit zak
+        for y in 0..15 { for x in 0..15 { st.g[y][x]=pg[y][x]; } }
+        for &(bx,by) in pb.iter() { st.blanks.push((bx,by)); }
+        for y in 0..15 { for x in 0..15 {
+            if st.g[y][x]!=0 { st.ntiles+=1;
+                if y!=0&&y!=7&&y!=14 && !st.blanks.contains(&(x,y)) { st.free[st.g[y][x] as usize]-=1; }
+            }
+        }}
+    } else {
+        // pre-cellen van de ankerrijen
+        for c in 0..15 { if !st.inm0[c]{st.g[0][c]=s.r0[c];} if !st.inm7[c]{st.g[7][c]=s.r7[c];} if !st.inm14[c]{st.g[14][c]=s.r14[c];} }
+        st.ntiles=(0..15).map(|y| (0..15).filter(|&x| st.g[y][x]!=0).count()).sum();
+    }
     let mut rng=Rng(seed.wrapping_mul(2862933555777941757).wrapping_add(3037000493));
-    // opening: random len7 met w[3]==r7[7]
+    // opening: random len7 met w[3]==r7[7] (alleen als kolom-7-venster nog vrij is)
     let tgt=s.r7[7];
-    let mut ops:Vec<Vec<u8>>=s.len7.iter().filter(|w| w[3]==tgt).cloned().collect();
-    order_words(s,&mut ops,&mut rng,valbias);
-    for w in ops {
-        let mut nd=[0i64;27]; for &ch in w.iter(){nd[ch as usize]+=1;} nd[tgt as usize]-=1;
-        let mut ok=true; for c in 1..27 { if st.free[c]<nd[c]{ok=false;break;} }
-        if ok { for i in 0..7 { st.g[4+i][7]=w[i]; } for c in 1..27 { st.free[c]-=nd[c]; } break; }
+    if (4..=10).filter(|&r| r!=7).all(|r| st.g[r][7]==0) {
+        let mut ops:Vec<Vec<u8>>=s.len7.iter().filter(|w| w[3]==tgt).cloned().collect();
+        order_words(s,&mut ops,&mut rng,valbias);
+        for w in ops {
+            let mut nd=[0i64;27]; for &ch in w.iter(){nd[ch as usize]+=1;} nd[tgt as usize]-=1;
+            let mut ok=true; for c in 1..27 { if st.free[c]<nd[c]{ok=false;break;} }
+            if ok { for i in 0..7 { if st.g[4+i][7]==0 { st.ntiles+=1; } st.g[4+i][7]=w[i]; } for c in 1..27 { st.free[c]-=nd[c]; } break; }
+        }
     }
     build_backbone(s,&mut st,&mut rng,valbias);
     let t0=Instant::now(); let mut best=999usize; let mut bestb=None;
     let closed=dfs(s,&mut st,&mut rng,0,&t0,tl_ms,&mut best,&mut bestb);
     if closed {
         if std::env::var("RUST_ENRICH").map(|v|v=="1").unwrap_or(false) { enrich(s,&mut st,&mut rng); }
-        Some(st.g)
+        Some((st.g, st.blanks.clone()))
     } else { None }
 }
 // Verrijkingspas (bob's 7e-bingo-idee): na sluiting resterende zaktegels als LANGE stubs aan de
@@ -243,12 +282,60 @@ fn tws_adj_bonus(s:&Solver, w:&[u8], x:i32, y:i32, h:bool)->i64{
     }
     b
 }
+// FINSEED-pas (na sluiting): verbind cellen naast TWS-maskercellen met de bestaande structuur
+// via een stub, met de hoogst-waardige letter op de doelcel -> x3-kruiswoord bij de slotzet.
+fn finseed_pass(s:&Solver, st:&mut St, nseed:usize){
+    let mut targets:Vec<(usize,usize)>=Vec::new();
+    let (m0c,m7c,m14c)=(st.m0.clone(),st.m7.clone(),st.m14.clone());
+    for &c in m0c.iter() { if (c==0||c==7||c==14)&&st.g[1][c]==0 { targets.push((c,1)); } }
+    for &c in m14c.iter() { if (c==0||c==7||c==14)&&st.g[13][c]==0 { targets.push((c,13)); } }
+    for &c in m7c.iter() { if c==0||c==14 { if st.g[6][c]==0 { targets.push((c,6)); } if st.g[8][c]==0 { targets.push((c,8)); } } }
+    let mut done=0;
+    for (tx,ty) in targets {
+        if done>=nseed { break; }
+        if st.g[ty][tx]!=0 { continue; }
+        let mut cands:Vec<(i64,Vec<u8>,i32,i32,bool)>=Vec::new();
+        // verticaal omlaag naar dichtstbijzijnde gevulde cel
+        { let mut k=ty+1; while k<15 && st.g[k][tx]==0 { if k==7||k==14 {break;} k+=1; }
+          if k<15 && st.g[k][tx]!=0 && k>ty && (k-ty+1)<=8 {
+            let l=(k-ty+1) as u8; let fl=st.g[k][tx];
+            if let Some(v)=s.bylast.get(&(fl,l)) { for w in v { cands.push((s.val[w[0] as usize],w.clone(),tx as i32,ty as i32,false)); } }
+        }}
+        // verticaal omhoog
+        { let mut k=ty as i32-1; while k>=0 && st.g[k as usize][tx]==0 { if k==7||k==0 {break;} k-=1; }
+          if k>=0 && st.g[k as usize][tx]!=0 && (ty as i32-k+1)<=8 && (ty as i32-k+1)>=2 {
+            let l=(ty as i32-k+1) as u8; let fl=st.g[k as usize][tx];
+            if let Some(v)=s.byfirst.get(&(fl,l)) { for w in v { cands.push((s.val[*w.last().unwrap() as usize],w.clone(),tx as i32,k,false)); } }
+        }}
+        // horizontaal rechts
+        { let mut k=tx+1; while k<15 && st.g[ty][k]==0 { k+=1; }
+          if k<15 && st.g[ty][k]!=0 && (k-tx+1)<=8 && (k-tx+1)>=2 {
+            let l=(k-tx+1) as u8; let fl=st.g[ty][k];
+            if let Some(v)=s.bylast.get(&(fl,l)) { for w in v { cands.push((s.val[w[0] as usize],w.clone(),tx as i32,ty as i32,true)); } }
+        }}
+        // horizontaal links
+        { let mut k=tx as i32-1; while k>=0 && st.g[ty][k as usize]==0 { k-=1; }
+          if k>=0 && st.g[ty][k as usize]!=0 && (tx as i32-k+1)<=8 && (tx as i32-k+1)>=2 {
+            let l=(tx as i32-k+1) as u8; let fl=st.g[ty][k as usize];
+            if let Some(v)=s.byfirst.get(&(fl,l)) { for w in v { cands.push((s.val[*w.last().unwrap() as usize],w.clone(),k,ty as i32,true)); } }
+        }}
+        cands.sort_by(|a,b| b.0.cmp(&a.0));
+        for (_,w,x,y,h) in cands.into_iter().take(6000) {
+            if place(s,st,&w,x,y,h,0).is_some() { done+=1; break; }
+        }
+    }
+}
 fn enrich(s:&Solver, st:&mut St, rng:&mut Rng){
     const SAMP:usize=25;
     let finbias=std::env::var("RUST_FINBIAS").map(|v|v=="1").unwrap_or(false);
+    let nblank_allow:i64=std::env::var("RUST_NBLANK").ok().and_then(|v|v.parse().ok()).unwrap_or(1);
+    let nseed:usize=std::env::var("RUST_FINSEED").ok().and_then(|v|v.parse().ok()).unwrap_or(0);
+    if nseed>0 { finseed_pass(s,st,nseed); }
     for _round in 0..20 {
         let mut placed_any=false;
         'tier: for l in (2..=8u8).rev() {
+            // blanco alleen inzetten op bingo-tiers (7 nieuwe tegels): wildcard voor de +50-lijn
+            let mb=if l>=7 { (nblank_allow-(st.blanks.len() as i64)).max(0) } else { 0 };
             // verzamel gesamplede kandidaten voor deze lengte-tier, gesorteerd op woordwaarde+jitter
             let mut cands:Vec<(i64,Vec<u8>,i32,i32,bool)>=Vec::new();
             for y in 0..15usize { for x in 0..15usize {
@@ -278,7 +365,7 @@ fn enrich(s:&Solver, st:&mut St, rng:&mut Rng){
             }}
             cands.sort_by(|a,b| b.0.cmp(&a.0));
             for (_,w,x,y,h) in cands {
-                if let Some(newc)=place(s,st,&w,x,y,h) {
+                if let Some(newc)=place(s,st,&w,x,y,h,mb) {
                     if newc.len()>=1 { placed_any=true; break 'tier; }
                 }
             }
@@ -397,9 +484,10 @@ fn beam_decompose(sco:&Scorer, s:&Solver, full:&[[u8;15];15], maskset:&HashSet<(
     let best=complete.into_iter().max_by_key(|s| s.cum)?;
     Some((best.cum,best.moves))
 }
-fn assign_blanks(sco:&Scorer, full:&[[u8;15];15], bag:&[i64;27])->HashSet<(usize,usize)>{
-    let mut cnt=[0i64;27]; for y in 0..15 { for x in 0..15 { if full[y][x]!=0 { cnt[full[y][x] as usize]+=1; } } }
-    let mut blanks=HashSet::new();
+fn assign_blanks(sco:&Scorer, full:&[[u8;15];15], bag:&[i64;27], existing:&HashSet<(usize,usize)>)->HashSet<(usize,usize)>{
+    // tel alleen niet-blanco cellen (blanco's verbruiken geen zakletters)
+    let mut cnt=[0i64;27]; for y in 0..15 { for x in 0..15 { if full[y][x]!=0 && !existing.contains(&(x,y)) { cnt[full[y][x] as usize]+=1; } } }
+    let mut blanks=existing.clone();
     for ch in 1..27usize {
         let over=cnt[ch]-bag[ch];
         for _ in 0..over.max(0) {
@@ -474,7 +562,7 @@ fn main(){
             for &c in &m0 { full[0][c]=s.r0[c]; } for &c in &m7 { full[7][c]=s.r7[c]; } for &c in &m14 { full[14][c]=s.r14[c]; }
             let mut maskset:HashSet<(usize,usize)>=HashSet::new();
             for &c in &m0 { maskset.insert((c,0)); } for &c in &m7 { maskset.insert((c,7)); } for &c in &m14 { maskset.insert((c,14)); }
-            let blanks=assign_blanks(&sco,&full,&s.bag);
+            let blanks=assign_blanks(&sco,&full,&s.bag,&HashSet::new());
             if let Some((prep,pmoves))=beam_decompose(&sco,&s,&full,&maskset,&blanks,beam_w) {
                 let mut finals=0i64; let mut okf=true;
                 for &(y,ms) in &[(7usize,&m7),(0usize,&m0),(14usize,&m14)] {
@@ -495,6 +583,88 @@ fn main(){
         }
         return;
     }
+    // LNS-modus (backbone-recombinatie): stdin = SCORED-regels; per regel NREST pogingen waarbij
+    // elke structuurgroep (verticale segmenten + horizontale rungs) met kans LNS_KEEP% behouden blijft
+    // en de rest vers wordt hervuld (opening/backbone/DFS/enrich). Buurt-zoeken rond topborden.
+    if std::env::var("LNS").map(|v|v=="1").unwrap_or(false) {
+        let keepp:u64=std::env::var("LNS_KEEP").ok().and_then(|v|v.parse().ok()).unwrap_or(70);
+        let salt:u64=std::env::var("SEED_SALT").ok().and_then(|v|v.parse().ok()).unwrap_or(0);
+        let mut li:u64=0;
+        for line in lines {
+            let p:Vec<&str>=line.split_whitespace().collect();
+            if p.len()<8 || p[0]!="SCORED" { continue; }
+            let m0=parse_csv(p[4]); let m14=parse_csv(p[5]); let m7=parse_csv(p[6]);
+            let bs=p[7].as_bytes();
+            let mut pg=[[0u8;15];15];
+            for y in 0..15 { for x in 0..15 { let ch=bs[y*15+x]; pg[y][x]= if ch==b'`' {0} else {ch-b'a'+1}; } }
+            let mut pblanks:Vec<(usize,usize)>=Vec::new();
+            if let Some(bi)=p.iter().position(|&t| t=="BL") {
+                if bi+1<p.len() { for cs2 in p[bi+1].split(',') { if cs2.is_empty(){continue;}
+                    let mut it=cs2.split('.');
+                    if let (Some(a),Some(b))=(it.next(),it.next()) {
+                        if let (Ok(x),Ok(y))=(a.parse::<usize>(),b.parse::<usize>()) { pblanks.push((x,y)); } } } }
+            }
+            let mut groups:Vec<Vec<(usize,usize)>>=Vec::new();
+            for x in 0..15usize {
+                for (a,b) in [(1usize,6usize),(8,13)] {
+                    let mut y=a;
+                    while y<=b {
+                        if pg[y][x]==0 { y+=1; continue; }
+                        let mut y2=y; while y2<=b && pg[y2][x]!=0 { y2+=1; }
+                        groups.push((y..y2).map(|k|(x,k)).collect()); y=y2;
+                    }
+                }
+            }
+            for y in (1..7usize).chain(8..14) {
+                let mut x=0;
+                while x<15 {
+                    if pg[y][x]==0 { x+=1; continue; }
+                    let mut x2=x; while x2<15 && pg[y][x2]!=0 { x2+=1; }
+                    if x2-x>=2 { groups.push((x..x2).map(|k|(k,y)).collect()); }
+                    x=x2;
+                }
+            }
+            let mut rng=Rng(salt.wrapping_mul(999983).wrapping_add(li*7919+1));
+            let allc:Vec<(usize,usize)>=(0..15).flat_map(|y|(0..15).map(move |x|(x,y))).collect();
+            for r in 0..nrest {
+                let mut kg=[[0u8;15];15];
+                for y in [0usize,7,14] { for x in 0..15 { kg[y][x]=pg[y][x]; } }
+                for gr in &groups { if (rng.next()%100)<keepp { for &(x,y) in gr { kg[y][x]=pg[y][x]; } } }
+                if !runs_valid(&s,&kg,&allc) { continue; }
+                let kb:Vec<(usize,usize)>=pblanks.iter().cloned().filter(|&(x,y)| kg[y][x]!=0).collect();
+                if let Some((g,sblanks))=attempt(&s,&m0,&m14,&m7, salt.wrapping_mul(31013)+li*1_000_003+r+1, tl_ms, valbias, Some((&kg,&kb))) {
+                    let mut full=g;
+                    for &c in &m0 { full[0][c]=s.r0[c]; }
+                    for &c in &m7 { full[7][c]=s.r7[c]; }
+                    for &c in &m14 { full[14][c]=s.r14[c]; }
+                    let mut maskset:HashSet<(usize,usize)>=HashSet::new();
+                    for &c in &m0 { maskset.insert((c,0)); } for &c in &m7 { maskset.insert((c,7)); } for &c in &m14 { maskset.insert((c,14)); }
+                    let sb:HashSet<(usize,usize)>=sblanks.iter().cloned().collect();
+                    let blanks=assign_blanks(&sco,&full,&s.bag,&sb);
+                    if blanks.len()>2 { continue; }
+                    if let Some((prep,pmoves))=beam_decompose(&sco,&s,&full,&maskset,&blanks,beam_w) {
+                        let mut finals=0i64; let mut okf=true;
+                        for &(y,ms) in &[(7usize,&m7),(0usize,&m0),(14usize,&m14)] {
+                            let cells:Vec<(usize,usize)>=ms.iter().map(|&c|(c,y)).collect();
+                            let cset:HashSet<(usize,usize)>=cells.iter().cloned().collect();
+                            match move_score(&sco,&s,&full,&cells,&cset,&blanks){ Some(v)=>finals+=v, None=>{okf=false;} }
+                        }
+                        if okf {
+                            let total=prep+finals;
+                            let mut nb=String::new();
+                            for y in 0..15 { for x in 0..15 { nb.push(if maskset.contains(&(x,y)) {'`'} else {(b'a'-1+full[y][x]) as char}); } }
+                            let j=|m:&[usize]| m.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+                            let mvenc:String=pmoves.iter().map(|mv| mv.iter().map(|&(x,y)| format!("{}.{}",x,y)).collect::<Vec<_>>().join(",")).collect::<Vec<_>>().join(";");
+                            let blenc:String=blanks.iter().map(|&(x,y)| format!("{}.{}",x,y)).collect::<Vec<_>>().join(",");
+                            println!("SCORED {} {} {} {} {} {} {} MV {} BL {}", total, prep, finals, j(&m0), j(&m14), j(&m7), nb, mvenc, blenc);
+                        }
+                    }
+                }
+            }
+            li+=1;
+        }
+        return;
+    }
     let mut combo_idx=0;
     for line in lines {
         let parts:Vec<&str>=line.split_whitespace().collect();
@@ -502,7 +672,7 @@ fn main(){
         let m0=parse_csv(parts[0]); let m14=parse_csv(parts[1]); let m7=parse_csv(parts[2]);
         let salt:u64=std::env::var("SEED_SALT").ok().and_then(|v|v.parse().ok()).unwrap_or(0);
         for r in 0..nrest {
-            if let Some(g)=attempt(&s,&m0,&m14,&m7,(combo_idx as u64)*1_000_003 + r + 1 + salt.wrapping_mul(7919), tl_ms, valbias) {
+            if let Some((g,sblanks))=attempt(&s,&m0,&m14,&m7,(combo_idx as u64)*1_000_003 + r + 1 + salt.wrapping_mul(7919), tl_ms, valbias, None) {
                 // reconstrueer VOL bord: vul masker-cellen met ankerletters
                 let mut full=g;
                 for &c in &m0 { full[0][c]=s.r0[c]; }
@@ -510,7 +680,9 @@ fn main(){
                 for &c in &m14 { full[14][c]=s.r14[c]; }
                 let mut maskset:HashSet<(usize,usize)>=HashSet::new();
                 for &c in &m0 { maskset.insert((c,0)); } for &c in &m7 { maskset.insert((c,7)); } for &c in &m14 { maskset.insert((c,14)); }
-                let blanks=assign_blanks(&sco,&full,&s.bag);
+                let sb:HashSet<(usize,usize)>=sblanks.iter().cloned().collect();
+                let blanks=assign_blanks(&sco,&full,&s.bag,&sb);
+                if blanks.len()>2 { continue; }
                 if let Some((prep,pmoves))=beam_decompose(&sco,&s,&full,&maskset,&blanks,beam_w) {
                     // finals: 3 masker-zetten op het volle bord
                     let mut finals=0i64; let mut okf=true;
