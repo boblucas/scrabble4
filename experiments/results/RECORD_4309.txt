@@ -1,0 +1,60 @@
+MAXGAME BEREIKBAAR RECORD: 4309 punten
+triple: geschenkcheques / flexwerkstertje / polymelkzuurtje  (rij 0 x27 / rij 7 x9 / rij 14 x27)
+zetten: 32  tegels: 101  blanco: [(7, 11)]
+score_game: ok=True (OK)  prep=764 + finals=3545
+
+      0   1   2   3   4   5   6   7   8   9  10  11  12  13  14
+ 0   g   e   s   c   h   e   n   k   c   h   e   q   u   e   s
+ 1   .   .   i   .   .   r   .   .   o   e   d   .   i   .   .
+ 2   .   .   m   .   .   v   .   .   .   b   i   n   t   .   .
+ 3   .   .   m   .   .   a   .   .   .   .   t   .   z   .   .
+ 4   .   .   e   v   e   r   .   w   a   d   e   .   a   .   .
+ 5   .   .   n   .   .   e   .   e   .   .   n   .   a   .   .
+ 6   .   .   d   .   .   n   e   g   .   .   d   .   g   .   .
+ 7   f   l   e   x   w   e   r   k   s   t   e   r   t   j   e
+ 8   .   .   .   .   e   .   .   n   .   .   .   .   .   .   .
+ 9   .   .   .   .   n   .   .   i   .   .   .   .   .   .   .
+10   .   .   .   .   s   .   .   p   a   f   .   .   .   .   .
+11   .   .   .   .   b   .   .   T   .   o   .   .   .   .   .
+12   .   a   n   n   o   .   .   .   .   n   .   .   .   .   .
+13   o   s   .   .   o   .   .   .   .   d   .   .   .   .   .
+14   p   o   l   y   m   e   l   k   z   u   u   r   t   j   e
+
+(hoofdletter = blanco-tegel)
+
+zet | pt   | tegels | woorden gevormd (op de tussenstand)
+----|------|--------|------------------------------------
+  1 |   84 | 7      | wegknip(V7,4) bingo
+  2 |    8 | 2      | wad(H7,4)
+  3 |   88 | 7      | editend(V10,0), wade(H7,4) bingo
+  4 |    5 | 2      | bin(H9,2)
+  5 |  102 | 7      | uitzaag(V12,0), bint(H9,2) bingo
+  6 |    5 | 1      | eg(H6,6)
+  7 |   73 | 7      | ervaren(V5,0), neg(H5,6) bingo
+  8 |   27 | 3      | werk(H4,7), ervarene(V5,0), er(V6,6)
+  9 |   84 | 7      | wensboom(V4,7) bingo
+ 10 |   14 | 2      | ver(H3,4)
+ 11 |   88 | 7      | simmend(V2,0), ever(H2,4) bingo
+ 12 |   18 | 1      | uitzaagt(V12,0)
+ 13 |   17 | 1      | wegknipt(V7,4)
+ 14 |   14 | 2      | te(H9,7), editende(V10,0)
+ 15 |   14 | 1      | simmende(V2,0)
+ 16 |    4 | 1      | pa(H7,10)
+ 17 |   16 | 4      | paf(H7,10), fond(V9,10)
+ 18 |   22 | 3      | uur(H9,14), fondu(V9,10)
+ 19 |   14 | 1      | zuur(H8,14)
+ 20 |   12 | 2      | oed(H8,1), eb(V9,1)
+ 21 |    8 | 3      | anno(H1,12)
+ 22 |   12 | 2      | os(H0,13), as(V1,12)
+ 23 |    4 | 1      | me(H4,14)
+ 24 |    7 | 1      | mel(H4,14)
+ 25 |    6 | 1      | co(V8,0)
+ 26 |    5 | 1      | he(H4,0)
+ 27 |    6 | 1      | hen(H4,0)
+ 28 |    4 | 1      | aso(V1,12)
+ 29 |    3 | 1      | es(H1,0)
+ 30 |  509 | 7      | flexwerkstertje(H0,7) SLOTZET
+ 31 | 1732 | 7      | geschenkcheques(H0,0), heb(V9,0) SLOTZET
+ 32 | 1304 | 7      | polymelkzuurtje(H0,14), op(V0,13) SLOTZET
+
+TOTAAL: 4309
