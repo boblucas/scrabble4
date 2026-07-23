@@ -16,7 +16,7 @@ for g in $(seq 1 $GENS); do
   head -24 "$POOL" > $TMP/gen_in.txt
   rm -f $TMP/gen_out_*.txt
   for w in $(seq 0 $((NW-1))); do
-    keep=$((60 + (w*7)%26))
+    keep=$((42 + (w*9)%33))
     { printf 'geschenkcheques flexwerkstertje polymelkzuurtje\n%s %s\n' "$NREST" "$TLMS"; cat $TMP/gen_in.txt; } | \
       LNS=1 LNS_KEEP=$keep RUST_ENRICH=1 RUST_NBLANK=1 MGBEAMW=$BEAMW SEED_SALT=$((g*1000+w)) \
       nice -n 8 experiments/mg_full_bin 2>/dev/null > $TMP/gen_out_$w.txt &
