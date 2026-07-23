@@ -477,6 +477,7 @@ fn beam_decompose(sco:&Scorer, s:&Solver, full:&[[u8;15];15], maskset:&HashSet<(
             if pc>=npre { complete.push(st); } else { nb.push(st); }
         }
         nb.sort_by(|a,b| b.cum.cmp(&a.cum));
+        if nb.len()>beam_w { eprintln!("TRUNC {}>{}", nb.len(), beam_w); }
         nb.truncate(beam_w);
         if nb.is_empty() { break; }
         beam=nb;
