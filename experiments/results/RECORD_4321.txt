@@ -1,0 +1,20 @@
+MAXGAME BEREIKBAAR RECORD: 4321 punten
+triple: geschenkcheques / flexwerkstertje / polymelkzuurtje
+zetten: 42  tegels: 101  blanco: [(12, 2)]  prep=788 finals=3533
+
+      0   1   2   3   4   5   6   7   8   9  10  11  12  13  14
+ 0   g   e   s   c   h   e   n   k   c   h   e   q   u   e   s
+ 1   .   .   i   .   .   r   .   .   o   e   d   .   i   .   .
+ 2   .   .   m   .   .   v   .   .   .   b   i   n   T   .   .
+ 3   .   .   m   a   v   a   .   .   .   .   t   .   z   .   .
+ 4   .   .   e   .   a   r   .   w   e   d   e   .   a   .   .
+ 5   .   .   n   .   .   e   .   e   .   .   n   .   a   .   .
+ 6   .   .   d   .   .   n   e   g   .   .   d   .   g   .   .
+ 7   f   l   e   x   w   e   r   k   s   t   e   r   t   j   e
+ 8   .   .   .   .   e   .   .   n   .   .   .   .   .   .   .
+ 9   .   .   .   .   n   .   .   i   .   .   .   .   .   .   .
+10   .   .   .   .   s   .   .   p   o   f   .   .   .   .   .
+11   .   .   .   .   b   .   .   t   .   o   .   .   .   .   .
+12   .   a   n   n   o   .   .   .   .   n   .   .   .   .   .
+13   .   s   .   .   o   .   .   .   .   d   .   .   .   .   .
+14   p   o   l   y   m   e   l   k   z   u   u   r   t   j   e
