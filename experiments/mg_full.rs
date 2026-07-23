@@ -230,8 +230,22 @@ fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u1
 // Verrijkingspas (bob's 7e-bingo-idee): na sluiting resterende zaktegels als LANGE stubs aan de
 // structuur hangen — voorkeur len-8 stub door 1 bestaande cel = 7 nieuwe tegels = bingo-lijn bij
 // decompositie. Valt terug naar kortere woorden; stopt als niets meer plaatsbaar.
+// finals-bias: tegel op cel grenzend aan een TWS-maskercel levert bij de slotzet een ×3-kruiswoord.
+// (rij 1/13 × kol 0/7/14 voor rij-0/14-slotzetten; rij 6/8 × kol 0/14 voor de rij-7-slotzet.)
+fn tws_adj_bonus(s:&Solver, w:&[u8], x:i32, y:i32, h:bool)->i64{
+    let (dx,dy)=if h {(1i32,0i32)} else {(0,1)};
+    let mut b=0i64;
+    for i in 0..w.len() {
+        let cx=x+dx*i as i32; let cy=y+dy*i as i32;
+        if cx<0||cx>14||cy<0||cy>14 { continue; }
+        let adj_tws = ((cy==1||cy==13)&&(cx==0||cx==7||cx==14)) || ((cy==6||cy==8)&&(cx==0||cx==14));
+        if adj_tws { b += s.val[w[i] as usize]*3; }
+    }
+    b
+}
 fn enrich(s:&Solver, st:&mut St, rng:&mut Rng){
     const SAMP:usize=25;
+    let finbias=std::env::var("RUST_FINBIAS").map(|v|v=="1").unwrap_or(false);
     for _round in 0..20 {
         let mut placed_any=false;
         'tier: for l in (2..=8u8).rev() {
@@ -242,17 +256,23 @@ fn enrich(s:&Solver, st:&mut St, rng:&mut Rng){
                 if let Some(v)=s.byfirst.get(&(ch,l)) {
                     for _ in 0..SAMP.min(v.len()) {
                         let w=v[rng.below(v.len())].clone();
-                        let k=wval(s,&w)*13 + (rng.below(13) as i64);
+                        let mut k=wval(s,&w)*13 + (rng.below(13) as i64);
+                        let mut k2=k;
+                        if finbias { k += tws_adj_bonus(s,&w,x as i32,y as i32,false)*40;
+                                     k2 += tws_adj_bonus(s,&w,x as i32,y as i32,true)*40; }
                         cands.push((k,w.clone(),x as i32,y as i32,false));   // stub omlaag
-                        cands.push((k,w,x as i32,y as i32,true));            // stub naar rechts
+                        cands.push((k2,w,x as i32,y as i32,true));           // stub naar rechts
                     }
                 }
                 if let Some(v)=s.bylast.get(&(ch,l)) {
                     for _ in 0..SAMP.min(v.len()) {
                         let w=v[rng.below(v.len())].clone();
-                        let k=wval(s,&w)*13 + (rng.below(13) as i64);
+                        let mut k=wval(s,&w)*13 + (rng.below(13) as i64);
+                        let mut k2=k;
+                        if finbias { k += tws_adj_bonus(s,&w,x as i32,y as i32-(l as i32)+1,false)*40;
+                                     k2 += tws_adj_bonus(s,&w,x as i32-(l as i32)+1,y as i32,true)*40; }
                         cands.push((k,w.clone(),x as i32,y as i32-(l as i32)+1,false)); // stub omhoog
-                        cands.push((k,w,x as i32-(l as i32)+1,y as i32,true));          // stub naar links
+                        cands.push((k2,w,x as i32-(l as i32)+1,y as i32,true));          // stub naar links
                     }
                 }
             }}
