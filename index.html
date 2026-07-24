@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAXGAME record — 4321 punten</title>
+<style>
+  :root{
+    --bg:#f2ede3; --panel:#ffffff; --text:#22201c; --muted:#6b665c;
+    --board-bg:#cfc7b5; --cell:#e3ddcf; --line:#b8b09d;
+    --tws:#c2453a; --dws:#e8a7a7; --tls:#2b5ea7; --dls:#a9c6e8;
+    --prem-text-dark:#ffffff; --tile:#f6e7c1; --tile-edge:#d9c48f;
+    --tile-text:#3a2f14; --tile-blank:#fdf6df;
+    --hl:#ff9f1c; --accent:#8a1f1f; --badge-bingo:#2e7d32; --badge-slot:#8a1f1f;
+    --item-hover:#f3efe6; --item-active:#f8ead0; --item-border:#e2dccd;
+    --btn:#efeadd; --btn-text:#22201c; --btn-border:#c9c2b1;
+    --shadow:0 1px 3px rgba(0,0,0,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#191817; --panel:#22211f; --text:#eae6dd; --muted:#a29b8d;
+      --board-bg:#2c2a26; --cell:#38352f; --line:#4a463e;
+      --tws:#a53a31; --dws:#8a5555; --tls:#31589a; --dls:#48628a;
+      --tile:#e8d7a8; --tile-edge:#b09a63; --tile-text:#2e2610; --tile-blank:#f3ecd4;
+      --hl:#ffb340; --accent:#e0836f; --badge-bingo:#4caf50; --badge-slot:#e0836f;
+      --item-hover:#2b2a27; --item-active:#3a3527; --item-border:#3a3830;
+      --btn:#2e2c28; --btn-text:#eae6dd; --btn-border:#4a463e;
+      --shadow:0 1px 3px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f2ede3; --panel:#ffffff; --text:#22201c; --muted:#6b665c;
+    --board-bg:#cfc7b5; --cell:#e3ddcf; --line:#b8b09d;
+    --tws:#c2453a; --dws:#e8a7a7; --tls:#2b5ea7; --dls:#a9c6e8;
+    --tile:#f6e7c1; --tile-edge:#d9c48f; --tile-text:#3a2f14; --tile-blank:#fdf6df;
+    --hl:#ff9f1c; --accent:#8a1f1f; --badge-bingo:#2e7d32; --badge-slot:#8a1f1f;
+    --item-hover:#f3efe6; --item-active:#f8ead0; --item-border:#e2dccd;
+    --btn:#efeadd; --btn-text:#22201c; --btn-border:#c9c2b1;
+    --shadow:0 1px 3px rgba(0,0,0,.12);
+  }
+  :root[data-theme="dark"]{
+    --bg:#191817; --panel:#22211f; --text:#eae6dd; --muted:#a29b8d;
+    --board-bg:#2c2a26; --cell:#38352f; --line:#4a463e;
+    --tws:#a53a31; --dws:#8a5555; --tls:#31589a; --dls:#48628a;
+    --tile:#e8d7a8; --tile-edge:#b09a63; --tile-text:#2e2610; --tile-blank:#f3ecd4;
+    --hl:#ffb340; --accent:#e0836f; --badge-bingo:#4caf50; --badge-slot:#e0836f;
+    --item-hover:#2b2a27; --item-active:#3a3527; --item-border:#3a3830;
+    --btn:#2e2c28; --btn-text:#eae6dd; --btn-border:#4a463e;
+    --shadow:0 1px 3px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+  body{padding:16px; max-width:1180px; margin:0 auto;}
+
+  header h1{font-size:clamp(1.25rem,3.5vw,1.7rem); letter-spacing:.02em;}
+  header .anchors{margin-top:6px; display:flex; flex-wrap:wrap; gap:6px 14px;
+    font-size:.9rem; color:var(--muted);}
+  header .anchors b{color:var(--text); font-family:ui-monospace,Menlo,Consolas,monospace;}
+  header .split{margin-top:4px; font-size:.9rem; color:var(--muted);}
+  header .split b{color:var(--text);}
+
+  main{display:flex; gap:18px; margin-top:16px; align-items:flex-start;}
+  .left{flex:0 1 auto; min-width:0;}
+  .right{flex:1 1 300px; min-width:260px;}
+
+  /* --- bord --- */
+  .board-wrap{width:min(92vw,600px);}
+  .board{display:grid; grid-template-columns:repeat(15,1fr);
+    gap:2px; background:var(--board-bg); border:4px solid var(--board-bg);
+    border-radius:8px; box-shadow:var(--shadow); user-select:none;}
+  .sq{position:relative; aspect-ratio:1; background:var(--cell); border-radius:2px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:min(2.2vw,13px); font-weight:700; color:var(--muted); overflow:hidden;}
+  .sq.tws{background:var(--tws); color:var(--prem-text-dark);}
+  .sq.dws{background:var(--dws); color:#5c2020;}
+  .sq.tls{background:var(--tls); color:var(--prem-text-dark);}
+  .sq.dls{background:var(--dls); color:#1e3a5c;}
+  .sq.center{background:var(--dws); color:#5c2020; font-size:min(3.4vw,20px);}
+  .sq .prem{pointer-events:none;}
+
+  .tile{position:absolute; inset:4%; background:var(--tile); border-radius:12%;
+    border:1px solid var(--tile-edge);
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.25);
+    display:flex; align-items:center; justify-content:center;}
+  .tile .tl{font-size:min(3.4vw,21px); font-weight:800; color:var(--tile-text);
+    text-transform:uppercase; line-height:1;}
+  .tile .tv{position:absolute; right:7%; bottom:3%;
+    font-size:min(1.5vw,9px); font-weight:700; color:var(--tile-text); opacity:.85;}
+  .tile.blank{background:var(--tile-blank); border-style:dashed;}
+  .tile.blank::after{content:""; position:absolute; left:9%; top:9%;
+    width:14%; height:14%; border-radius:50%; background:var(--accent);}
+  .tile.last{outline:3px solid var(--hl); outline-offset:-1px;
+    box-shadow:0 0 0 2px var(--hl), 0 0 10px 2px var(--hl),
+      inset 0 -2px 0 rgba(0,0,0,.14); z-index:2;}
+
+  /* --- navigatie --- */
+  .nav{display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .nav button{background:var(--btn); color:var(--btn-text); border:1px solid var(--btn-border);
+    border-radius:8px; font-size:1.15rem; line-height:1; padding:8px 14px; cursor:pointer;
+    box-shadow:var(--shadow);}
+  .nav button:hover{filter:brightness(1.06);}
+  .nav button:active{transform:translateY(1px);}
+  .nav .pos{font-variant-numeric:tabular-nums; font-weight:700; margin-left:4px;}
+  .scorebar{margin-top:10px; display:flex; gap:16px; flex-wrap:wrap; align-items:baseline;}
+  .scorebar .run{font-size:1.35rem; font-weight:800; font-variant-numeric:tabular-nums;}
+  .scorebar .tot{color:var(--muted); font-size:.95rem;}
+  .scorebar .tot b{color:var(--text);}
+  .hint{margin-top:8px; font-size:.78rem; color:var(--muted);}
+
+  /* --- zettenlijst --- */
+  .right h2{font-size:1rem; margin-bottom:8px; display:flex; justify-content:space-between;
+    align-items:baseline;}
+  .right h2 .themebtn{font-size:.75rem; font-weight:400; background:var(--btn);
+    color:var(--btn-text); border:1px solid var(--btn-border); border-radius:6px;
+    padding:3px 8px; cursor:pointer;}
+  .moves{list-style:none; max-height:min(600px,72vh); overflow-y:auto;
+    background:var(--panel); border:1px solid var(--item-border); border-radius:10px;
+    box-shadow:var(--shadow);}
+  .moves li{display:flex; align-items:center; gap:8px; padding:7px 10px;
+    border-bottom:1px solid var(--item-border); cursor:pointer; font-size:.9rem;}
+  .moves li:last-child{border-bottom:none;}
+  .moves li:hover{background:var(--item-hover);}
+  .moves li.active{background:var(--item-active); box-shadow:inset 3px 0 0 var(--hl);}
+  .moves .num{width:2.1em; text-align:right; color:var(--muted);
+    font-variant-numeric:tabular-nums; flex:none;}
+  .moves .words{flex:1 1 auto; min-width:0; overflow-wrap:anywhere;
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.85rem;}
+  .moves .sc{flex:none; font-weight:800; font-variant-numeric:tabular-nums;}
+  .badge{flex:none; font-size:.62rem; font-weight:800; letter-spacing:.05em;
+    padding:2px 6px; border-radius:99px; color:#fff; text-transform:uppercase;}
+  .badge.bingo{background:var(--badge-bingo);}
+  .badge.slot{background:var(--badge-slot);}
+
+  @media (max-width:820px){
+    main{flex-direction:column;}
+    .right{width:100%;}
+    .moves{max-height:44vh;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>MAXGAME record — 4321 punten</h1>
+  <div class="anchors" id="anchors"></div>
+  <div class="split" id="split"></div>
+</header>
+
+<main>
+  <section class="left">
+    <div class="board-wrap"><div class="board" id="board" aria-label="Scrabblebord 15 bij 15"></div></div>
+    <div class="nav">
+      <button id="btnFirst" title="Naar begin">⏮</button>
+      <button id="btnPrev"  title="Vorige zet">◀</button>
+      <button id="btnNext"  title="Volgende zet">▶</button>
+      <button id="btnLast"  title="Naar einde">⏭</button>
+      <span class="pos" id="pos"></span>
+    </div>
+    <div class="scorebar">
+      <span class="run" id="runscore"></span>
+      <span class="tot" id="totscore"></span>
+    </div>
+    <div class="hint">Toetsen: ← vorige · → of spatie volgende · Home/End begin/einde · klik op een zet in de lijst</div>
+  </section>
+
+  <aside class="right">
+    <h2><span>Zetten</span><button class="themebtn" id="themebtn">licht/donker</button></h2>
+    <ol class="moves" id="movelist"></ol>
+  </aside>
+</main>
+
+<script>
+"use strict";
+const DATA = {"title":"MAXGAME record 4321","triple":["geschenkcheques","flexwerkstertje","polymelkzuurtje"],"total":4321,"prep":788,"finals":3533,"letters":[["g","e","s","c","h","e","n","k","c","h","e","q","u","e","s"],["","","i","","","r","","","o","e","d","","i","",""],["","","m","","","v","","","","b","i","n","t","",""],["","","m","a","v","a","","","","","t","","z","",""],["","","e","","a","r","","w","e","d","e","","a","",""],["","","n","","","e","","e","","","n","","a","",""],["","","d","","","n","e","g","","","d","","g","",""],["f","l","e","x","w","e","r","k","s","t","e","r","t","j","e"],["","","","","e","","","n","","","","","","",""],["","","","","n","","","i","","","","","","",""],["","","","","s","","","p","o","f","","","","",""],["","","","","b","","","t","","o","","","","",""],["","a","n","n","o","","","","","n","","","","",""],["","s","","","o","","","","","d","","","","",""],["p","o","l","y","m","e","l","k","z","u","u","r","t","j","e"]],"blanks":[[12,2]],"lm":[[1,1,1,2,1,1,1,1,1,1,1,2,1,1,1],[1,1,1,1,1,3,1,1,1,3,1,1,1,1,1],[1,1,1,1,1,1,2,1,2,1,1,1,1,1,1],[2,1,1,1,1,1,1,2,1,1,1,1,1,1,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,3,1,1,1,3,1,1,1,3,1,1,1,3,1],[1,1,2,1,1,1,2,1,2,1,1,1,2,1,1],[1,1,1,2,1,1,1,1,1,1,1,2,1,1,1],[1,1,2,1,1,1,2,1,2,1,1,1,2,1,1],[1,3,1,1,1,3,1,1,1,3,1,1,1,3,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[2,1,1,1,1,1,1,1,1,1,1,1,1,1,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],"wm":[[3,1,1,1,1,1,1,3,1,1,1,1,1,1,3],[1,2,1,1,1,1,1,1,1,1,1,1,1,2,1],[1,1,2,1,1,1,1,1,1,1,1,1,2,1,1],[1,1,1,2,1,1,1,1,1,1,1,2,1,1,1],[1,1,1,1,2,1,1,1,1,1,2,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,1,1,1,1,1,1,2,1,1,1,1,1,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,1,1,1,2,1,1,1,1,1,2,1,1,1,1],[1,1,1,2,1,1,1,1,1,1,1,2,1,1,1],[1,1,2,1,1,1,1,1,1,1,1,1,2,1,1],[1,2,1,1,1,1,1,1,1,1,1,1,1,2,1],[3,1,1,1,1,1,1,3,1,1,1,1,1,1,3]],"moves":[{"cells":[[7,4],[7,5],[7,6],[7,7],[7,8],[7,9],[7,10]],"score":84,"words":["wegknip"],"slot":false,"bingo":true},{"cells":[[8,4]],"score":6,"words":["we"],"slot":false,"bingo":false},{"cells":[[9,4]],"score":8,"words":["wed"],"slot":false,"bingo":false},{"cells":[[10,0],[10,1],[10,2],[10,3],[10,4],[10,5],[10,6]],"score":88,"words":["editend","wede"],"slot":false,"bingo":true},{"cells":[[9,2]],"score":4,"words":["bi"],"slot":false,"bingo":false},{"cells":[[11,2]],"score":5,"words":["bin"],"slot":false,"bingo":false},{"cells":[[12,0],[12,1],[12,2],[12,3],[12,4],[12,5],[12,6]],"score":94,"words":["uitzaag","bint"],"slot":false,"bingo":true},{"cells":[[6,6]],"score":5,"words":["eg"],"slot":false,"bingo":false},{"cells":[[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[5,6]],"score":73,"words":["ervaren","neg"],"slot":false,"bingo":true},{"cells":[[4,3]],"score":5,"words":["va"],"slot":false,"bingo":false},{"cells":[[3,3]],"score":12,"words":["ava"],"slot":false,"bingo":false},{"cells":[[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6]],"score":89,"words":["simmend","mava"],"slot":false,"bingo":true},{"cells":[[5,7]],"score":13,"words":["ervarene"],"slot":false,"bingo":false},{"cells":[[4,7]],"score":6,"words":["we"],"slot":false,"bingo":false},{"cells":[[4,8],[4,9],[4,10],[4,11],[4,12],[4,13],[4,14]],"score":84,"words":["wensboom"],"slot":false,"bingo":true},{"cells":[[7,11]],"score":19,"words":["wegknipt"],"slot":false,"bingo":false},{"cells":[[4,4]],"score":16,"words":["ar","va"],"slot":false,"bingo":false},{"cells":[[12,7]],"score":16,"words":["uitzaagt"],"slot":false,"bingo":false},{"cells":[[2,7]],"score":14,"words":["simmende"],"slot":false,"bingo":false},{"cells":[[6,7]],"score":14,"words":["werk","er"],"slot":false,"bingo":false},{"cells":[[8,10]],"score":4,"words":["po"],"slot":false,"bingo":false},{"cells":[[9,10]],"score":8,"words":["pof"],"slot":false,"bingo":false},{"cells":[[9,11],[9,12],[9,13]],"score":8,"words":["fond"],"slot":false,"bingo":false},{"cells":[[9,14]],"score":12,"words":["fondu"],"slot":false,"bingo":false},{"cells":[[10,14],[11,14]],"score":10,"words":["uur"],"slot":false,"bingo":false},{"cells":[[8,14]],"score":14,"words":["zuur"],"slot":false,"bingo":false},{"cells":[[8,1],[9,1]],"score":12,"words":["oed","eb"],"slot":false,"bingo":false},{"cells":[[10,7]],"score":11,"words":["editende"],"slot":false,"bingo":false},{"cells":[[3,12]],"score":2,"words":["no"],"slot":false,"bingo":false},{"cells":[[1,12],[2,12]],"score":8,"words":["anno"],"slot":false,"bingo":false},{"cells":[[5,14]],"score":4,"words":["me"],"slot":false,"bingo":false},{"cells":[[6,14]],"score":7,"words":["mel"],"slot":false,"bingo":false},{"cells":[[8,0]],"score":6,"words":["co"],"slot":false,"bingo":false},{"cells":[[1,13]],"score":6,"words":["as"],"slot":false,"bingo":false},{"cells":[[4,0]],"score":5,"words":["he"],"slot":false,"bingo":false},{"cells":[[6,0]],"score":6,"words":["hen"],"slot":false,"bingo":false},{"cells":[[1,14]],"score":4,"words":["aso"],"slot":false,"bingo":false},{"cells":[[1,0]],"score":3,"words":["es"],"slot":false,"bingo":false},{"cells":[[9,7]],"score":3,"words":["te"],"slot":false,"bingo":false},{"cells":[[0,7],[1,7],[3,7],[8,7],[11,7],[13,7],[14,7]],"score":509,"words":["flexwerkstertje"],"slot":true,"bingo":false},{"cells":[[0,0],[3,0],[7,0],[9,0],[11,0],[13,0],[14,0]],"score":1732,"words":["geschenkcheques","heb"],"slot":true,"bingo":false},{"cells":[[0,14],[2,14],[3,14],[7,14],[12,14],[13,14],[14,14]],"score":1292,"words":["polymelkzuurtje"],"slot":true,"bingo":false}]};
+
+/* dutch2026 letterwaardes */
+const VAL = {a:1,b:3,c:5,d:2,e:1,f:4,g:3,h:4,i:1,j:4,k:3,l:3,m:3,n:1,o:1,
+             p:3,q:10,r:2,s:2,t:2,u:4,v:4,w:5,x:8,y:8,z:4};
+
+const N = 15, M = DATA.moves.length;
+
+/* --- afgeleide data --- */
+const blankSet = new Set(DATA.blanks.map(([x,y]) => x + "," + y));
+const placedBy = new Map();                 // "x,y" -> zetindex (0-based)
+DATA.moves.forEach((mv,i) => mv.cells.forEach(([x,y]) => placedBy.set(x+","+y, i)));
+const cum = [0];                            // cum[k] = score t/m zet k
+DATA.moves.forEach((mv,i) => cum.push(cum[i] + mv.score));
+
+/* --- header --- */
+{
+  const mult = {geschenkcheques:"×27", flexwerkstertje:"×9", polymelkzuurtje:"×27"};
+  document.getElementById("anchors").innerHTML = DATA.triple
+    .map(w => `<span><b>${w}</b> ${mult[w] || ""}</span>`).join("");
+  document.getElementById("split").innerHTML =
+    `Voorbereiding <b>${DATA.prep}</b> + slotzetten <b>${DATA.finals}</b> = <b>${DATA.total}</b> punten in ${M} zetten`;
+}
+
+/* --- bord opbouwen --- */
+const boardEl = document.getElementById("board");
+const cellEls = [];                         // [y][x]
+for (let y = 0; y < N; y++) {
+  cellEls.push([]);
+  for (let x = 0; x < N; x++) {
+    const sq = document.createElement("div");
+    const lm = DATA.lm[y][x], wm = DATA.wm[y][x];
+    let cls = "sq", label = "";
+    if (x === 7 && y === 7)      { cls += " center"; label = "★"; }
+    else if (wm === 3)           { cls += " tws";    label = "3W"; }
+    else if (wm === 2)           { cls += " dws";    label = "2W"; }
+    else if (lm === 3)           { cls += " tls";    label = "3L"; }
+    else if (lm === 2)           { cls += " dls";    label = "2L"; }
+    sq.className = cls;
+    if (label) sq.innerHTML = `<span class="prem">${label}</span>`;
+    const key = x + "," + y;
+    if (placedBy.has(key)) {
+      const letter = DATA.letters[y][x];
+      const blank = blankSet.has(key);
+      const tile = document.createElement("div");
+      tile.className = "tile" + (blank ? " blank" : "");
+      tile.innerHTML = `<span class="tl">${letter}</span>` +
+        (blank ? "" : `<span class="tv">${VAL[letter] ?? ""}</span>`);
+      tile.dataset.move = placedBy.get(key);
+      tile.style.display = "none";
+      sq.appendChild(tile);
+    }
+    boardEl.appendChild(sq);
+    cellEls[y].push(sq);
+  }
+}
+const tiles = Array.from(boardEl.querySelectorAll(".tile"));
+
+/* --- zettenlijst --- */
+const listEl = document.getElementById("movelist");
+const itemEls = [];
+DATA.moves.forEach((mv, i) => {
+  const li = document.createElement("li");
+  li.innerHTML =
+    `<span class="num">${i+1}.</span>` +
+    `<span class="words">${mv.words.join(" + ")}</span>` +
+    (mv.bingo ? `<span class="badge bingo">bingo</span>` : "") +
+    (mv.slot  ? `<span class="badge slot">slotzet</span>` : "") +
+    `<span class="sc">${mv.score}</span>`;
+  li.addEventListener("click", () => setState(i + 1));
+  listEl.appendChild(li);
+  itemEls.push(li);
+});
+
+/* --- spelstand --- */
+let k = M;                                  // toon standaard het eindbord
+function setState(nk) {
+  k = Math.max(0, Math.min(M, nk));
+  for (const t of tiles) {
+    const mi = +t.dataset.move;
+    t.style.display = (mi < k) ? "" : "none";
+    t.classList.toggle("last", mi === k - 1);
+  }
+  itemEls.forEach((li, i) => li.classList.toggle("active", i === k - 1));
+  if (k > 0) itemEls[k - 1].scrollIntoView({block:"nearest"});
+  document.getElementById("pos").textContent = `zet ${k}/${M}`;
+  document.getElementById("runscore").textContent = `${cum[k]} punten`;
+  document.getElementById("totscore").innerHTML =
+    `eindtotaal <b>${DATA.total}</b>` + (k < M ? ` · nog ${DATA.total - cum[k]} te gaan` : ` · klaar!`);
+}
+
+/* --- navigatie --- */
+document.getElementById("btnFirst").addEventListener("click", () => setState(0));
+document.getElementById("btnPrev") .addEventListener("click", () => setState(k - 1));
+document.getElementById("btnNext") .addEventListener("click", () => setState(k + 1));
+document.getElementById("btnLast") .addEventListener("click", () => setState(M));
+window.addEventListener("keydown", e => {
+  if (e.target.tagName === "BUTTON" && e.key === " ") return;
+  switch (e.key) {
+    case "ArrowRight": case " ": e.preventDefault(); setState(k + 1); break;
+    case "ArrowLeft":  e.preventDefault(); setState(k - 1); break;
+    case "Home":       e.preventDefault(); setState(0); break;
+    case "End":        e.preventDefault(); setState(M); break;
+  }
+});
+
+/* --- thematoggle --- */
+document.getElementById("themebtn").addEventListener("click", () => {
+  const r = document.documentElement;
+  const dark = r.dataset.theme
+    ? r.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme = dark ? "light" : "dark";
+});
+
+setState(M);
+</script>
+</body>
+</html>
