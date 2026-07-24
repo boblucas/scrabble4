@@ -35,7 +35,7 @@ impl Solver{
 // per-attempt mutabele staat
 struct St{ g:[[u8;15];15], free:[i64;27], m0:Vec<usize>, m7:Vec<usize>, m14:Vec<usize>,
            inm0:[bool;15], inm7:[bool;15], inm14:[bool;15],
-           blanks:Vec<(usize,usize)>, ntiles:usize }
+           blanks:Vec<(usize,usize)>, ntiles:usize, cap:usize }
 
 fn is_free_row(y:usize)->bool{ (1..=6).contains(&y) || (8..=13).contains(&y) }
 
@@ -118,7 +118,7 @@ fn place(s:&Solver, st:&mut St, word:&[u8], x:i32, y:i32, h:bool, maxb:i64)->Opt
     let mut deficit=[0i64;27]; let mut dtot=0i64;
     for c in 1..27 { let d=(need[c]-st.free[c].max(0)).max(0); if d>0 { deficit[c]=d; dtot+=d; } }
     if dtot>maxb || (st.blanks.len() as i64)+dtot>2 { return None; }
-    if st.ntiles+newc.len()>80 { return None; }
+    if st.ntiles+newc.len()>st.cap { return None; }
     let mut newblanks:Vec<(usize,usize)>=Vec::new();
     if dtot>0 {
         let mut left=deficit;
@@ -228,7 +228,8 @@ fn dfs(s:&Solver, st:&mut St, rng:&mut Rng, depth:i32, t0:&Instant, tl_ms:u128, 
 fn attempt(s:&Solver, m0:&[usize], m14:&[usize], m7:&[usize], seed:u64, tl_ms:u128, valbias:bool,
            pre:Option<(&[[u8;15];15],&Vec<(usize,usize)>)>)->Option<([[u8;15];15],Vec<(usize,usize)>)>{
     let mut st=St{ g:[[0u8;15];15], free:[0i64;27], m0:m0.to_vec(),m7:m7.to_vec(),m14:m14.to_vec(),
-        inm0:[false;15],inm7:[false;15],inm14:[false;15], blanks:Vec::new(), ntiles:0 };
+        inm0:[false;15],inm7:[false;15],inm14:[false;15], blanks:Vec::new(), ntiles:0,
+        cap: 101usize.saturating_sub(m0.len()+m7.len()+m14.len()) };
     for &c in m0 {st.inm0[c]=true;} for &c in m7 {st.inm7[c]=true;} for &c in m14 {st.inm14[c]=true;}
     for c in 1..27 { st.free[c]=s.bag[c]; }
     for c in 0..15 { st.free[s.r0[c] as usize]-=1; st.free[s.r7[c] as usize]-=1; st.free[s.r14[c] as usize]-=1; }

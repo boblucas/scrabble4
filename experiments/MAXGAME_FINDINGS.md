@@ -84,3 +84,24 @@ rustc -O -C target-cpu=native experiments/mg_full.rs -o experiments/mg_full_bin
 - Een geldige klasse-UB voor deze triple-familie bestaat nog niet (de scherpe route is
   bord-conditionele exactheid + exhaustie over enumereerbare dimensies zoals maskercombo's).
 - LNS-ladder met beam-128-evaluatie (loopt) — dichtere ranking kan de buurt verder openen.
+
+## Addendum (2026-07-24): maskergroottes + bouwcuratrixjes-eliminatie
+
+**Maskergrootte-aanname gevalideerd.** Variabele maskers (3-7 cellen per slotzet) toegevoegd aan
+de pipeline (`MGSIZES`, per rij instelbaar; tegel-cap dynamisch 101−Σ|masker|):
+- size-5 op de record-triple: **bestaat niet** (geen pre-run-legale configuratie);
+- pure size-6: prep-record 818 maar finals −458 (bingo's + DLS-dekking weg) → netto veel slechter;
+- gemengd (alleen rij 7 kleiner): top 4266 (prep 809, finals 3457) → −55 t.o.v. record.
+Masker=7 is dus optimaal voor de record-triple.
+
+**Bouwcuratrixjes-familie (rank 1) definitief geëlimineerd — via de maskergrootte-ontdekking.**
+De connectiviteits-analyse (`mg_connect_analysis.py`: per (kolom,rij) exhaustief uit het lexicon
+of een verticale verbinding bestaat; noodzakelijke voorwaarde per segment) toonde: rij 0 heeft
+maar 6 legale maskers; totaal 18.600 combo's. De EXHAUSTIEVE sweep daarover (25.028 gesloten
+borden!) onthulde: de familie sluit WÉL — de oude "onbouwbaarheid" was een artefact van de
+masker=7-aanname — maar **max finals over alle combo's = 3319** en top-totaal 4000. Zelfs met
+record-klasse prep (~790) en exacte-DP-polish blijft het plafond ~4160, ruim 150 onder 4321.
+De proxy-"jackpot" (kern 3884) bestond nooit: die maskers zijn pre-run-illegaal.
+
+Dit valideert het eliminatieladder-patroon voor een toekomstig optimaliteitsbewijs:
+per familie (exhaustieve finals-max over de maskerruimte) + (prep-bovengrens) < 4321 ⇒ familie weg.

@@ -16,16 +16,35 @@ def prl(w,m):
         while j+1<len(pre) and pre[j+1]==pre[j]+1:j+=1
         out.append(list(range(pre[i],pre[j]+1)));i=j+1
     return out
+import os as _os
+def _sizes(key): return [int(x) for x in _os.environ.get(key,_os.environ.get('MGSIZES','7')).split(',')]
+SIZES=None  # per-aanroep gezet
 def topm(w,ok,forced,mult,k):
-    base=sum(val[c] for c in w);cands=[];nf=7-len(forced);pool=[c for c in range(15) if c not in forced]
-    for e in combinations(pool,nf):
-        m=forced|set(e);runs=prl(w,m)
-        if not all(len(s)==1 or isw(w[s[0]:s[-1]+1]) for s in runs):continue
-        if not all(len(s)>=2 or w[s[0]] in ok for s in runs):continue
-        sc=mult*(base+sum(val[w[cc]] for cc in (3,11) if cc in m))+50
-        cands.append((sc,tuple(sorted(m))))
-    cands.sort(reverse=True);return cands[:k]
-m0s=topm(R0,after_ok,{0,7,14},27,8);m14s=topm(R14,before_ok,{0,7,14},27,8);m7s=topm(R7,after_ok,{0,14},9,8)
+    global SIZES
+    # maskergrootte variabel (MGSIZES): kleiner masker = geen +50 bingo maar meer prep-cellen.
+    base=sum(val[c] for c in w);cands=[];pool=[c for c in range(15) if c not in forced]
+    for size in SIZES:
+        nf=size-len(forced)
+        if nf<0: continue
+        for e in combinations(pool,nf):
+            m=forced|set(e);runs=prl(w,m)
+            if not all(len(s)==1 or isw(w[s[0]:s[-1]+1]) for s in runs):continue
+            if not all(len(s)>=2 or w[s[0]] in ok for s in runs):continue
+            sc=mult*(base+sum(val[w[cc]] for cc in (3,11) if cc in m))+(50 if size==7 else 0)
+            cands.append((sc,tuple(sorted(m))))
+    cands.sort(reverse=True)
+    # dedup + spreiding over groottes: neem per grootte de top-(k//len(SIZES)+1)
+    bysize={}
+    for sc,m in cands: bysize.setdefault(len(m),[]).append((sc,m))
+    out=[]
+    per=max(1,k//max(1,len(SIZES)))
+    for size in SIZES:
+        out+=bysize.get(size,[])[:per]
+    out.sort(reverse=True)
+    return out[:k]
+SIZES=_sizes('MGSIZES0');m0s=topm(R0,after_ok,{0,7,14},27,8)
+SIZES=_sizes('MGSIZES14');m14s=topm(R14,before_ok,{0,7,14},27,8)
+SIZES=_sizes('MGSIZES7');m7s=topm(R7,after_ok,{0,14},9,8)
 combos=sorted([(s0+s14+s7,m0,m14,m7) for s0,m0 in m0s for s14,m14 in m14s for s7,m7 in m7s],reverse=True)[:MAXC]
 for sc,m0,m14,m7 in combos:
     print(f"{','.join(map(str,m0))} {','.join(map(str,m14))} {','.join(map(str,m7))}")
