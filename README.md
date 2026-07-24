@@ -1,5 +1,8 @@
 # scrabble4 — maximale-score-onderzoek op het dutch2026-lexicon
 
+**🎯 [Interactieve record-viewer →](https://boblucas.github.io/scrabble4/)** — stap zet voor zet door
+het 4321-punten-recordspel én de bewezen-optimale 2102-punten-beurt.
+
 Onderzoek naar twee extremale Scrabble-vragen op een standaard 15×15-bord (dutch2026-lexicon,
 102 stenen incl. 2 blanco's):
 
