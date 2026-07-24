@@ -152,7 +152,7 @@ def add_hint(mh, cells, grid, Ltail, newly):
 def verify(word, mask, grid):
     turn = ''.join(c.upper() if i in set(mask) else c.lower() for i, c in enumerate(word))
     mask_b = [turn[x].isupper() for x in range(W)]
-    r2 = V.construct_rules('dutch', B)
+    r2 = V.construct_rules(os.environ.get('N15_LANG', 'dutch'), B)
     blank, info = wc.derive_blanks(r2, grid, mask_b, W, H)
     if blank is None:
         return False, None, {'fail': f'blank: {info}'}
