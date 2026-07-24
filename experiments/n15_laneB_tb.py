@@ -13,7 +13,7 @@ import multiprocessing as mp
 
 ROOT = '/home/bob/programming/scrabble4'
 LEDGER_DIR = f'{ROOT}/experiments/results/oracle_parallel'
-WORD = 'geschenkcheques'
+WORD = os.environ.get('N15_WORD', 'geschenkcheques')
 
 
 def _init(word, mask, vfloor, cap):
