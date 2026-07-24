@@ -165,8 +165,14 @@ def run_mask(word, mask, lb, cap, workers, save=True, recheck_unknown=False,
     mc = T.main_const(word, mask)
     vfloor = lb - mc
     ubm = int(os.environ.get('UB_MASK', UB_ANALYTIC))    # per-mask analytic UB (caller-supplied)
-    assert lb >= ubm - 27, \
-        f"lb {lb} < UB_mask {ubm} - 27: turn-blank exclusion fails (boards <= UB-27 cannot BEAT lb) -- use the TB-extended oracle"
+    if os.environ.get('TB_COMPANION') == '1':
+        # SOUND alleen met laneB als metgezel op dezelfde lb: laneB dekt de turn-blank-slice
+        # (nominal-pen > vfloor+27); deze oracle dekt de nominale+verticale-blank-band. Samen compleet.
+        if lb < ubm - 27:
+            print(f"# TB_COMPANION: lb {lb} < UB_mask {ubm}-27 -- turn-blank-borden naar laneB", flush=True)
+    else:
+        assert lb >= ubm - 27, \
+            f"lb {lb} < UB_mask {ubm} - 27: turn-blank exclusion fails (boards <= UB-27 cannot BEAT lb) -- use the TB-extended oracle"
     assert all(c in mask for c in (0, 7, 14)), "27-pt turn-blank argument needs the x27 main"
     avail, _ = T.build_avail(word, mask, int(os.environ.get('RESERVE', '1')))
 
