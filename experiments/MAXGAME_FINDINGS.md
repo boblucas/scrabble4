@@ -105,3 +105,33 @@ De proxy-"jackpot" (kern 3884) bestond nooit: die maskers zijn pre-run-illegaal.
 
 Dit valideert het eliminatieladder-patroon voor een toekomstig optimaliteitsbewijs:
 per familie (exhaustieve finals-max over de maskerruimte) + (prep-bovengrens) < 4321 ⇒ familie weg.
+
+## Optimaliteitsbewijs: status en gemeten muren (2026-07-24)
+
+**Pijler 1 — frame-lemma (RIGOUREUS, af):** finals-mains ≤ 4005 (zak-gerelaxeerd); de
+(3,3,2)-TWS-partitie is bewijsbaar optimaal (beste alternatief ≥300 lager); center-lemma:
+de lijn-7-slotzet krijgt nooit ×18 (zet 1 dekt het center en kan geen 15-lijn voltooien).
+Hoogste lijn-waarde in het lexicon: `croquemboucheje` (63).
+
+**Pijler 2 — sound extra-bovengrens (E*): DRIE relaxaties gemeten, alle ≥2-3× realiteit:**
+1. Per-cel-kruisrelaxatie: F*(rank13)=5829 vs gerealiseerd 3559 (7 cellen claimen elk de q).
+2. Lexicon-ketting-DP: kettingen zelf mooi gecapt (`fox→…→foxysten`, 135 kaal voor 8 tegels,
+   nesting-diepte ~6) — maar elke tegel scoort in TWEE richtingen en sound-separabel telt beide
+   vol: extra-UB ≈ 2000+ vs gerealiseerd 896.
+3. Per-tegel-dieptebound: zelfde probleem, ×wm-stapeling maakt het erger.
+**Structurele conclusie:** de maxgame-score is orde-afhankelijk (ketting-herscoring) — "bordwaarde"
+is zelf al een max over exponentieel veel ordeningen. Elke separabele relaxatie gooit precies de
+verstrengeling weg (gedeelde letters; kruisingen die in beide richtingen op elk moment woorden
+moeten zijn) die de realiteit begrenst. Dit is waarom max-turn (2102) wél bewijsbaar was
+(beurtscore is orde-vrij, per-combinatie beslisbaar) en maxgame fundamenteel moeilijker is.
+
+**Pijler 3 — per-familie mains-max-frontier (exact, masker-legaal, center-lemma):** loopt;
+gecached per (woord,rol). Dit is de rigoureuze per-familie-component; met de gemeten E*-muur
+volstaat hij niet voor massa-eliminatie, wel voor het uitsluiten van de staart en het prioriteren
+van exhaustieve per-familie-sweeps (rank1-stijl, 18.600-combo's bewezen haalbaar per familie).
+
+**Eerlijke eindstatus:** een volledig aannamevrij optimaliteitsbewijs vergt per-familie complete
+beslisprocedures (B&B over pre-borden met de exacte decompose-DP als inner) — een
+onderzoeksprogramma van maanden, analoog aan maar zwaarder dan de 2102-campagne. Rigoureus
+staat nu: LB=4321 (geverifieerd spel), frame-structuur afgedwongen, per-familie mains-grenzen,
+en exhaustieve eliminaties van de onderzochte families. Geconjectureerd optimum: ~4330-4360.
