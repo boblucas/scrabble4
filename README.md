@@ -1,7 +1,7 @@
 # scrabble4 — maximale-score-onderzoek op het dutch2026-lexicon
 
 **🎯 [Interactieve record-viewer →](https://boblucas.github.io/scrabble4/)** — stap zet voor zet door
-het 4373-punten-recordspel, de bewezen-optimale Nederlandse 2102-beurt én de bewezen-optimale Engelse (NWL) 1786-beurt.
+het 4399-punten-recordspel, de bewezen-optimale Nederlandse 2102-beurt én de bewezen-optimale Engelse (NWL) 1786-beurt.
 
 Onderzoek naar twee extremale Scrabble-vragen op een standaard 15×15-bord (dutch2026-lexicon,
 102 stenen incl. 2 blanco's):
@@ -14,9 +14,9 @@ Onderzoek naar twee extremale Scrabble-vragen op een standaard 15×15-bord (dutc
    [`experiments/results/english/THEOREM_NWL_1786.md`](experiments/results/english/THEOREM_NWL_1786.md).
 2. **Maxgame**: wat is de hoogst mogelijke totaalscore van een volledig legaal gespeeld spel
    (beide spelers samen, elke tussenstand geldig)?
-   → **4373 punten, huidig record** (letterinvulling bewezen optimaal per voetafdruk via CP-SAT) (volledig bereikbare zetreeks, onafhankelijk geverifieerd).
+   → **4399 punten, huidig record** (letterinvulling bewezen optimaal per voetafdruk via CP-SAT) (volledig bereikbare zetreeks, onafhankelijk geverifieerd).
    Zie [`experiments/MAXGAME_FINDINGS.md`](experiments/MAXGAME_FINDINGS.md) voor het volledige
-   verslag (3974 → 4373, alle hefbomen en negatieve resultaten) en
+   verslag (3974 → 4399, alle hefbomen en negatieve resultaten) en
    [`experiments/results/maxgame_BEST.json`](experiments/results/maxgame_BEST.json) voor het spel zelf.
 
 ## Maxgame-record in het kort
