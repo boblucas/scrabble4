@@ -1,7 +1,9 @@
-# MAXGAME: het maximale-totaalscore-spel (dutch2026) — 3974 → 4319 (+8,7%)
+# MAXGAME: het maximale-totaalscore-spel (dutch2026) — 3974 → 4328 (+8,9%)
 
 **Resultaat:** het hoogste bekende volledig-bereikbare Scrabble-spel (beide spelers gecombineerd,
-dutch2026-lexicon): **4319 punten** — `geschenkcheques` (rij 0, ×27) / `flexwerkstertje` (rij 7, ×9)
+dutch2026-lexicon): **4328 punten** (stand 2026-07-25; het intro hieronder beschrijft de 4319-fase)
+
+(historisch intro:) **4319 punten** — `geschenkcheques` (rij 0, ×27) / `flexwerkstertje` (rij 7, ×9)
 / `polymelkzuurtje` (rij 14, ×27), 40 zetten, 101 tegels, 1 blanco, elke tussenstand legaal,
 onafhankelijk geverifieerd door de Python-arbiter `score_game`. Zie `results/RECORD_4319.txt`
 (leesbaar) en `results/maxgame_BEST.json` (machine-leesbaar, her-verifieerbaar).
