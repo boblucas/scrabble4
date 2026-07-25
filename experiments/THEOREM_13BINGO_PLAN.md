@@ -37,3 +37,12 @@ moet >=1 BINNEN-verticaal-kop bevatten (kolom 4-6 links, 8-11 rechts; binnen = w
 geankerd). Buiten-verticalen (1-3, 12-13) wortelen alleen via een aaneengesloten pre-brug naar
 zo'n kop op hetzelfde eiland. Dit verklaart de 73k order-fails van v2 (koppen zonder wortel) en
 is een scherpe snoeiregel + bewijscomponent voor fase B.
+
+## Triplet-alternatieven binnen 50 punten (blanco-bewust, 2026-07-25)
+M_huidig=2880 (27/9/27-gewogen, blanco-degradatie). 520 opties binnen -50; toppers (sterke
+binnen-kolommen omhoog+omlaag, frag-dichtheid, anker-delta):
+- hypochlorigzuur x jacquardweefsel: 12 sterk (vs 9 nu), delta +54 (BETER op beide assen!)
+- cyberhuwelijkje x quizmasterschap: 12 sterk, frag 0.85 (vs 0.70), delta -9
+- gymjuffrouwtjes x quizmasterschap: 12 sterk, +9
+Rij 7 blijft flexwerkstertje (werkster-analoog). Volgende stap: top-3 door de volledige pijplijn
+(bereikbaar 12-bingo-basisspel bouwen met de bestaande chirurgie-machinerie, dan 13e proberen).
