@@ -9,11 +9,14 @@ Onderzoek naar twee extremale Scrabble-vragen op een standaard 15×15-bord (dutc
 1. **Max-turn**: wat is de hoogst mogelijke score van één beurt?
    → **2102 punten, BEWEZEN optimum** (~9,8 miljard combinaties beslist; witness + volledige
    certificaat-keten). Hoofdwoord `geschenkcheques` over drie triple-word-squares (×27).
+   **Engels (NWL): 1786 punten, eveneens BEWEZEN optimum** (`oxyphenbutazone`) — het eerste
+   bewezen Engelse max-turn-optimum; zie
+   [`experiments/results/english/THEOREM_NWL_1786.md`](experiments/results/english/THEOREM_NWL_1786.md).
 2. **Maxgame**: wat is de hoogst mogelijke totaalscore van een volledig legaal gespeeld spel
    (beide spelers samen, elke tussenstand geldig)?
    → **4328 punten, huidig record** (letterinvulling bewezen optimaal per voetafdruk via CP-SAT) (volledig bereikbare zetreeks, onafhankelijk geverifieerd).
    Zie [`experiments/MAXGAME_FINDINGS.md`](experiments/MAXGAME_FINDINGS.md) voor het volledige
-   verslag (3974 → 4321, alle hefbomen en negatieve resultaten) en
+   verslag (3974 → 4328, alle hefbomen en negatieve resultaten) en
    [`experiments/results/maxgame_BEST.json`](experiments/results/maxgame_BEST.json) voor het spel zelf.
 
 ## Maxgame-record in het kort
