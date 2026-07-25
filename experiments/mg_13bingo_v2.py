@@ -35,19 +35,26 @@ def runs_ok(pl,word):
         if j>i and not isw(word[cs[i]:cs[j]+1]): return False
         i=j+1
     return True
-def deliverable(placed,word,todo,seq):
-    """DFS: plaats atomaire blokken (1-3 kolommen, samen met bestaand aaneengesloten span,
-    rakend aan placed), elke tussenstand run-geldig. Geeft zetreeks (lijst blokken) of None."""
+def deliverable(placed,word,todo,seq,heads=frozenset()):
+    """DFS over singles-blokken EN koppen: koppen plaatsbaar zonder rij-adjacentie (werkster-rail);
+    singles-blokken (1-3 kol) met rij-adjacentie + gatenvulling. ELKE tussenstand run-geldig."""
     if not todo: return seq
-    tl=sorted(todo)
+    for h in sorted(todo&heads):
+        if not (4<=h<=11) and not (h-1 in placed or h+1 in placed): continue
+        np_=placed|{h}
+        if runs_ok(np_,word):
+            got=deliverable(np_,word,todo-{h},seq+[('H',h)],heads)
+            if got is not None: return got
+    tl=sorted(todo-heads)
+    import itertools as _it
     for size in (1,2,3):
-        for blk in itertools.combinations(tl,size):
+        for blk in _it.combinations(tl,size):
             span=set(range(min(blk),max(blk)+1))
-            if not (span-set(blk)) <= placed: continue          # gaten in de zet gevuld door bestaand
+            if not (span-set(blk)) <= placed: continue
             if not (set(blk)&placed or any((b-1 in placed or b+1 in placed) for b in blk)): continue
             np_=placed|set(blk)
             if not runs_ok(np_,word): continue
-            got=deliverable(np_,word,todo-set(blk),seq+[blk])
+            got=deliverable(np_,word,todo-set(blk),seq+[blk],heads)
             if got is not None: return got
     return None
 @lru_cache(maxsize=None)
@@ -62,10 +69,11 @@ def singles_options(heads,word):
     cand={c for c in cand if 1<=c<=13 and c not in (0,7,14) and c not in H}
     out=[]
     for S in itertools.combinations(sorted(cand),need):
-        seq=deliverable(frozenset(H) and set(H),word,set(S),[])
-        if seq is not None: out.append((S,tuple(tuple(b) for b in seq)))
+        seq=deliverable(set(),word,set(S)|set(H),[],frozenset(H))
+        if seq is not None:
+            out.append((S,tuple(tuple(b) if not (len(b)==2 and b[0]=='H') else b for b in seq)))
     return tuple(out)
-LEDGER='experiments/results/ledger_13bingo_v3.jsonl'
+LEDGER='experiments/results/ledger_13bingo_v4.jsonl'
 done=set()
 if os.path.exists(LEDGER):
     for line in open(LEDGER):
@@ -88,14 +96,17 @@ def hspans(row,vcols):
     return out
 def solve_config(Vt,Vb,S0,seq0,S14,seq14,Hs,tlim=90):
     g=[[0]*15 for _ in range(15)]
-    groups=[[(7,y) for y in range(4,11)],[(c,7) for c in (4,5,6,8,9,10,11)]]
-    for c in Vt: groups.append([(c,y) for y in range(7)])
-    for c in Vb: groups.append([(c,y) for y in range(8,15)])
-    for blk in seq0: groups.append([(c,0) for c in blk])
-    for blk in seq14: groups.append([(c,14) for c in blk])
+    mvpre=[[(7,y) for y in range(4,11)],[(c,7) for c in (4,5,6,8,9,10,11)]]
+    for item in seq0:
+        if len(item)==2 and item[0]=='H': mvpre.append([(item[1],y) for y in range(7)])
+        else: mvpre.append([(c,0) for c in item])
+    for item in seq14:
+        if len(item)==2 and item[0]=='H': mvpre.append([(item[1],y) for y in range(8,15)])
+        else: mvpre.append([(c,14) for c in item])
     for (row,a,L) in Hs:
         occ={7} if (row in (4,5,6) or row in (8,9,10)) else set()
-        groups.append([(x,row) for x in range(a,a+L) if x not in occ])
+        mvpre.append([(x,row) for x in range(a,a+L) if x not in occ])
+    groups=mvpre
     pre0=set(Vt)|set(S0);pre14=set(Vb)|set(S14)
     mask0=sorted(set(range(15))-pre0);mask14=sorted(set(range(15))-pre14)
     fins=[[(c,7) for c in (0,1,2,3,12,13,14)],[(c,0) for c in mask0],[(c,14) for c in mask14]]
