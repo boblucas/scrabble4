@@ -10,9 +10,9 @@ while read -r ub mask; do
   [ "$ub" -le "$LB" ] && continue
   tag=$(echo "$mask" | tr -d ',')
   case ",$SKIP," in *",$tag,"*) echo "mask $mask: OVERGESLAGEN (elders bezig)" >> "$ST"; continue;; esac
-  or_ok=$(grep -l "VERDICT: CERTIFIED" experiments/results/english/oxy_or_${tag}_lb${LB}*.log 2>/dev/null | head -1)
+  or_ok=$(grep -l "VERDICT: CERTIFIED" experiments/results/english/oxy_or_${tag}_lb${LB}*.log experiments/results/english/oxy_or_${tag}_lb1784*.log 2>/dev/null | head -1)
   tb_need=1; [ "$LB" -ge $((ub-27)) ] && tb_need=0
-  tb_ok=$(grep -l "CERTIFIED" experiments/results/english/oxy_tb_${tag}_lb${LB}*.log 2>/dev/null | head -1)
+  tb_ok=$(grep -l "CERTIFIED" experiments/results/english/oxy_tb_${tag}_lb${LB}*.log experiments/results/english/oxy_tb_${tag}_lb1784*.log 2>/dev/null | head -1)
   if [ -n "$or_ok" ] && { [ "$tb_need" -eq 0 ] || [ -n "$tb_ok" ]; }; then
     echo "mask $mask ub=$ub: AL-CERTIFIED" >> "$ST"; continue
   fi
@@ -28,7 +28,7 @@ while read -r ub mask; do
   or2=$(grep -h "VERDICT" experiments/results/english/oxy_or_${tag}_lb${LB}*.log 2>/dev/null | tail -1)
   tb2=$(grep -h "VERDICT" experiments/results/english/oxy_tb_${tag}_lb${LB}*.log 2>/dev/null | tail -1)
   echo "mask $mask ub=$ub: OR[$or2] TB[$tb2]" >> "$ST"
-  if find experiments/results/turns -name "N15_best_1*.json" -mmin -30 2>/dev/null | grep -q .; then
+  if find experiments/results/turns -name "N15_best_1*.json" -newer experiments/results/turns/N15_best_1785.json 2>/dev/null | grep -q .; then
     echo "WITNESS GEVONDEN - runner stopt" >> "$ST"; exit 0
   fi
 done < $TMP/oxy_maskubs_all.txt
