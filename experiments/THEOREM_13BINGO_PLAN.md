@@ -29,3 +29,11 @@ BOT 'F[c]......P[c]': k1:12 k2:38 k3:0(DOOD) k4:74 k5:390 k6:103 k8:3 k9:4 k10:1
 4. Alle configs INFEASIBLE => STELLING: 13 onmogelijk. Anders: witness = nieuw record (12 bingo's
    bestaat: 4435 heeft er 12 incl finals; 13 = +1).
 Pruning: censusdode kolommen, V>=6, adjacente verticalen alleen met 2-woord-tabellen, symmetrie.
+
+## Eiland-lemma (ontdekt 2026-07-25, v3)
+(7,0) en (7,14) zijn ALTIJD maskercellen (TWS in de slotzet) => rij 0 en rij 14 vallen elk uiteen
+in twee bezorg-eilanden: kolommen 1-6 en 8-13. Elke samenhangende pre-component op een ankerrij
+moet >=1 BINNEN-verticaal-kop bevatten (kolom 4-6 links, 8-11 rechts; binnen = werkster/rail-
+geankerd). Buiten-verticalen (1-3, 12-13) wortelen alleen via een aaneengesloten pre-brug naar
+zo'n kop op hetzelfde eiland. Dit verklaart de 73k order-fails van v2 (koppen zonder wortel) en
+is een scherpe snoeiregel + bewijscomponent voor fase B.
