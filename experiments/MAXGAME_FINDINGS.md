@@ -1,7 +1,7 @@
-# MAXGAME: het maximale-totaalscore-spel (dutch2026) — 3974 → 4399 (+10,7%)
+# MAXGAME: het maximale-totaalscore-spel (dutch2026) — 3974 → 4435 (+11,6%)
 
 **Resultaat:** het hoogste bekende volledig-bereikbare Scrabble-spel (beide spelers gecombineerd,
-dutch2026-lexicon): **4399 punten** (stand 2026-07-25, 7e+8e-bingo-doorbraak `ranziger`/`emigrante` — bob's structurele inzichten; het intro hieronder beschrijft de 4319-fase)
+dutch2026-lexicon): **4435 punten** (stand 2026-07-25, 7e+8e-bingo-doorbraak `ranziger`/`emigrante` — bob's structurele inzichten; het intro hieronder beschrijft de 4319-fase)
 
 (historisch intro:) **4319 punten** — `geschenkcheques` (rij 0, ×27) / `flexwerkstertje` (rij 7, ×9)
 / `polymelkzuurtje` (rij 14, ×27), 40 zetten, 101 tegels, 1 blanco, elke tussenstand legaal,
