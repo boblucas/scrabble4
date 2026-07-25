@@ -19,7 +19,7 @@ LM=np.array(r.letter_multiplier);WM=np.array(r.word_multiplier)
 bag=Counter({c:r.counts[c] for c in r.counts})
 bylen={}
 for w in r.words_str: bylen.setdefault(len(w),[]).append(tuple(cba[ch] for ch in w))
-G='geschenkcheques';F='flexwerkstertje';P='polymelkzuurtje'
+G=os.environ.get('T_G','geschenkcheques');F='flexwerkstertje';P=os.environ.get('T_P','polymelkzuurtje')
 CNT8={}
 for c in range(1,14):
     if c==7: continue
@@ -73,7 +73,7 @@ def singles_options(heads,word):
         if seq is not None:
             out.append((S,tuple(tuple(b) if not (len(b)==2 and b[0]=='H') else b for b in seq)))
     return tuple(out)
-LEDGER='experiments/results/ledger_13bingo_v4.jsonl'
+LEDGER=os.environ.get('T_LEDGER','experiments/results/ledger_13bingo_v4.jsonl')
 done=set()
 if os.path.exists(LEDGER):
     for line in open(LEDGER):
