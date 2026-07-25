@@ -417,6 +417,31 @@ fn move_score(sco:&Scorer, s:&Solver, cur:&[[u8;15];15], cells:&[(usize,usize)],
     }
     Some(mscore)
 }
+// volledige-spel-scoorder over een zetlijst (semantiek = Python score_game): per zet score van
+// alle runs door de nieuwe cellen op de TUSSENSTAND; bingo +50 bij 7 nieuwe; geen legaliteits-
+// checks hier (Python-arbiter verifieert het eindresultaat) — alleen exacte score.
+fn full_game_score(sco:&Scorer, s:&Solver, grid:&[[u8;15];15], mvs:&Vec<Vec<(usize,usize)>>,
+                   blanks:&HashSet<(usize,usize)>)->Option<i64>{
+    // semantiek = Python score_game: zet 1 dekt center; elke latere zet raakt eerder gelegde tegels;
+    // alle gevormde runs zijn dict-woorden (via move_score). Python blijft de eindarbiter.
+    let mut cur=[[0u8;15];15]; let mut placed=[[false;15];15]; let mut tot=0i64;
+    for (t,cells) in mvs.iter().enumerate() {
+        if t==0 {
+            if !cells.contains(&(7,7)) { return None; }
+        } else {
+            let touch=cells.iter().any(|&(x,y)|{
+                let nb:[(i32,i32);4]=[(1,0),(-1,0),(0,1),(0,-1)];
+                nb.iter().any(|&(a,b)|{ let nx=x as i32+a; let ny=y as i32+b;
+                    nx>=0&&nx<15&&ny>=0&&ny<15 && placed[ny as usize][nx as usize] })
+            });
+            if !touch { return None; }
+        }
+        for &(x,y) in cells { cur[y][x]=grid[y][x]; placed[y][x]=true; }
+        let cset:HashSet<(usize,usize)>=cells.iter().cloned().collect();
+        match move_score(sco,s,&cur,cells,&cset,blanks){ Some(v)=>tot+=v, None=>return None }
+    }
+    Some(tot)
+}
 type Bits=[u64;4];
 fn bset(b:&mut Bits, x:usize, y:usize){ let i=y*15+x; b[i/64]|=1u64<<(i%64); }
 fn bget(b:&Bits, x:usize, y:usize)->bool{ let i=y*15+x; (b[i/64]>>(i%64))&1==1 }
@@ -582,6 +607,96 @@ fn main(){
                     println!("SCORED {} {} {} {} {} {} {} MV {} BL {}", total, prep, finals, j(&m0), j(&m14), j(&m7), nb, mvenc, blenc);
                 }
             }
+        }
+        return;
+    }
+    // POLISH-modus (bob's onafhankelijkheids-inzicht, Rust-schaal): stdin = SCORED-regels met MV+BL
+    // (volledige zetreeks). Mutaties: (a) 1-tegel-verplaatsing van 1-cel-prepzetten naar elke lege
+    // niet-masker/niet-ankerrij-cel (zet verhuist naar vlak voor de 3 slotzetten); (b) letterruil
+    // tussen twee vrije-rij-cellen. Hill-climb met EXACTE full_game_score; output beste regel.
+    if std::env::var("POLISH").map(|v|v=="1").unwrap_or(false) {
+        for line in lines {
+            let p:Vec<&str>=line.split_whitespace().collect();
+            if p.len()<8 || p[0]!="SCORED" { continue; }
+            let m0=parse_csv(p[4]); let m14=parse_csv(p[5]); let m7=parse_csv(p[6]);
+            let bs=p[7].as_bytes();
+            let mut grid=[[0u8;15];15];
+            for y in 0..15 { for x in 0..15 { let ch=bs[y*15+x]; grid[y][x]= if ch==b'`' {0} else {ch-b'a'+1}; } }
+            for &c in &m0 { grid[0][c]=s.r0[c]; } for &c in &m7 { grid[7][c]=s.r7[c]; } for &c in &m14 { grid[14][c]=s.r14[c]; }
+            let mut maskset:HashSet<(usize,usize)>=HashSet::new();
+            for &c in &m0 { maskset.insert((c,0)); } for &c in &m7 { maskset.insert((c,7)); } for &c in &m14 { maskset.insert((c,14)); }
+            let mvi=p.iter().position(|&t| t=="MV").unwrap_or(0); let bli=p.iter().position(|&t| t=="BL").unwrap_or(0);
+            let mut mvs:Vec<Vec<(usize,usize)>>=Vec::new();
+            if mvi>0 && mvi+1<p.len() && p[mvi+1]!="x" {
+                for seg in p[mvi+1].split(';') {
+                    let mut mv=Vec::new();
+                    for c in seg.split(',') { if c.is_empty(){continue;} let mut it=c.split('.');
+                        if let (Some(a),Some(b))=(it.next(),it.next()) {
+                            if let (Ok(x),Ok(y))=(a.parse::<usize>(),b.parse::<usize>()) { mv.push((x,y)); } } }
+                    if !mv.is_empty() { mvs.push(mv); }
+                }
+            }
+            // slotzetten toevoegen (rij 7,0,14 maskercellen) als ze niet in MV zitten
+            let nslots=3usize;
+            let have_slots = mvs.len()>=nslots && mvs[mvs.len()-1].iter().all(|&(_,y)| y==14);
+            if !have_slots {
+                mvs.push(m7.iter().map(|&c|(c,7)).collect());
+                mvs.push(m0.iter().map(|&c|(c,0)).collect());
+                mvs.push(m14.iter().map(|&c|(c,14)).collect());
+            }
+            let mut blanks:HashSet<(usize,usize)>=HashSet::new();
+            if bli>0 && bli+1<p.len() {
+                for c in p[bli+1].split(',') { if c.is_empty(){continue;} let mut it=c.split('.');
+                    if let (Some(a),Some(b))=(it.next(),it.next()) {
+                        if let (Ok(x),Ok(y))=(a.parse::<usize>(),b.parse::<usize>()) { blanks.insert((x,y)); } } }
+            }
+            let mut cur=match full_game_score(&sco,&s,&grid,&mvs,&blanks){ Some(v)=>v, None=>{ eprintln!("polish: basisscore faalt"); continue } };
+            eprintln!("polish start: {}", cur);
+            loop {
+                let mut best:Option<(i64,[[u8;15];15],Vec<Vec<(usize,usize)>>)>=None;
+                let occ:HashSet<(usize,usize)>=(0..15).flat_map(|y|(0..15).filter(move |_|true).map(move |x|(x,y))).filter(|&(x,y)| grid[y][x]!=0).collect();
+                // (a) 1-tegel-verplaatsingen
+                for mi in 0..mvs.len().saturating_sub(nslots) {
+                    if mvs[mi].len()!=1 { continue; }
+                    let (ox,oy)=mvs[mi][0];
+                    if blanks.contains(&(ox,oy)) { continue; }
+                    let l=grid[oy][ox];
+                    for ty in 0..15usize {
+                        if ty==0||ty==7||ty==14 { continue; }
+                        for tx in 0..15usize {
+                            if occ.contains(&(tx,ty)) || maskset.contains(&(tx,ty)) || (tx,ty)==(ox,oy) { continue; }
+                            let mut g2=grid; g2[oy][ox]=0; g2[ty][tx]=l;
+                            let mut m2=mvs.clone(); m2.remove(mi);
+                            let at=m2.len()-nslots; m2.insert(at, vec![(tx,ty)]);
+                            if let Some(v)=full_game_score(&sco,&s,&g2,&m2,&blanks) {
+                                if v>cur && best.as_ref().map_or(true,|b| v>b.0) { best=Some((v,g2,m2)); }
+                            }
+                        }
+                    }
+                }
+                // (b) letterruil tussen vrije-rij-cellen
+                let freec:Vec<(usize,usize)>=(1..14usize).filter(|&y| y!=7).flat_map(|y|(0..15usize).map(move |x|(x,y)))
+                    .filter(|&(x,y)| grid[y][x]!=0 && !blanks.contains(&(x,y))).collect();
+                for i in 0..freec.len() { for j in i+1..freec.len() {
+                    let (x1,y1)=freec[i]; let (x2,y2)=freec[j];
+                    if grid[y1][x1]==grid[y2][x2] { continue; }
+                    let mut g2=grid; let t=g2[y1][x1]; g2[y1][x1]=g2[y2][x2]; g2[y2][x2]=t;
+                    if let Some(v)=full_game_score(&sco,&s,&g2,&mvs,&blanks) {
+                        if v>cur && best.as_ref().map_or(true,|b| v>b.0) { best=Some((v,g2,mvs.clone())); }
+                    }
+                }}
+                match best {
+                    Some((v,g2,m2))=>{ cur=v; grid=g2; mvs=m2; eprintln!("polish -> {}", cur); }
+                    None=>break
+                }
+            }
+            // output
+            let mut nb=String::new();
+            for y in 0..15 { for x in 0..15 { nb.push(if maskset.contains(&(x,y)) {'`'} else {(b'a'-1+grid[y][x]) as char}); } }
+            let j=|m:&[usize]| m.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+            let mvenc:String=mvs[..mvs.len()-nslots].iter().map(|mv| mv.iter().map(|&(x,y)| format!("{}.{}",x,y)).collect::<Vec<_>>().join(",")).collect::<Vec<_>>().join(";");
+            let blenc:String=blanks.iter().map(|&(x,y)| format!("{}.{}",x,y)).collect::<Vec<_>>().join(",");
+            println!("SCORED {} 0 0 {} {} {} {} MV {} BL {}", cur, j(&m0), j(&m14), j(&m7), nb, mvenc, blenc);
         }
         return;
     }
