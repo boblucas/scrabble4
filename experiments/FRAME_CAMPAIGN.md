@@ -142,3 +142,13 @@ V2-AANWIJZINGEN: kies 2 top-verts (8 + 12), 2 bottom (9 of 8, 11 — NIET beide 
 pre0 zonder 2-3-adjacentie (3-stub + 4-'alt'-ketting maar 2 in mask), westketting alleen indien
 (c,13)-cellen niet boven mask-letters eindigen (check '?+R14[c]'-2-woorden), budget <=101 streng
 tellen VOOR de bouw. Machinerie: mg_roy_topo.py (blanco-model in tail aanwezig).
+
+## ROYALTY-LIJN GESLOTEN (2026-07-26 nacht) + de grote conclusie
+V2-budgettering: kern 29 cellen => max 4 bezorg-verts (56-budget); beide ankerrijen cappen dan op
+7/8 pre-cellen (fragmenten ya/ff/tc/oy dood; geen kettingruimte). Royalty's rijke MIDDEN-tabellen
+compenseren de ANKERRIJ-fragmentarmoede niet. CONCLUSIE VAN DE HELE TRIPLET-ZOEKTOCHT:
+geschenkcheques/flexwerkstertje/polymelkzuurtje heeft UITZONDERLIJKE ankerrij-fragmenten
+(es/hen/he + mel/uur/zuur-clusters) — precies waarom het onze recordhouder is EN waarom bob's
+4819-referentie dezelfde triplet gebruikt (gespiegeld). De frontier is dus: de referentie-
+orientatie (P-boven) dieper verfijnen met ALLE klassen (reftopo-lijn 4224 was gen-2; de
+geschenk-lijn kreeg ~15 generaties tot 4457) OF referentie-details van bob.
