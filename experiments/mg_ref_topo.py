@@ -25,6 +25,8 @@ mv=[
  [(10,y) for y in (3,4,5,6,8,9,10)],                            # x4-vert kol 10 (door e)
  [(x,3) for x in (3,5,6,7,8,9,11)],                             # rij-3-laan (x4: 3,3+11,3)
  [(4,11)],[(10,11)],                                            # exts -> 9-woorden
+ [(11,11)],                                                     # DWS-single aan ext+laan
+]+ {'A':[[(12,1)],[(12,2)]],'B':[[(8,4)],[(3,2)]],'C':[[(8,4)],[(12,1)]],'':[]}[os.environ.get('MODS','')] + [
  [(6,0),(6,1),(6,2)],[(9,0),(9,1),(9,2)],                       # top-stubs (4-runs met laan)
  [(5,0)],[(4,0)],[(10,0),(11,0)],[(8,0)],[(12,0)],              # el/mel/uur/zuur/zuurt
  [(5,y) for y in range(8,15)],                                  # kol-5-bottom-vert (e......e)

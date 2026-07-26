@@ -21,7 +21,7 @@ bag=Counter({c:r.counts[c] for c in r.counts})
 bylen={}
 for w in r.words_str: bylen.setdefault(len(w),[]).append(tuple(cba[ch] for ch in w))
 TLIM=float(sys.argv[1]) if len(sys.argv)>1 else 300
-D=json.load(open('experiments/results/maxgame_BEST.json'))
+D=json.load(open(os.environ.get('MGBASE','experiments/results/maxgame_BEST.json')))
 grid0=D['grid'];moves0=[[tuple(c) for c in m] for m in D['moves']];bl=set(tuple(b) for b in D['blanks'])
 BASE=int(D['total'])
 ANCH={0,7,14}
@@ -152,7 +152,7 @@ def attempt(g,groups,fin,tag):
         print(f"STRUCT {tag} -> {res[0]}",flush=True)
 
 for row in (0,14,7):
-    W={0:'geschenkcheques',7:'flexwerkstertje',14:'polymelkzuurtje'}[row]
+    W={0:''.join(chr(96+grid0[0][x]) for x in range(15)),7:''.join(chr(96+grid0[7][x]) for x in range(15)),14:''.join(chr(96+grid0[14][x]) for x in range(15))}[row]
     mask=maskrow[row];pre=set(range(15))-mask
     for i in sorted(mask-{0,7,14}):  # TWS-kolommen moeten in de slotzet blijven (x27)
         for j in sorted(pre):
