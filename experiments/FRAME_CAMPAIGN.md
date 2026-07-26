@@ -72,3 +72,15 @@ NEXT: lane-weave-generator (H-configs met DWS-paar-dekking verplicht, verticalen
   ~125 punten per 7 tegels; 4-6 hangers per final-rij => +240 per rij => +500-750 totaal. DIT
   schaalt naar 4819. Generator-v2: menu = pre-verts (bezorging) + mask-hangers (oogst) + lanen +
   randen, beide helften vrij; ankering van hangers via buurkolommen = het echte ontwerpprobleem.
+
+## Triplet-ranking-v2 (2026-07-26): waarde x hangers x kolommen x frag
+126.462 kandidaten; HUIDIG = (3315: M2880, hang200, kol9, frag0.70). TOP:
+1. gymjuffrouwtjes / schuldcomplexen / wetenschapsquiz = 3509 (M2952 +72, hang300, kol11, frag0.63)
+   R7-werkster-analoog: 'complexe' (venster kol 6-13!).
+2. quichebuffetjes / whiskyzuipsters / vuurwerkexcesje = 3494 (hang350!)
+3. gymjuffrouwtjes / hyperexclusieve / wetenschapsquiz = 3470
+GENERATOR-V2-SPEC: mg_13bingo_v2-machinerie als basis met (a) werkster-VENSTER geparametriseerd
+([a,a+7] uit R7-analoog i.p.v. vast [4,11]; pre7-interval volgt venster), (b) V-tellingen vrij
+(12-bingo-configs toegestaan: score-objectief beslist, niet de 13-eis), (c) hanger-groepen
+(6-cel-verticalen rijen 1-6 op mask0-kolommen met geneste tabellen; oogst via finals),
+(d) F/G/P uit env (al aanwezig). Draai op top-3 tripletten; elke SAT = compleet geverifieerd spel.
