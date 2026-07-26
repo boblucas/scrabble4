@@ -17,8 +17,11 @@ bag=Counter({c:r.counts[c] for c in r.counts})
 bylen={}
 for w in r.words_str: bylen.setdefault(len(w),[]).append(tuple(cba[ch] for ch in w))
 import os as _os
-G='geschenkcheques';F='flexwerkstertje';P='polymelkzuurtje'
+G=_os.environ.get('T_G','geschenkcheques');F=_os.environ.get('T_F','flexwerkstertje');P=_os.environ.get('T_P','polymelkzuurtje')
 if _os.environ.get('ORIENT')=='P': G,P=P,G
+WIN=tuple(int(x) for x in _os.environ.get('WIN','4,11').split(','))
+V4COLS=tuple(int(x) for x in _os.environ.get('V4COLS','4,10').split(','))
+STUBS=tuple(int(x) for x in _os.environ.get('STUBS','2,12').split(','))
 def runs_ok(pl,word):
     cs=sorted(pl);i=0
     while i<len(cs):
@@ -51,42 +54,38 @@ def try_config(vspan,lane,Vb,tlim=600):
     # vspan: (r0,r1) voor beide x4-verts (3,10) of (4,11); lane: 3/11/None; Vb: bottom-verts
     g=[[0]*15 for _ in range(15)]
     gaskast=[(7,y) for y in range(4,11)]
-    werk=[(c,7) for c in (4,5,6,8,9,10,11)]
-    v4a=[(4,y) for y in range(vspan[0],vspan[1]+1) if y!=7]
-    v4b=[(10,y) for y in range(vspan[0],vspan[1]+1) if y!=7]
+    werk=[(c,7) for c in range(WIN[0],WIN[1]+1) if c!=7]
+    v4a=[(V4COLS[0],y) for y in range(vspan[0],vspan[1]+1) if y!=7]
+    v4b=[(V4COLS[1],y) for y in range(vspan[0],vspan[1]+1) if y!=7]
     core=[gaskast,werk,v4a,v4b]
     lg=[]
     if lane is not None:
-        occ={(x,lane) for x in (4,10)} if (vspan[0]<=lane<=vspan[1]) else set()
+        occ={(x,lane) for x in V4COLS} if (vspan[0]<=lane<=vspan[1]) else set()
         newc=[(x,lane) for x in range(3,12) if (x,lane) not in occ]
         if len(newc)!=7: return ('laan-arith',len(newc))
         lg=[newc]
-    topv=[[(c,y) for y in range(3)] for c in (2,12)]
+    topv=[]
+    for c in sorted(set(int(x) for x in os.environ.get('PRE0','2,3,4,8,9,10,11,12').split(','))):
+        if c==V4COLS[0] or c==V4COLS[1]:
+            topv.append([(c,0),(c,1)])   # ministub boven de vert (gat rij 2)
+        else:
+            topv.append([(c,0),(c,1)])
     botv=[[(c,y) for y in range(8,15)] for c in Vb]
     # rij-0: pre0 = {2,12}-koppen + singles via DFS
     s0=deliver(G,{2,12},set())
     pre0={2,12}
     cand0=sorted({c for h in pre0 for c in (h-1,h+1)}|{c+d for c in {1,3,11,13} for d in (0,)} )
     # kies singles0: 6 nodig (8 pre - 2 koppen); DFS over kandidaten
-    opts0=[]
-    for S0 in itertools.combinations([c for c in range(1,14) if c not in (0,7,14) and c not in pre0],6):
-        if not ({s for s in S0}|pre0)&{1,2,3,4,5,6} or not ({s for s in S0}|pre0)&{8,9,10,11,12,13}: continue
-        seq=deliver(G,pre0,set(S0))
-        if seq is not None:
-            opts0.append((S0,seq))
-            if len(opts0)>=4: break
-    if not opts0: return ('keten0',)
+    PRE0=tuple(int(x) for x in os.environ.get('PRE0','2,3,4,8,9,10,11,12').split(','))
+    pre0=set(PRE0)
+    opts0=[((),())]  # ministubs: geen rij-singles nodig
     pre14=set(Vb)
-    opts14=[]
-    need14=8-len(Vb)
-    for S14 in itertools.combinations([c for c in range(1,14) if c not in (0,7,14) and c not in pre14],need14):
-        pp=set(S14)|pre14
-        if not pp&{4,5,6} or not pp&{8,9,10,11,12}: continue
-        seq=deliver(P,pre14,set(S14))
-        if seq is not None:
-            opts14.append((S14,seq))
-            if len(opts14)>=4: break
-    if not opts14: return ('keten14',)
+    PRE14=tuple(int(x) for x in os.environ.get('PRE14','2,3,4,8,9,10,11,12').split(','))
+    pre14=set(PRE14)
+    if not set(Vb)<=pre14: return ('vb-pre14',)
+    opts14=[((),())]
+    for c in sorted(pre14-set(Vb)):
+        botv.append([(c,13),(c,14)])   # bottom-ministub
     for (S0,seq0) in opts0:
      for (S14,seq14) in opts14:
       res=_inner(vspan,lane,Vb,S0,seq0,S14,seq14,tlim)
@@ -95,15 +94,20 @@ def try_config(vspan,lane,Vb,tlim=600):
 def _inner(vspan,lane,Vb,S0,seq0,S14,seq14,tlim):
     g=[[0]*15 for _ in range(15)]
     gaskast=[(7,y) for y in range(4,11)]
-    werk=[(c,7) for c in (4,5,6,8,9,10,11)]
-    v4a=[(4,y) for y in range(vspan[0],vspan[1]+1) if y!=7]
-    v4b=[(10,y) for y in range(vspan[0],vspan[1]+1) if y!=7]
+    werk=[(c,7) for c in range(WIN[0],WIN[1]+1) if c!=7]
+    v4a=[(V4COLS[0],y) for y in range(vspan[0],vspan[1]+1) if y!=7]
+    v4b=[(V4COLS[1],y) for y in range(vspan[0],vspan[1]+1) if y!=7]
     lg=[]
     if lane is not None:
-        occ={(x,lane) for x in (4,10)} if (vspan[0]<=lane<=vspan[1]) else set()
+        occ={(x,lane) for x in V4COLS} if (vspan[0]<=lane<=vspan[1]) else set()
         newc=[(x,lane) for x in range(3,12) if (x,lane) not in occ]
         lg=[newc]
-    topv=[[(c,y) for y in range(3)] for c in (2,12)]   # 3-cel-stubs: raken laan-rij-3 NIET
+    topv=[]
+    for c in sorted(set(int(x) for x in os.environ.get('PRE0','2,3,4,8,9,10,11,12').split(','))):
+        if c==V4COLS[0] or c==V4COLS[1]:
+            topv.append([(c,0),(c,1)])   # ministub boven de vert (gat rij 2)
+        else:
+            topv.append([(c,0),(c,1)])
     botv=[[(c,y) for y in range(8,15)] for c in Vb]
     extra=[]
     ex=os.environ.get('EXTRA','1')
@@ -122,7 +126,9 @@ def _inner(vspan,lane,Vb,S0,seq0,S14,seq14,tlim):
     botv+=extra
     scaf=[[(3,2)],[(11,2)]]   # diagonale ankers: laan-(3,3)/(11,3) -> stub-kolommen 2/12
     botv=scaf+botv
-    pre0={2,12};pre14=set(Vb)
+    pre0=set(int(x) for x in os.environ.get('PRE0','2,3,4,8,9,10,11,12').split(','))
+    pre14=set(int(x) for x in os.environ.get('PRE14','2,3,4,8,9,10,11,12').split(','))
+    for c in sorted(pre14-set(Vb)): botv.append([(c,13),(c,14)])
     groups=[gaskast,werk,v4a,v4b]+lg+topv
     for item in seq0:
         if len(item)==2 and item[0]=='H': continue
@@ -134,7 +140,8 @@ def _inner(vspan,lane,Vb,S0,seq0,S14,seq14,tlim):
     mask0=sorted(set(range(15))-set(S0)-pre0)
     mask14=sorted(set(range(15))-set(S14)-pre14)
     if len(mask0)!=7 or len(mask14)!=7: return ('mask',)
-    fins=[[(c,7) for c in (0,1,2,3,12,13,14)],[(c,0) for c in mask0],[(c,14) for c in mask14]]
+    mask7=[c for c in range(15) if not (WIN[0]<=c<=WIN[1])]
+    fins=[[(c,7) for c in mask7],[(c,0) for c in mask0],[(c,14) for c in mask14]]
     allc=[c for m in groups for c in m]
     if len(allc)!=len(set(allc)): return ('dubbel',)
     if len(allc)+21>101+  (21-21): pass
@@ -215,9 +222,9 @@ best=None
 for vspan in ((3,10),(4,11)):
     for lane in (3,):
         if vspan!=(3,10): continue
-        for Vb in (('5','9'),('5','11'),('6','9'),('6','11'),('6','8'),('5','8')):
+        for Vb in (('4','9'),('4','11'),('3','9'),('2','10'),('4','8'),('3','11')):
             vb=[int(x) for x in Vb]
-            if any(c in (4,10) for c in vb): continue
+            if any(c in V4COLS for c in vb): continue
             res=try_config(vspan,lane,vb)
             tag=f"v{vspan}-L{lane}-Vb{vb}"
             print(tag,"->",res[0],res[1] if res[0]=='ok' else (str(res[1])[:50] if len(res)>1 else ''),flush=True)

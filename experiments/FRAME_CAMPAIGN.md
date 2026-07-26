@@ -84,3 +84,12 @@ GENERATOR-V2-SPEC: mg_13bingo_v2-machinerie als basis met (a) werkster-VENSTER g
 (12-bingo-configs toegestaan: score-objectief beslist, niet de 13-eis), (c) hanger-groepen
 (6-cel-verticalen rijen 1-6 op mask0-kolommen met geneste tabellen; oogst via finals),
 (d) F/G/P uit env (al aanwezig). Draai op top-3 tripletten; elke SAT = compleet geverifieerd spel.
+
+## Gym-triplet DOOD + les (2026-07-26 middag)
+gymjuffrouwtjes is fataal fragment-arm op rij 0: pre-bezorging vereist rij-fragmenten OF verticale
+stubs, maar aangrenzende stubs vormen zelf rij-runs ('mj','ym','ff' = dood) en 8 niet-aangrenzende
+kolommen bestaan niet. LES voor de ranker: HARDE bezorgbaarheids-check per ankerwoord (bestaat een
+geldige pre-bezorgings-architectuur: eiland-DFS incl. ministubs) i.p.v. zachte frag-dichtheid.
+Bob-topo-plateau: 4116 (oude triplet). SPOREN NU: (a) hybridisatie 4435 + x4-verticalen,
+(b) ranker-v3 met harde bezorg-check -> nieuwe tripletten, (c) bob's 4819-referentiestructuur
+(gevraagd, nog geen antwoord).
