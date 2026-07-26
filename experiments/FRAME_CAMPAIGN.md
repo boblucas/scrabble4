@@ -131,3 +131,14 @@ plafond op deze basis. VOLGENDE NIVEAUS: (a) sloop-diepte (3+-cel-zetten inkorte
 extensie heeft (8 kolommen x ~35 = +280 t.o.v. nul-extensie-ontwerp!) — vereist: 9-woord-tabellen
 (kol-woord+1) niet-leeg per kolom + extensie-cellen vrijgehouden op rij 8/13 + ruil-budget in
 ontwerp (101-N tegels prep, N extensies); dit hoort in de triplet/topologie-keuze vanaf het begin.
+
+## ROYALTY-FIT v1-stand (2026-07-26 laat)
+Census: tabellen 5-25x rijker dan geschenk-triplet (kol-8-top 1452 w.v. 1358 verlengbaar!;
+x4-verts door 'o'/'e': 4608/10470; centrum 1657). Bezorg-solver-sets: rij-0 {2,3,4,5,8,9,11,12}
+(mask0 {0,1,6,7,10,13,14}), rij-14 {1,2,4,5,6,8,9,11}. v1-bouw: 121 tegels (over-ontworpen:
+3 top-verts + 3 bottom-verts + 2 x4 + laan + stubs + westketting = te veel) + fragment-conflicten:
+(2,3)-stubs 'ya' dood, (8,9)-bottom-feet 'ff' dood, (3,13)-westketting vs mask.
+V2-AANWIJZINGEN: kies 2 top-verts (8 + 12), 2 bottom (9 of 8, 11 — NIET beide 8+9: ff!),
+pre0 zonder 2-3-adjacentie (3-stub + 4-'alt'-ketting maar 2 in mask), westketting alleen indien
+(c,13)-cellen niet boven mask-letters eindigen (check '?+R14[c]'-2-woorden), budget <=101 streng
+tellen VOOR de bouw. Machinerie: mg_roy_topo.py (blanco-model in tail aanwezig).
