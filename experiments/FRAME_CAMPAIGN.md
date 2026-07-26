@@ -50,3 +50,13 @@ systematisch rijen 1-3/11-13 bereiken als kruisletters, zodat 13-cel-spans slech
 Architectuur: lane-woorden eerst (spans die DWS-paren dekken), verticalen als kruis-leveranciers,
 3-lijnen-skelet blijft (2x27+x9 is multiplier-optimaal bewezen: 8 TWS = 3+3+2).
 NEXT: lane-weave-generator (H-configs met DWS-paar-dekking verplicht, verticalen vol-hoogte).
+
+## Stand 2026-07-26 ochtend
+- Rand-oogst (kol-0-top) getest: BH1 (dubbele oogst) INFEASIBLE (geneste g..f-eis leeg);
+  BH2 (enkele oogst) 4373 = -62. Rand-klasse vereist triplet-tabel-steun; hand-chirurgie op.
+- CONCLUSIE: +384 naar 4819 komt niet uit enkelvoudige mutaties op 4435. Nodig: WEAVE-GENERATOR
+  die per triplet JOINT optimaliseert: verticalen-posities (NIET op DWS-diagonaalcellen!),
+  x4-laan-woorden, rand-kolom-halfwoorden, maskers, ketens — score-objectief (niet bingo-telling),
+  CP-SAT sluit letters, arbiter verifieert. = generalisatie van de 13-bingo-prover-config-machinerie.
+- Extra kandidaat-klasse genoteerd: lange geneste hook-ketens (letter-voor-letter opbouwen,
+  driehoeks-herscoring ~20/tegel) — meenemen als generator-move-klasse.
