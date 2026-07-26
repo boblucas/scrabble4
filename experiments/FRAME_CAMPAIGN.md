@@ -121,3 +121,13 @@ x4 structureel mogelijk. MAAR: het resulterende voetafdruk (dubbele laan 11+12 +
 blanco-model (nu permanent in mg_ref_topo: <=2 blanco's, waarde 0, zak-vrij) dekt maar 2.
 LES: elke extra lange-woord-structuur trekt aan dezelfde schaarse letters — zak-druk is de
 uiteindelijke begrenzer van structuur-dichtheid. Reftopo-lijn-plafond: 4224.
+
+## HERSCORING-KLASSE: doorbraak + status (2026-07-26 avond)
+RECORD 4457: post-finale 1-tegel-extensies (kolomwoord-herscoring na de betreffende final; ~35/tegel,
+DLS-rij-8-bonus) — alle 4 varianten sloegen 4435. Ontleding 4435: 37,4% herscoring, 47/101 cellen
+nooit herscoord. Oogst-2-sweep: ruilbronnen op (alleen (11,2) over, arbiter-nee) => enkelvoudig
+plafond op deze basis. VOLGENDE NIVEAUS: (a) sloop-diepte (3+-cel-zetten inkorten — chirurgie),
+(b) RESCORING-DICHTHEID ALS GENERATOR-OBJECTIEF: ontwerp borden waar elke kolom een post-finale
+extensie heeft (8 kolommen x ~35 = +280 t.o.v. nul-extensie-ontwerp!) — vereist: 9-woord-tabellen
+(kol-woord+1) niet-leeg per kolom + extensie-cellen vrijgehouden op rij 8/13 + ruil-budget in
+ontwerp (101-N tegels prep, N extensies); dit hoort in de triplet/topologie-keuze vanaf het begin.
