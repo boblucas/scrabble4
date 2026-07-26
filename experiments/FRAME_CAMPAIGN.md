@@ -102,3 +102,13 @@ per-geval). BESLUIT: bouw UNIFORME BEZORG-SOLVER: input (ankerwoord, structuurko
 kolom-wortels [verts/lane-adjacent], premie-voorkeuren) -> output (pre-set, blok-zetreeks,
 stub-plaatsing) via runs_orderable-DFS + root-mechanismen {kolom-vert, laan-adjacentie(3-cel),
 buur-keten(fragment-word)}. Die component sluit ALLE toekomstige triplet-fits.
+
+## REFERENTIE-ORIENTATIE (bob, 2026-07-26): P boven / F midden / G onder!
+Zelfde triplet, GESPIEGELD. Tabellen worden overal rijk: TOP P..F {2:589,10:443,12:408,9:368,...},
+BOTTOM F..G {1:589,6:455,5:390,10:390,13:152} (onze oude bodem was 3/4/1!). G's rijke fragmenten
+(es/he/hen) dienen de bezorg-intensieve BODEM; P's mel/uur/zuur de top. Analyse wijst naar:
+DUBBEL-LAAN-ARCHITECTUUR: x4-verts kol 4/10 rijen 3-11 (9-woorden: 7-zet rijen 3-10 + (c,11)-
+extensie) => kruisingen voor rij-3-laan EN rij-11-laan (beide x4); lanen = wortel-rails voor
+3-cel-stubs naar rij 0 (boven) en rij 14 (onder) — lost het linksbodem-wortelprobleem op
+(kol 1,2,3 waren onbereikbaar; q/u-cellen (11,14)/(12,14) gaan in mask14). TE BOUWEN in
+mg_bob_topo: vspan-extensie, dubbele laan, stub-bezorging beide zijden, pre-sets per fragmentanalyse.

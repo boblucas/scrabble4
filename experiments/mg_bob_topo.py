@@ -215,7 +215,7 @@ best=None
 for vspan in ((3,10),(4,11)):
     for lane in (3,):
         if vspan!=(3,10): continue
-        for Vb in (('5','9'),('5','11'),('6','9'),('6','11'),('6','8'),('5','8')):
+        for Vb in (('5','13'),('6','13'),('5','9'),('6','9'),('6','8'),('5','8'),('5','12'),('6','12')):
             vb=[int(x) for x in Vb]
             if any(c in (4,10) for c in vb): continue
             res=try_config(vspan,lane,vb)
