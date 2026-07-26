@@ -25,16 +25,15 @@ mv=[
  [(10,y) for y in (3,4,5,6,8,9,10)],                            # x4-vert kol 10 (door e)
  [(x,3) for x in (3,5,6,7,8,9,11)],                             # rij-3-laan (x4: 3,3+11,3)
  [(4,11)],[(10,11)],                                            # exts -> 9-woorden
- [(11,11)],                                                     # DWS-single aan ext+laan
 ]+ {'A':[[(12,1)],[(12,2)]],'B':[[(8,4)],[(3,2)]],'C':[[(8,4)],[(12,1)]],'':[]}[os.environ.get('MODS','')] + [
  [(6,0),(6,1),(6,2)],[(9,0),(9,1),(9,2)],                       # top-stubs (4-runs met laan)
  [(5,0)],[(4,0)],[(10,0),(11,0)],[(8,0)],[(12,0)],              # el/mel/uur/zuur/zuurt
- [(5,y) for y in range(8,15)],                                  # kol-5-bottom-vert (e......e)
- [(x,12) for x in (7,8,9,10,11,12,13)],                         # rij-12-laan [7,13] (x2 via 12,12)
- [(9,13),(9,14)],[(12,13),(12,14)],                             # ministubs 9/12
+ [(x,11) for x in (3,5,6,8,9,11)]+[(7,11)],                     # rij-11-laan x4 ((3,11)+(11,11))
+ [(x,12) for x in (8,9,10,11,12,13,14)],                        # rij-12-laan [8,14] (x2 via 12,12; mijdt kol-7-9-run)
+ [(6,12),(6,13),(6,14)],[(9,13),(9,14)],[(12,13),(12,14)],      # stub-6 (3-cel via laan-11), minis 9/12
  [(3,10)],[(2,10)],[(2,11)],[(2,12)],[(2,13)],                  # westketting rij10 + kol2 zuid
  [(2,14)],[(1,14)],                                             # es-cluster
- [(4,14)],[(6,14)],[(10,14)],                                   # he/en/he-kettingen
+ [(5,14)],[(4,14)],[(10,14)],                                   # en/hen/he-kettingen
  [(c,7) for c in (0,1,2,3,12,13,14)],                           # fin7
  [(c,0) for c in (0,1,2,3,7,13,14)],                            # fin0 (pre0={4,5,6,8,9,10,11,12})
  [(c,14) for c in (0,3,7,8,11,13,14)],                          # fin14 (pre14={1,2,4,5,6,9,10,12})
@@ -87,18 +86,29 @@ for run in stage_runs:
     if not tab: print("LEEG:",run);bad=run;continue
     m_.add_allowed_assignments([L[c] for c in run],tab)
 if bad: sys.exit(1)
+BL={c:m_.new_bool_var(f"bl{c}") for c in free}
+m_.add(sum(BL.values())<=2)
 for ch in range(1,27):
     cnt=[]
     for c in free:
         b=m_.new_bool_var(f"i{c}_{ch}")
         m_.add(L[c]==ch).only_enforce_if(b);m_.add(L[c]!=ch).only_enforce_if(b.negated())
-        cnt.append(b)
+        nb=m_.new_bool_var(f"nb{c}_{ch}")   # letter ch EN geen blanco
+        m_.add_bool_and([b,BL[c].negated()]).only_enforce_if(nb)
+        m_.add_bool_or([b.negated(),BL[c]]).only_enforce_if(nb.negated())
+        cnt.append(nb)
     base=sum(1 for c,v in fixed.items() if v==ch)
     m_.add(sum(cnt)+base<=bag[ch])
 VV=[0]+[val[i] for i in range(1,27)]
 valvar={}
 for c in set(sum(([cc for cc in run] for run,_ in events),[])):
-    v=m_.new_int_var(0,10,f"v{c}");m_.add_element(L[c],VV,v);valvar[c]=v
+    v=m_.new_int_var(0,10,f"v{c}");m_.add_element(L[c],VV,v)
+    if c in BL:
+        ve=m_.new_int_var(0,10,f"ve{c}")
+        m_.add(ve==v).only_enforce_if(BL[c].negated())
+        m_.add(ve==0).only_enforce_if(BL[c])
+        valvar[c]=ve
+    else: valvar[c]=v
 obj=[];bingos=sum(50 for mm in mv if len(mm)==7)
 for run,cset in events:
     wm=1
@@ -114,10 +124,11 @@ print("status:",sol.status_name(st))
 if st in (cp_model.OPTIMAL,cp_model.FEASIBLE):
     g2=[row[:] for row in g]
     for c in free: g2[c[1]][c[0]]=sol.value(L[c])
-    tot,per,ok,msg=MG.score_game([row[:] for row in g2],mv,set())
+    blset={c for c in free if sol.value(BL[c])}
+    tot,per,ok,msg=MG.score_game([row[:] for row in g2],mv,blset)
     print("score_game:",int(tot),"ok:",ok,msg if not ok else '')
     if ok:
-        json.dump({'grid':g2,'moves':[[list(c) for c in m] for m in mv],'blanks':[],
+        json.dump({'grid':g2,'moves':[[list(c) for c in m] for m in mv],'blanks':[list(b) for b in sorted(blset)],
                    'total':int(tot),'triple':[R0,R7,R14],'plan':'referentie-topologie P/F/G dubbel-laan v1'},
                   open('experiments/results/mg_reftopo_best.json','w'))
         for y in range(15):
