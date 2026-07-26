@@ -93,3 +93,12 @@ geldige pre-bezorgings-architectuur: eiland-DFS incl. ministubs) i.p.v. zachte f
 Bob-topo-plateau: 4116 (oude triplet). SPOREN NU: (a) hybridisatie 4435 + x4-verticalen,
 (b) ranker-v3 met harde bezorg-check -> nieuwe tripletten, (c) bob's 4819-referentiestructuur
 (gevraagd, nog geen antwoord).
+
+## Ranker-v3 + royalty-triple (2026-07-26 middag)
+Ranker-v3 (harde bezorg-check, x4-venster-eis): top = royaltywatchers/pulsoxymetertje/
+quichebuffetjes (M=2970 +90, venster 'oxymeter' [4,11] — zelfde geometrie als werkster!).
+Generator-fitting strandt op bezorg-worteling (6 iteraties: ministubs floaten, fragmenten
+per-geval). BESLUIT: bouw UNIFORME BEZORG-SOLVER: input (ankerwoord, structuurkolommen met
+kolom-wortels [verts/lane-adjacent], premie-voorkeuren) -> output (pre-set, blok-zetreeks,
+stub-plaatsing) via runs_orderable-DFS + root-mechanismen {kolom-vert, laan-adjacentie(3-cel),
+buur-keten(fragment-word)}. Die component sluit ALLE toekomstige triplet-fits.
