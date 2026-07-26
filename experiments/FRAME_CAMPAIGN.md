@@ -60,3 +60,15 @@ NEXT: lane-weave-generator (H-configs met DWS-paar-dekking verplicht, verticalen
   CP-SAT sluit letters, arbiter verifieert. = generalisatie van de 13-bingo-prover-config-machinerie.
 - Extra kandidaat-klasse genoteerd: lange geneste hook-ketens (letter-voor-letter opbouwen,
   driehoeks-herscoring ~20/tegel) — meenemen als generator-move-klasse.
+
+## Weave-v1-uitslag + DE derde klasse-onthulling (2026-07-26)
+- Weave-v1 (vaste 4435-top, onderhelft gegenereerd, 1476 configs): beste 4396 (pure verts) < 4435;
+  L10/L11-lanen joint-INFEASIBLE (6/6), L12-lanen cap-113 (top te vol: 37/56 niet-anker).
+  Laan-economie op deze triplet: ~+80 netto indien haalbaar — te dun voor +384.
+- ONTHULLING: MASK-KOLOM-HANGVERTICALEN. Onze finals hebben ~nul kruisoogst omdat alle verticalen
+  op PRE-kolommen staan. Hang onder elke maskercel van rij 0/14 (en boven/onder rij 7) een
+  verticaal woord (rijen 1-7, 7 tegels = bingo, '??????F[c]'-klasse): bij de final scoort het
+  x celpremie ((3,0)/(11,0) DLS x2, (0,0)/(7,0)/(14,0) TWS x3). Geen bezorgplicht (maskercellen!).
+  ~125 punten per 7 tegels; 4-6 hangers per final-rij => +240 per rij => +500-750 totaal. DIT
+  schaalt naar 4819. Generator-v2: menu = pre-verts (bezorging) + mask-hangers (oogst) + lanen +
+  randen, beide helften vrij; ankering van hangers via buurkolommen = het echte ontwerpprobleem.
