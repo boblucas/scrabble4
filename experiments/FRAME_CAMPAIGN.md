@@ -152,3 +152,12 @@ geschenkcheques/flexwerkstertje/polymelkzuurtje heeft UITZONDERLIJKE ankerrij-fr
 4819-referentie dezelfde triplet gebruikt (gespiegeld). De frontier is dus: de referentie-
 orientatie (P-boven) dieper verfijnen met ALLE klassen (reftopo-lijn 4224 was gen-2; de
 geschenk-lijn kreeg ~15 generaties tot 4457) OF referentie-details van bob.
+
+## SURVIVOR-TRACK AFGEROND (2026-07-27 ochtend)
+Survey compleet (40/40). Behandeling: benzoylperoxide-familie 4121-raw -> wave 4251 -> footprint-
+OPTIMAL 4284 -> sweep leeg (653 kandidaten). Cheque-familie wave <= benzoyl-niveau. Families 3-5
+(plafonds < 4400) overgeslagen. CONCLUSIE: geen familie nadert 4457 — de fragment-uitzonderlijkheid
+van geschenkcheques/flexwerkstertje/polymelkzuurtje is definitief bevestigd als de kern van zowel
+ons record als bob's 4819-referentie (gespiegeld). OPEN FRONTIERS: (a) bob's referentie-details
+(zetten/verticalen van het 4819-bord), (b) reftopo-laan-chirurgie (P-boven 4268), (c) 13-bingo
+fase B (volgorde-volledigheid), (d) rescoring-dichtheid-generator (ontwerp-vanaf-nul).
