@@ -168,3 +168,8 @@ Volgende hefbomen richting 4819 (gat 288): (a) bob's referentie-details (P-boven
 
 ### Joint-extensiemodel (mg_extjoint, scratchpad) — NEGATIEF 2026-07-27
 CP-SAT die zelf 7 van 15 optionele extensie-cellen kiest (core-94, ketens<=2, beide uiteinden, blanco's): obj 4517 FEASIBLE na 600s, arbiter VERWERPT ('overzwevena'). Kernbug: brug-cellen ((11,4)-klasse) mergen twee runs — vaste-lengte-woordtabellen dekken de gefuseerde run niet, en juist brugslots dragen de waarde. Sound maken vergt conditionele aux-tabellen per activatiecombo (5/run) — geschatte winst marginaal (greedy benutte dezelfde 7 slots al, obj<record). CONCLUSIE: greedy-scan+extgen-met-arbiter is de sound en voldoende motor; spoor 3 op het 4531-bord geconvergeerd. Volgende: extensie-oogst op de reftopo-lijn (4268) — test of bobs spiegelorientatie hogere herscoringsdichtheid toelaat (pad naar 4819-begrip).
+
+### 13-bingo fase B — voortgang 2026-07-27
+- hypochlorigzuur x jacquardweefsel: DOOD op fragment-niveau (0 van 128.394 configs haalde CP-SAT; singles_options leeg). Positie-gefilterde woord-fragmenten: hypo links {po,poch,och} rechts ALLEEN {ri}; jacquard links {qua,ar} rechts {we,wee,weef}. Bevestigt fragment-exceptionaliteit van ankerwoorden op een derde onafhankelijke laag (na ranker-v3 en survivor-track).
+- gymjuffrouwtjes: fragment-arm (2 links/2 rechts) — overgeslagen.
+- cyberhuwelijkje x quizmasterschap: fragment-RIJK (cyber 4L/5R: be,er,erhu,hu | el,li,lij,lijk,ijk; quiz 4L/3R: ui,ma,mas,as | er,scha,ha) — fase-B-run gestart (104.412 configs, CAP 2500, ledger_13bingo_faseB_cyber.jsonl).
