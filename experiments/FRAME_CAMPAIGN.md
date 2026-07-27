@@ -161,3 +161,7 @@ van geschenkcheques/flexwerkstertje/polymelkzuurtje is definitief bevestigd als 
 ons record als bob's 4819-referentie (gespiegeld). OPEN FRONTIERS: (a) bob's referentie-details
 (zetten/verticalen van het 4819-bord), (b) reftopo-laan-chirurgie (P-boven 4268), (c) 13-bingo
 fase B (volgorde-volledigheid), (d) rescoring-dichtheid-generator (ontwerp-vanaf-nul).
+
+## Spoor 3 (rescoring-densiteit) — oogst 2026-07-26
+Iteratieve keten-extensie-loop (mg_extgen.py + scan-na-herlettering): 4457 -> 4459 (indopend-ruil, 4 exts) -> 4515 (ketenpaar (2,11)+(13,4); rij-4 'overzweefden' 13 letters, kol-2 'smarotsenden' 12) -> **4531** ((5,8) 'erbarmden'). +74 totaal, zak-vrij (pure herscoring). Bord VOL: 101/101 tegels — verdere extensies vergen ruilen (sloop elders). Motor bevestigd: elke CP-SAT-herlettering opent nieuwe ketens; convergeert pas bij tegel-cap.
+Volgende hefbomen richting 4819 (gat 288): (a) bob's referentie-details (P-boven-spiegel), (b) ruil-extensies (sloop laagwaardige tegel -> lange-keten-slot), (c) struct-sweep op 4531-basis (mask-swaps composeerden eerder additief).
