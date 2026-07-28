@@ -332,3 +332,31 @@ De laatste levende bingo-lead is uitgeput. De woordenboek-bewuste schemazoeker v
 familie 7304 woordbare schema's met plafond 4873 (tegen 4881 voor de basis), maar de CP-SAT-vulling
 van de drie beste geeft alle drie 4772 (arbiter ok) -- onder hun eigen basis van 4773 en 6 onder het
 record. Het plafondgat van 8 punten bleek dus geen speelruimte maar juist een extra lexicale schuld.
+
+## DICHTE BLOKKEN (2026-07-28): negatief, maar met de scherpste diagnose tot nu toe
+Een dicht blok (aangrenzende kolommen, zodat de middenrijen zelf woorden vormen) is bij gelijke
+tegelinzet +130 tot +230 ankervast m-plafond waard -- het idee klopt kwantitatief. Toch geen bord
+boven 4778: elk zetschema met een plafond boven ~4680 is CP-SAT-INFEASIBLE. Wel drie geverifieerde
+dichte-blok-borden: denseblock_board_E2.json 4540, _G 4476, _D 4412.
+DRIE BEVINDINGEN:
+1. DE EERSTE ZEEF IS LOGISTIEK, NIET LEXICAAL. Maskercellen worden pas in de slotzet gelegd, dus
+   rij 0 valt tot dan uiteen in de eilanden {1,2} {4,5,6} {9,10} {12} en rij 14 in {4,5,6} {8..12}.
+   Elk eiland heeft een eigen dragende kolom nodig die rij 1 resp. rij 13 haalt => vier bovendragers
+   en twee onderdragers liggen GEDWONGEN uit elkaar. Dat onze verticalen ver uit elkaar staan is dus
+   een GEVOLG VAN DE MASKERKEUZE, geen ontwerpfout. Alle acht vrij ontworpen blokken sneuvelden
+   hierop voordat er een woord aan te pas kwam.
+2. DE LEXICALE MUUR IS EXACT GEMETEN: het 8-letter kolomwoord met twee vaste ankerletters dwingt de
+   blokbreedte af op max 4 boven (posities 5-8, 6-9, 7-10, 9-12) en 3 onder (4-6, 5-7, 10-12);
+   breedte 5 bestaat nergens. Met bouwvolgorde blijft boven een breedte-4-positie over (kol 7-10) en
+   onder een breedte-3 (4-6).
+3. DE DOODSOORZAAK IS DE BOUWVOLGORDE, NIET HET EINDBORD. Nieuw filterpaar static_feasible (alleen
+   eindbord-runs) vs lex_feasible (alle tussenruns): elke dichte-blok-bezetting is statisch JA en met
+   zetschema NEE. Twee aangrenzende kolommen over zes rijen eisen zes horizontale minidwoorden
+   (waarvan drie 2-letterwoorden) bovenop twee dubbel verankerde kolomwoorden.
+GEREEDSCHAPSLES: mg_newtopo.auto_schedule hangt de slotzetten altijd achteraan en verwerpt daardoor
+bezettingen die wel bestaan (het record zelf is er een van); mg_denseblock.schedule() doet dat niet.
+En: de m-plafondzoeker mag niet zonder lexicale toets gebruikt worden -- boven ~4680 bestaat het niet.
+De realisatiegraad is NIET het probleem (E2 haalt 4540 uit plafond 4580 = 99,1%).
+=> VOLGENDE: masker en geometrie GEZAMENLIJK optimaliseren. Het masker is tot nu toe alleen
+geoptimaliseerd op wat het voor de ankerrij zelf oplevert; wat het afdwingt aan dragende kolommen --
+en dus aan productiviteit van de middenrijen -- zat in geen enkele maat.
