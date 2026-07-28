@@ -1,0 +1,761 @@
+{
+ "prof": {
+  "0": [
+   27,
+   28,
+   35,
+   54,
+   29,
+   31,
+   28,
+   27,
+   27,
+   28,
+   30,
+   54,
+   30,
+   27,
+   27
+  ],
+  "7": [
+   9,
+   9,
+   14,
+   18,
+   14,
+   14,
+   11,
+   13,
+   10,
+   12,
+   14,
+   17,
+   10,
+   9,
+   9
+  ],
+  "14": [
+   27,
+   27,
+   27,
+   54,
+   31,
+   29,
+   28,
+   27,
+   29,
+   30,
+   30,
+   33,
+   28,
+   27,
+   27
+  ]
+ },
+ "score": 4777,
+ "nominaal_x9": {
+  "huidig": 3645,
+  "n_beter": 832,
+  "top": [
+   {
+    "som": 3744,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemmertjes",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3735,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemstertje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3735,
+    "r0": "vluchtreflexjes",
+    "r7": "babyparfummetje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3726,
+    "r0": "vluchtreflexjes",
+    "r7": "babywenkbrauwen",
+    "r14": "verzamelcheques",
+    "blanco": 1
+   },
+   {
+    "som": 3726,
+    "r0": "vluchtreflexjes",
+    "r7": "papyrusfragment",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3726,
+    "r0": "vluchtreflexjes",
+    "r7": "bodypumpstertje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3717,
+    "r0": "vluchtreflexjes",
+    "r7": "smurfenspraytje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3717,
+    "r0": "vluchtreflexjes",
+    "r7": "bouwsysteempjes",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3717,
+    "r0": "vluchtreflexjes",
+    "r7": "bodysurfstertje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 3717,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemmertjes",
+    "r14": "chequeformulier",
+    "blanco": 0
+   },
+   {
+    "som": 3708,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemmertjes",
+    "r14": "jacquardweefsel",
+    "blanco": 1
+   },
+   {
+    "som": 3708,
+    "r0": "vluchtreflexjes",
+    "r7": "zenuwsysteempje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   }
+  ]
+ },
+ "nominaal_x18": {
+  "huidig": 4104,
+  "n_beter": 116,
+  "top": [
+   {
+    "som": 4221,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemmertjes",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 4203,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemstertje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 4203,
+    "r0": "vluchtreflexjes",
+    "r7": "babyparfummetje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 4194,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemmertjes",
+    "r14": "chequeformulier",
+    "blanco": 0
+   },
+   {
+    "som": 4185,
+    "r0": "vluchtreflexjes",
+    "r7": "babywenkbrauwen",
+    "r14": "verzamelcheques",
+    "blanco": 1
+   },
+   {
+    "som": 4185,
+    "r0": "vluchtreflexjes",
+    "r7": "papyrusfragment",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 4185,
+    "r0": "vluchtreflexjes",
+    "r7": "bodypumpstertje",
+    "r14": "verzamelcheques",
+    "blanco": 0
+   },
+   {
+    "som": 4176,
+    "r0": "vluchtreflexjes",
+    "r7": "verzamelcheques",
+    "r14": "webcommunitytje",
+    "blanco": 1
+   },
+   {
+    "som": 4176,
+    "r0": "vluchtreflexjes",
+    "r7": "vrouwenlobbytje",
+    "r14": "wetenschapsquiz",
+    "blanco": 0
+   },
+   {
+    "som": 4176,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemstertje",
+    "r14": "chequeformulier",
+    "blanco": 0
+   },
+   {
+    "som": 4167,
+    "r0": "verzamelcheques",
+    "r7": "bouwcuratrixjes",
+    "r14": "playbackshowtje",
+    "blanco": 1
+   },
+   {
+    "som": 4167,
+    "r0": "jacquardweefsel",
+    "r7": "luchtdrukmaxima",
+    "r14": "playbackshowtje",
+    "blanco": 1
+   }
+  ]
+ },
+ "bezorgmodel": [
+  {
+   "R": 0,
+   "n": 31030,
+   "best": 495,
+   "word": "quichebuffetjes",
+   "flex": 441,
+   "rang_flex": 36
+  },
+  {
+   "R": 1,
+   "n": 93213,
+   "best": 549,
+   "word": "vluchtreflexjes",
+   "flex": 441,
+   "rang_flex": 148
+  },
+  {
+   "R": 2,
+   "n": 114059,
+   "best": 549,
+   "word": "vluchtreflexjes",
+   "flex": 441,
+   "rang_flex": 277
+  },
+  {
+   "R": 3,
+   "n": 117552,
+   "best": 558,
+   "word": "geschenkcheques",
+   "flex": 459,
+   "rang_flex": 154
+  },
+  {
+   "R": 4,
+   "n": 118400,
+   "best": 558,
+   "word": "geschenkcheques",
+   "flex": 459,
+   "rang_flex": 175
+  },
+  {
+   "R": 5,
+   "n": 118496,
+   "best": 558,
+   "word": "geschenkcheques",
+   "flex": 459,
+   "rang_flex": 175
+  },
+  {
+   "R": 6,
+   "n": 118496,
+   "best": 558,
+   "word": "geschenkcheques",
+   "flex": 459,
+   "rang_flex": 175
+  },
+  {
+   "R": 7,
+   "n": 118496,
+   "best": 558,
+   "word": "geschenkcheques",
+   "flex": 459,
+   "rang_flex": 175
+  }
+ ],
+ "minroot_both_flex": 3,
+ "minroot_hist": {
+  "0": 0,
+  "1": 18186,
+  "2": 37625,
+  "3": 29796,
+  "4": 7839,
+  "5": 0,
+  "6": 0,
+  "7": 0
+ },
+ "joint_R0": {
+  "huidig": 3573,
+  "n": 2,
+  "top": [
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "polymelkzuurtje"
+   },
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "papyruszuiltjes"
+   }
+  ]
+ },
+ "joint_R1": {
+  "huidig": 3573,
+  "n": 4,
+  "top": [
+   {
+    "som": 3591,
+    "r0": "geschenkcheques",
+    "r7": "bouwvakkersfuif",
+    "r14": "woestijnlynxjes"
+   },
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "polymelkzuurtje"
+   },
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "papyruszuiltjes"
+   },
+   {
+    "som": 3573,
+    "r0": "chequeformulier",
+    "r7": "vluchtreflexjes",
+    "r14": "babyzwemmertjes"
+   }
+  ]
+ },
+ "joint_R2": {
+  "huidig": 3573,
+  "n": 7,
+  "top": [
+   {
+    "som": 3591,
+    "r0": "geschenkcheques",
+    "r7": "bouwvakkersfuif",
+    "r14": "woestijnlynxjes"
+   },
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "wolframtrioxide",
+    "r14": "polymelkzuurtje"
+   },
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "wolframtrioxide",
+    "r14": "papyruszuiltjes"
+   },
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "polymelkzuurtje"
+   },
+   {
+    "som": 3573,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "papyruszuiltjes"
+   },
+   {
+    "som": 3573,
+    "r0": "chequeformulier",
+    "r7": "vluchtreflexjes",
+    "r14": "babyzwemmertjes"
+   },
+   {
+    "som": 3573,
+    "r0": "bouwcuratrixjes",
+    "r7": "verzamelcheques",
+    "r14": "lewylichaampjes"
+   }
+  ]
+ },
+ "joint_R3": {
+  "huidig": 3591,
+  "n": 3,
+  "top": [
+   {
+    "som": 3591,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "polymelkzuurtje"
+   },
+   {
+    "som": 3591,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "papyruszuiltjes"
+   },
+   {
+    "som": 3591,
+    "r0": "geschenkcheques",
+    "r7": "bouwvakkersfuif",
+    "r14": "woestijnlynxjes"
+   }
+  ]
+ },
+ "restzak_rang_flex": 1,
+ "restzak_top": [
+  {
+   "w": "flexwerkstertje",
+   "v": 523,
+   "blanco": 0
+  },
+  {
+   "w": "reflexweggetjes",
+   "v": 512,
+   "blanco": 0
+  },
+  {
+   "w": "flexowritertjes",
+   "v": 501,
+   "blanco": 0
+  },
+  {
+   "w": "bewijsexemplaar",
+   "v": 499,
+   "blanco": 0
+  },
+  {
+   "w": "walvisexpertjes",
+   "v": 496,
+   "blanco": 0
+  },
+  {
+   "w": "afwijzingsfaxen",
+   "v": 494,
+   "blanco": 0
+  },
+  {
+   "w": "flexflitsertjes",
+   "v": 490,
+   "blanco": 1
+  },
+  {
+   "w": "flexkiezeresjes",
+   "v": 489,
+   "blanco": 0
+  },
+  {
+   "w": "wolframtrioxide",
+   "v": 488,
+   "blanco": 0
+  },
+  {
+   "w": "zwaveloxidetjes",
+   "v": 487,
+   "blanco": 0
+  },
+  {
+   "w": "zwartwitfilmpje",
+   "v": 486,
+   "blanco": 0
+  },
+  {
+   "w": "afwijzingsfaxje",
+   "v": 485,
+   "blanco": 1
+  }
+ ],
+ "warem": {
+  "huidig": 3767,
+  "n": 118,
+  "top": [
+   {
+    "som": 3865,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemmertjes",
+    "r14": "chequeformulier"
+   },
+   {
+    "som": 3851,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemstertje",
+    "r14": "chequeformulier"
+   },
+   {
+    "som": 3827,
+    "r0": "vluchtreflexjes",
+    "r7": "whiskyzuipsters",
+    "r14": "jacquardweefsel"
+   },
+   {
+    "som": 3823,
+    "r0": "vluchtreflexjes",
+    "r7": "enzymvorminkjes",
+    "r14": "chequeformulier"
+   },
+   {
+    "som": 3821,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemmertjes",
+    "r14": "jacquardweefsel"
+   },
+   {
+    "som": 3811,
+    "r0": "vluchtreflexjes",
+    "r7": "babyzwemstertje",
+    "r14": "jacquardweefsel"
+   },
+   {
+    "som": 3809,
+    "r0": "vluchtreflexjes",
+    "r7": "hobbykweeksters",
+    "r14": "jacquardweefsel"
+   },
+   {
+    "som": 3804,
+    "r0": "vluchtreflexjes",
+    "r7": "bouwsysteempjes",
+    "r14": "jacquardweefsel"
+   },
+   {
+    "som": 3801,
+    "r0": "vluchtreflexjes",
+    "r7": "whiskyverkopers",
+    "r14": "jacquardweefsel"
+   },
+   {
+    "som": 3800,
+    "r0": "vluchtreflexjes",
+    "r7": "whiskybrouwster",
+    "r14": "jacquardweefsel"
+   },
+   {
+    "som": 3800,
+    "r0": "vluchtreflexjes",
+    "r7": "maquettebouwers",
+    "r14": "playbackshowtje"
+   },
+   {
+    "som": 3797,
+    "r0": "vluchtreflexjes",
+    "r7": "showbizzfiguren",
+    "r14": "cliquetsystemen"
+   }
+  ]
+ },
+ "chirurgie_dl11": {
+  "score": 4755,
+  "ok": true,
+  "delta": -22
+ },
+ "schedsearch": {
+  "iters": 200000,
+  "best": 4777,
+  "base": 4777
+ },
+ "herscoring": {
+  "rang_flex_zonder_zak": 101,
+  "n": 31030,
+  "rang_flex_met_zak": 1,
+  "top": [
+   {
+    "w": "acrylschilderij",
+    "v": 567,
+    "keten": 99,
+    "venster": [
+     5,
+     12
+    ]
+   },
+   {
+    "w": "excuusvrouwtjes",
+    "v": 556,
+    "keten": 79,
+    "venster": [
+     6,
+     13
+    ]
+   },
+   {
+    "w": "quichebuffetjes",
+    "v": 553,
+    "keten": 58,
+    "venster": [
+     6,
+     13
+    ]
+   },
+   {
+    "w": "vluchtreflexjes",
+    "v": 552,
+    "keten": 75,
+    "venster": [
+     6,
+     13
+    ]
+   },
+   {
+    "w": "gymjuffrouwtjes",
+    "v": 550,
+    "keten": 73,
+    "venster": [
+     3,
+     10
+    ]
+   },
+   {
+    "w": "polymelkzuurtje",
+    "v": 539,
+    "keten": 53,
+    "venster": [
+     4,
+     11
+    ]
+   },
+   {
+    "w": "vrouwtjesguppys",
+    "v": 538,
+    "keten": 79,
+    "venster": [
+     1,
+     8
+    ]
+   },
+   {
+    "w": "vrachtvluchtjes",
+    "v": 538,
+    "keten": 70,
+    "venster": [
+     6,
+     13
+    ]
+   },
+   {
+    "w": "vluchtburchtjes",
+    "v": 533,
+    "keten": 47,
+    "venster": [
+     6,
+     13
+    ]
+   },
+   {
+    "w": "becquerelletjes",
+    "v": 531,
+    "keten": 54,
+    "venster": [
+     6,
+     13
+    ]
+   },
+   {
+    "w": "chequebedragjes",
+    "v": 531,
+    "keten": 45,
+    "venster": [
+     6,
+     13
+    ]
+   },
+   {
+    "w": "burchtvrouwtjes",
+    "v": 529,
+    "keten": 79,
+    "venster": [
+     6,
+     13
+    ]
+   }
+  ],
+  "top_zak": [
+   {
+    "w": "flexwerkstertje",
+    "v": 486,
+    "keten": 45
+   },
+   {
+    "w": "flexkiezeresjes",
+    "v": 458,
+    "keten": 44
+   },
+   {
+    "w": "reflexweggetjes",
+    "v": 454,
+    "keten": 58
+   },
+   {
+    "w": "walvisexpertjes",
+    "v": 449,
+    "keten": 53
+   },
+   {
+    "w": "walvisvrouwtjes",
+    "v": 448,
+    "keten": 79
+   },
+   {
+    "w": "zwaveloxidetjes",
+    "v": 439,
+    "keten": 43
+   },
+   {
+    "w": "wegzwijmelenden",
+    "v": 436,
+    "keten": 103
+   },
+   {
+    "w": "proxyservertjes",
+    "v": 432,
+    "keten": 45
+   },
+   {
+    "w": "flexkiezeressen",
+    "v": 431,
+    "keten": 44
+   },
+   {
+    "w": "torxsleuteltjes",
+    "v": 430,
+    "keten": 79
+   },
+   {
+    "w": "klavervrouwtjes",
+    "v": 430,
+    "keten": 79
+   },
+   {
+    "w": "flexmakelaartje",
+    "v": 430,
+    "keten": 43
+   }
+  ]
+ }
+}
