@@ -471,6 +471,18 @@ if __name__ == '__main__':
               + (f" -> met centrumregel {b}" if cidx is not None else ""))
     print(f"PER-LIJN-BOVENGRENS: vrij {som_vrij}, met centrumregel {som_cen}")
     MODE = os.environ.get('MODE', 'bnb')
+    if MODE == 'count':
+        tot = 1
+        for L in LN:
+            cnt = [0] * (1 << L.n); cnt[0] = 1
+            for S in range(1 << L.n):
+                if not cnt[S]: continue
+                for g, inc, c in L.groups[S]: cnt[S | g] += cnt[S]
+            print(f"  {L.tag}{L.n} {L.run[0]} '{L.s}': {cnt[L.full]:,} legale lijn-geschiedenissen")
+            tot *= cnt[L.full]
+        print(f"product over de {len(LN)} lijnen = {tot:.3e}  (aantal echte schema's is nog groter: "
+              f"de lijn-geschiedenissen kunnen ook nog onderling verweven worden)")
+        sys.exit(0)
     if MODE == 'freebound':
         freebound(bd, LN, os.environ['VALDIR']); sys.exit(0)
     if MODE == 'audit':

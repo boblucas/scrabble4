@@ -97,9 +97,24 @@ polymelkzuurtje : po pol poly polymelkzuur polymelkzuurtje lyme me mel melk melk
 ```
 
 Daardoor zijn er van de 32768 deelverzamelingen maar 6218 / 6682 / 7000 woord-consistent.
-De ruimte van *volgordes* blijft desondanks astronomisch (het record alleen al heeft 33 zetten;
-alleen al het permuteren van de losse tegels loopt in de faculteiten). Volledige opsomming van
-schema's is uitgesloten — vandaar de grens hieronder.
+
+Toch is de ruimte astronomisch. `MODE=count` telt exact het aantal legale *lijn-geschiedenissen*
+per lijn (padtelling in dezelfde DP):
+
+```
+H15 geschenkcheques  1.151.884.557    V11 smarotsende  2.345.582
+H3  aft                          9    V9  eenorigen       73.894
+H13 overzwevenden      959.728.754    V9  enabelden      286.516
+H15 flexwerkstertje  3.885.236.470    V8  uitademt        19.718
+H2  in                           3    V7  waakton         2.492
+H2  na                           3    V8  windboom        18.213
+H15 polymelkzuurtje 22.737.680.062    V8  raspiger        27.164
+                                   product = 9,55 x 10^72
+```
+
+Het werkelijke aantal schema's is nog gróter: die 9,55·10^72 lijn-geschiedenissen mogen ook nog
+onderling verweven worden tot één globale volgorde. Opsommen is uitgesloten — vandaar de grens
+hieronder. (De B&B bezoekt er uiteindelijk **751**.)
 
 ---
 
@@ -208,9 +223,14 @@ in §5. Ze sommeren ruim boven 913, dus **een bewijs voor de vrije-letter-klasse
 uit** — de per-lijn-grenzen zijn daarvoor te los, omdat ze de zak (100 lettertegels + 2 blanco's)
 en de gedeelde letters op de 24 kruispunten negeren.
 
+§5 sluit die klasse alsnog af met een zak- en kruispuntbewust CP-SAT-model: **STELLING 3, score
+<= 4847 bij deze bezetting over zetvolgorde EN herlettering samen.**
+
 Expliciet NIET afgedekt:
-* zetschema's bij een **andere letterinvulling** van de 56 vrije cellen;
-* andere bezettingen (dat is een andere vraag).
+* **andere bezettingen** — dat is een andere vraag;
+* de 69 punten tussen 4778 en de vrije-letter-grens 4847: daarvoor zou de koppeling tussen de
+  lijnen (globale volgorde, aanraakregel, cel-in-hoogstens-een-meer-tegelzet) ook in het
+  vrije-letter-model moeten zitten, zoals ze in Stelling 1 wel zit.
 
 ---
 
@@ -246,32 +266,50 @@ gedeelde cellen delen één lettervariabele, en het totale lettergebruik over al
 in de zak passen op ten hoogste 2 blanco's na (die blanco's krijgen in het model tóch hun volle
 waarde — overschatting, dus gezond).
 
-Uitkomst (zie §6 voor de exacte getallen uit de laatste run): de grens zakt van 3865 + 1364 = 5229
-naar aanzienlijk lager. Deelklasse-ijkpunt: houdt rij 4 zijn woord `overzwevenden`, dan is de
-vrije-letter-bovengrens **4847** — d.w.z. bij deze bezetting is met álle herletteringen van de
-overige vrije cellen en álle zetvolgordes hooguit 69 punten boven het record te halen.
+CP-SAT sluit dit model **OPTIMAAL**: de elf vrije lijnen halen samen hoogstens **982** (de
+letters van het record halen daar 966; het record zelf 938). De losse per-lijn-optima sommeerden
+tot 1364 — de zak en de kruispunten kosten dus 382 van die 1364.
 
-Wat deze grens nog steeds weglaat (en dus loszit): globale volgorde-consistentie tussen lijnen, de
-aanraakregel, en de regel dat een cel in hoogstens één van zijn twee lijnen in een meer-tegelzet
-kan zitten. Op de vaste-letter-instantie was juist die koppeling goed voor de laatste 53 punten
-(4831 → 4778).
+> ### STELLING 3 (bewezen)
+> Bij deze bezetting geldt, over **alle** legale zetvolgordes **én alle** herletteringen van de 56
+> vrije cellen (ankerletters vast, zak = 100 lettertegels + 2 blanco's, alle gevormde runs
+> woorden):
+> ```
+>        score  <=  3865 (ankerrijen)  +  982 (vrije lijnen)  =  4847.
+> ```
+> Het record staat op 4778; er ligt bij deze bezetting dus **hooguit 69 punten** headroom, over
+> zetvolgorde én herlettering samen.
+
+Gebruikte verruimingen (alle in de veilige richting, dus de grens blijft geldig): de per-lijn-optima
+worden onafhankelijk gekozen — dat laat de globale volgorde-consistentie, de aanraakregel en de
+regel *een cel kan in hoogstens één van zijn twee lijnen in een meer-tegelzet zitten* vallen; en
+blanco's krijgen in het model hun volle letterwaarde. Op de vaste-letter-instantie was precies die
+weggelaten koppeling goed voor de laatste 53 punten (4831 → 4778); als ze hier vergelijkbaar bijt,
+is de echte vrije-letter-top dicht bij het record.
 
 ---
 
 ## 6. Bestanden en gebruik
 
 ```
-experiments/mg_scheduleproof.py        motor: decompositie, per-lijn-DP, staartgrens, B&B
-experiments/SCHEDULEPROOF.md           dit document
+experiments/mg_scheduleproof.py            motor: decompositie, per-lijn-DP, staartgrens, B&B,
+                                           vrije-letter-DP en zakbewuste CP-SAT-grens
+experiments/SCHEDULEPROOF.md               dit document
+experiments/results/scheduleproof/L*.json  per vrije lijn: alle kandidaat-woorden met hun exacte
+                                           lijn-bovengrens U_L(W)  (11 lijnen, 157.807 woorden)
 
-# hoofdbewijs (0,2 s)
+# hoofdbewijs (0,2 s)  -> STELLING 1
 .venv/bin/python experiments/mg_scheduleproof.py
-# validatie: moet het record zelf terugvinden
+# validatie: moet het record zelf terugvinden (getuige 32 zetten, arbiter 4778)
 LB=4777 .venv/bin/python experiments/mg_scheduleproof.py
 # arbiter-audit van de zetgenerator
 MODE=audit N=600 .venv/bin/python experiments/mg_scheduleproof.py
-# vrije-letter-maximum van één lijn (LI = index uit de lijnlijst)
-MODE=free LI=7 OUT=/tmp/L7.json .venv/bin/python experiments/mg_scheduleproof.py
+# omvang van de zoekruimte
+MODE=count .venv/bin/python experiments/mg_scheduleproof.py
+# vrije-letter-tabel van één lijn (LI = index uit de lijnlijst; SHARD/NSHARD voor parallel)
+MODE=free LI=2 SHARD=0 NSHARD=16 OUT=/tmp/L2_0.json .venv/bin/python experiments/mg_scheduleproof.py
+# zak- en kruispuntbewuste vrije-letter-grens (~5 min)  -> STELLING 3
+MODE=freebound VALDIR=experiments/results/scheduleproof .venv/bin/python experiments/mg_scheduleproof.py
 ```
 
 `WOUT=<pad>` schrijft een gevonden beter schema weg (alleen als de arbiter > 4778 bevestigt).
