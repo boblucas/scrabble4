@@ -416,3 +416,13 @@ kunnen vormen. De triplet-ranker weegt tot nu toe alleen wat een triplet ZELF op
 voor de overige 56 cellen OVERLAAT. En de m-plafondmaat is zak-BEWUST maar niet zak-LEXICAAL: hij
 telt tegels, niet of de resterende letters nog woorden kunnen vormen. Dat verschil kostte hier vier
 veelbelovende kandidaten.
+
+### Laan-verificatie definitief (2026-07-29) + de mooiste bevestiging van het ruil-lemma
+Zes laan-varianten getoetst op het 4790-bord: rij 3 (kol 2..11, +59) INFEASIBLE, rij 4 (+30)
+INFEASIBLE, rij 1 (+21) INFEASIBLE, rij 4 (+21) INFEASIBLE, rij 6 (+11) UNKNOWN, en precies EEN
+overlevende: rij 3 met alleen de cel (11,3), plafond 4896. Die levert een geverifieerd spel op
+(maskgeom_board_laan3.json, 4744 arbiter-ok) maar ruim onder het record: om die ene tegel kwijt te
+kunnen moet CP-SAT het hele bord herletteren, en dat kost elders meer dan de toevoeging opbrengt.
+BEVESTIGING VAN HET RUIL-LEMMA: diezelfde cel (11,3) is precies wat de LNS-vloot een uur eerder
+gebruikte -- maar als RUIL tegen (11,2), en dat gaf 4793. Dezelfde cel, 49 punten verschil, alleen
+omdat de ruil binnen het tegelbudget past en de toevoeging niet.
