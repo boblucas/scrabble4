@@ -326,3 +326,9 @@ lange horizontale woorden vormen. Spanningsveld: elke aangrenzende kolom maakt k
 buur die allemaal geldig moeten zijn.
 NB: de per-lijn-plafonds in de diagnose zijn gecertificeerde ONDERgrenzen op het lijnplafond en
 negeren zak, kruispuntconsistentie en volgorde -- indicaties, geen grenzen.
+
+### 12-bingo-familie GESLOTEN (2026-07-28)
+De laatste levende bingo-lead is uitgeput. De woordenboek-bewuste schemazoeker vond binnen die
+familie 7304 woordbare schema's met plafond 4873 (tegen 4881 voor de basis), maar de CP-SAT-vulling
+van de drie beste geeft alle drie 4772 (arbiter ok) -- onder hun eigen basis van 4773 en 6 onder het
+record. Het plafondgat van 8 punten bleek dus geen speelruimte maar juist een extra lexicale schuld.
