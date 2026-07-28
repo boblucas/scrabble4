@@ -256,3 +256,35 @@ Onze maskers: rij 0 {0,3,7,8,11,13,14}, rij 7 {0,1,2,3,12,13,14}, rij 14 {0,1,2,
 - BOVENGRENS: set-packing over 12.835 vormlegale 7-groepen geeft max 13 disjuncte bingo's, maar elke
   pakking van 13 splitst rij 0 EN rij 14 (~-2200 voor +100). **12 is het maximum dat de x27-structuur
   overleeft**, en 12 kost ons 5 punten.
+
+## LAAG 2 BEWEZEN (2026-07-28): deze bezetting is uitgeput op 4847
+DECOMPOSITIE-IDENTITEIT (de sleutel, numeriek geverifieerd tegen score_game):
+    score = SOM over de 14 maximale EINDruns L van g_L(geschiedenis van L)
+    g_L = alle woordscores op L + 50 * (aantal 7-tegelzetten met L als hoofdlijn)
+Elke gescoorde run ligt in precies EEN maximale eindrun (span-vulregel) en elke bingo hoort bij
+precies EEN hoofdlijn. Daarmee valt de score per lijn uiteen en geeft een exacte DP over
+deelverzamelingen per lijn een TOELAATBARE staartgrens.
+
+STELLING 1: bij de bezetting EN de letters van het record bestaat er geen legale zetvolgorde met
+score > 4778. Uitputtend bewezen: wortelgrens 5225, met de centrumregel (de zet met (7,7) is globaal
+zet 1, dus de centrale x2 kan nooit in een slotzet worden hergebruikt — dat kostte rij 7 alleen al
+955->561) zakt hij naar 4831, en de branch-and-bound sluit in 0,2 s met 751 bezochte toestanden
+terwijl de ruimte 9,55e72 combinaties van lijn-geschiedenissen telt.
+Validatie: identiteit vs arbiter; 600 willekeurige volledige schema's 600x arbiter-identiek; met
+LB=4777 vindt de zoeker zelf een 32-zets-getuige die de arbiter op 4778 zet (het record heeft er 33),
+dus de zoektocht gaat diep genoeg en snoeit niets legaals weg.
+
+STELLING 3 (CP-SAT, OPTIMAAL gesloten): over ALLE zetvolgordes EN ALLE herletteringen van de 56 vrije
+cellen (zak 100 tegels + 2 blanco's, kruispuntconsistentie op de 24 gedeelde cellen) geldt
+    score <= 3865 (ankerrijen, onvoorwaardelijk) + 982 = 4847.
+Losse per-lijn-maxima sommeerden tot 1364; zak en kruispunten kosten daar 382 van.
+
+GEVOLG VOOR DE CAMPAGNE: deze bezetting heeft hooguit 69 punten headroom over zetvolgorde EN
+herlettering samen, en dat is een BOVENgrens. Winst moet uit een ANDERE BEZETTING komen.
+Bobs 4819 ligt nog net onder 4847, dus deze bezetting sluit hem niet uit — maar 4819 halen zou
+betekenen dat we 41 van de 69 bound-punten daadwerkelijk incasseren, terwijl per lijn zichtbaar is
+dat de zak die combinatie niet toelaat (V11 145 vs plafond 221, V9 87/143, V8 100/141).
+
+VOLGENDE STAP die hieruit volgt: de decompositie-identiteit is niet aan DEZE bezetting gebonden.
+Per-lijn-grenzen maken het mogelijk om hele GEOMETRIEKLASSEN te begrenzen in plaats van losse borden
+— dat is de aangewezen route naar laag 3 (alle geometrieen bij gegeven triplet+masker).
