@@ -33,7 +33,9 @@ def run(drops, adds):
     for m in moves0:
         keep = [c for c in m if c not in dset]
         if not keep: continue
-        if len(keep) != len(m): return ('splitzet',)   # sloop binnen een meertegelzet: niet toegestaan
+        if len(keep) != len(m) and not os.environ.get('ALLOWSHRINK'):
+            return ('splitzet',)   # sloop binnen een meertegelzet: standaard niet toegestaan
+        # met ALLOWSHRINK mag een zet krimpen; de arbiter (score_game) blijft de poortwachter
         mv.append(keep)
     # stabiele greedy-touch-herordening van het PRE-FINAL-deel; finals en de
     # post-final-extensiestaart houden hun plaats (extensies werken pas na de finals)
