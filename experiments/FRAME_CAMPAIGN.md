@@ -401,3 +401,18 @@ in een klap waarom elke gerichte structurele ingreep van deze campagne sneuvelde
 dichte blokken, bruggen, lanen -- allemaal TOEVOEGINGEN) terwijl een blinde ruil-zoeker drie
 verbeteringen op rij vond. De zoekruimte die nog leeft is die van de PERMUTATIES van hetzelfde
 tegelbudget, niet die van de uitbreidingen.
+
+### Zak-uitputting exact gemeten (2026-07-29)
+Op het 4793-bord is van de 100 lettertegels er nog precies EEN over (een 'n'), plus beide blanco's
+liggen op het bord. Verbruik van de goedkope letters: e 18/18, a 6/6, o 6/6, d 5/5, r 5/5, s 5/5,
+t 5/5, i 4/4, n 9/10. Alle vier de laan-varianten op het 4790-bord zijn CP-SAT-INFEASIBLE
+(rij 1 +21, rij 4 +30, rij 4 +21, rij 3 +59), net als de 4787-tegenhangers. Formeel blijft alleen
+de rij-3-laan op invoegpositie >=7 van het 4790-bord ongetoetst; de vloot-lijst bevat per laan maar
+een positie. Model B (schema-onafhankelijke zaktoets) draait nog.
+CONSEQUENTIE VOOR DE CAMPAGNE: verbetering moet uit een ander LETTERMULTISET komen, niet uit meer
+structuur. Het ankertriplet eist 45 tegels op, en juist de goedkope bindletters (e/n/a/o/d/r/s/t/i)
+zijn daarna volledig vergeven -- terwijl precies die letters nodig zijn om verderop nog woorden te
+kunnen vormen. De triplet-ranker weegt tot nu toe alleen wat een triplet ZELF oplevert, niet wat het
+voor de overige 56 cellen OVERLAAT. En de m-plafondmaat is zak-BEWUST maar niet zak-LEXICAAL: hij
+telt tegels, niet of de resterende letters nog woorden kunnen vormen. Dat verschil kostte hier vier
+veelbelovende kandidaten.
