@@ -186,3 +186,36 @@ Machinerie: sloop een cel, greedy-touch-herordening van het pre-final-blok, voll
 - Vrije slots op het 4531-bord: alleen V7 'wankend' NA (7,11) en VOOR (7,3).
 - 6 ruilen (blad (10,8)/(5,8)/(2,11) x slot (7,11)/(7,3)) leveren ALLE een legaal bord maar geen enkele wint: 4500/4496/4511/4517/4490/4489 (beste -14). De bladeren zijn 14-27 waard, de vrije slots ~2-6.
 CONCLUSIE: het bord is verzadigd — geen sloopbare tegel met positieve ruilwaarde. Daarmee zijn ALLE rescoring-motoren uitgeput op dit footprint (extgen, structsweep, extjoint, chainify, ladder, ruil). 4531 staat.
+
+## NA DE BORDCORRECTIE (2026-07-28): economie van de ingrepen, exact doorgerekend
+Record 4777; plafond huidige geometrie 4867; bewezen globale bovengrens 13917 (GLOBALBOUND.md).
+
+STRUCTURELE FEITEN (nieuw, en ze corrigeren de oude frame-analyse):
+- Een zet legt max 7 tegels, dus een 15-letterlijn wordt ALTIJD door een slotzet voltooid. Alleen een
+  RIJ-slotzet kan drie TWS-cellen tegelijk nieuw leggen => alleen rij 0 en rij 14 halen x27.
+  Een KOLOM kan nooit x27 halen; hij wordt door een rij-slotzet gekruist en krijgt dan x3 per TWS-cel.
+  Dat maakt het hele frame-idee structureel zwakker dan gedacht.
+- Rij 7 haalt x9, niet x18: de DWS op (7,7) telt niet mee omdat het centrum in zet 1 ligt.
+- De zak is UITGEPUT (alleen een 'i' over) en alle 20 hoogste m-cellen zijn ankercellen met vaste
+  letters. Het restgat van 90 punten is dus puur HERSCHIKKING van dezelfde letters.
+- Sloopkosten (mg_tradeoff.py): 9 cellen kosten samen 30 punten; vanaf de 10e kost elke sloop 50+
+  omdat hij een bingo breekt. Dat verklaart waarom eerdere netto-schattingen te somber waren.
+
+BRUTO-WAARDE per toevoeging (m-calculus, cap genegeerd): kolom 7 gaten +191/6 tegels (32/tegel,
+lexicaal dood), kolom 14 volledig +211/12 (18/tegel), kolom 14 boven +65/6, kolom 14 onder +59/6,
+kolom 0 boven/onder +83/6 (14/tegel). Superadditief: de volledige kolom is meer waard dan de som
+van zijn helften, want hij wordt drie keer gekruist.
+
+NEGATIEF, met arbiter geverifieerd (niet herhalen):
+- kolom 14 boven ingevoegd als groep vóór de finals tegen 6 goedkope sloopcellen: 4735 (-42).
+  De m-calculus voorspelde bruto +65; het woordenboek dwingt goedkope letters in het kolomwoord.
+  LES: bruto-m-winst is een BOVENGRENS, geen voorspelling -- bij lange nieuwe lijnen is het
+  woordenboekverlies veel groter dan de ~90 punten die we op de bestaande geometrie zien.
+- kolom 11 x4 (3 tegels): beide sloopvarianten infeasible.
+- lange herlettering (3000s, 14 workers) op de huidige geometrie: geen verbetering => 4777 is
+  het praktische optimum van dit footprint.
+- woordbare schema-alternatieven (plafond 4872) vullen naar 4776.
+
+NIEUW GEREEDSCHAP: mg_mceiling.py (m-calculus + schemazoeker), mg_schedsearch.py (woordenboek-bewuste
+schemazoeker), mg_schedfit_all.py, mg_tradeoff.py (sloopkosten incl. bingo-breuk), mg_insert.py
+(groep invoegen VOOR de slotzetten), mg_globalbound.py (bovengrens 13917).

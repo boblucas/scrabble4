@@ -13,6 +13,7 @@ import maxgame_score as MG
 src = open('/home/bob/programming/scrabble4/experiments/mg_ladder.py').read()
 head = src.split("fin_idx = set(")[0]
 head = head.replace("os.environ.get('LDBASE'", "os.environ.get('RFBASE'")
+head = head.replace("sol.parameters.num_workers = 8", "sol.parameters.num_workers = int(os.environ.get('NW','8'))")
 g = {}
 exec(compile(head, 'refit_head', 'exec'), g)
 

@@ -63,6 +63,9 @@ def peel(k, skip=(), occ0=None):
 
 variants = []
 K = len(ADD)
+DS = os.environ.get('DROPSET')
+if DS:
+    variants.append(tuple(eval(DS)))
 variants.append(tuple(peel(K)))
 for skipn in range(1, 5):                      # varieer: sla de n goedkoopste over
     sk = tuple(c for _, c in sorted(((m[c], c) for c in occ if c[1] not in (0, 7, 14) and c not in PROTECT))[:skipn])
