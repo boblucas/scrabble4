@@ -21,7 +21,7 @@ weerlegging zit niet waar iedereen hem zoekt. Het eindbord van een dicht blok is
 invulbaar; wat sneuvelt zijn de **tussenstanden**: elke bouwvolgorde van aangrenzende kolommen
 maakt gedeeltelijke rij-runs (2-, 3-, 5-letterwoorden) die *bovenop* de eindwoorden moeten
 bestaan. Elk schema met een plafond boven ~4680 is CP-SAT-INFEASIBLE; de schema's die wél
-bestaan leveren geverifieerde borden van **4540** en **4412** op.
+bestaan leveren geverifieerde borden van **4540**, **4476** en **4412** op.
 **Er is geen bord boven 4778 gevonden; `maxgame_BEST.json` is ongewijzigd.**
 
 ---
@@ -245,13 +245,14 @@ gekozen dat `lex_feasible == JA` haalt. Dat kost plafond en levert een bord op:
 | topologie | tegels | eindruns | beste lex-levende plafond | CP-SAT | **arbiter** |
 |---|---:|---:|---:|---|---:|
 | **E2** — dicht ONDERpaar kolommen 5-6 (rijen 8-13), centrumkolom, geen laan | 98 | 24 | 4580 | ok 4540 | **4540 ok=True** |
+| **G** — dicht ONDERpaar kolommen 10-11 (kolom 10 kort), laan, centrum | 98 | 15 | 4592 | ok 4476 | **4476 ok=True** |
 | **D** — onder 4/6/11 vol, boven record (geen blok) | 87 | 10 | 4421 | ok 4412 | **4412 ok=True** |
 | E — zelfde onderpaar 5-6 mét de rij-4-laan | 101 | 18 | 4682 | **INFEASIBLE** | — |
 | F — dicht BOVENpaar kolommen 9-10 (rijen 1-6) + laan | 100 | 17 | 4680 | **INFEASIBLE** | — |
 | A — bovenblok kolommen 7-10 vol (de enige breedte-4-positie uit §2b) | 99 | 18 | — | — | **geen enkel lexicaal levend schema** (12 schema's, alle NEE) |
 
-`experiments/results/denseblock_board_E2.json` en `..._D.json` zijn geverifieerde spellen
-(`ok=True`), maar met **4540** resp. **4412** ver onder het record. E2 laat wél precies zien wat
+`experiments/results/denseblock_board_E2.json`, `..._G.json` en `..._D.json` zijn
+geverifieerde spellen (`ok=True`), maar met **4540** / **4476** / **4412** ver onder het record. E2 laat wél precies zien wat
 de opdracht vroeg — middenrijen die zelf een woord vormen:
 
 ```
@@ -271,6 +272,14 @@ de opdracht vroeg — middenrijen die zelf een woord vormen:
    13 . . . . . v a . . . . e . . .
    14 p o l y m e l k z u u r t j e
 ```
+
+**Eerlijkheidsvoorbehoud bij de lex-kolom.** `lex_feasible` geeft drie antwoorden. **NEE** is een
+bewijs (CP-SAT INFEASIBLE) en daar rust alle weerlegging hierboven op. **JA** en **ONBEKEND**
+hangen van de rekentijd af, en niet elk model is even makkelijk: de recordbezetting zelf heeft
+>60 s nodig voor een JA (bij `tlim=90` geeft `schedule(boete=0)` en `boete=15` op de
+recordbezetting wél JA, met 32 resp. 31 runs), terwijl de dunnere blokborden binnen seconden
+klaar zijn. De filter is dus *conservatief in de goede richting* — hij verwerpt alleen bewezen
+onmogelijke schema's — maar hij is geen betrouwbare *rangschikking* van wat wél kan.
 
 > **De realisatiegraad is niet het probleem.** E2 haalt 4540 uit een plafond van 4580 = **99,1 %**
 > (het record: 4778 uit 4881 = 97,9 %). Het probleem is dat een dicht blok géén hoog plafond
@@ -292,19 +301,23 @@ de opdracht vroeg — middenrijen die zelf een woord vormen:
 3. **De lexicale muur is scherp gelokaliseerd**: het 8-letter kolomwoord met twee vaste
    ankerletters. Blokbreedte ≤ 4 boven / ≤ 3 onder statisch, en met een echte bouwvolgorde
    1 positie boven (kolommen 7-10) en 1 onder (kolommen 4-6).
-4. **De echte doodsoorzaak is de bouwvolgorde, niet het eindbord.** Elke dichte-blok-bezetting
-   die we hebben doorgerekend is statisch invulbaar en met zetschema niet. Dat is een *nieuw*
-   filter (`static_feasible` vs `lex_feasible`) dat elke volgende generator zou moeten draaien:
-   het scheidt "deze bezetting bestaat niet" van "deze bezetting bestaat, maar dit schema niet".
+4. **De echte doodsoorzaak is de bouwvolgorde, niet het eindbord.** Elke doorgerekende
+   dichte-blok-bezetting is *statisch* invulbaar; wat sneuvelt is het zetschema. Dat is een
+   *nieuw* filter (`static_feasible` vs `lex_feasible`) dat elke volgende generator zou moeten
+   draaien: het scheidt "deze bezetting bestaat niet" van "deze bezetting bestaat, maar dit
+   schema niet". Praktisch gevolg: de plafondzoeker mag niet meer zonder lexicale toets
+   worden gebruikt — elk schema dat hij boven ~4680 vindt, bestaat niet.
 5. **De enige breedte-4-positie is apart uitgeprobeerd en valt om.** Variant A (bovenblok
    kolommen 7-10 vol, met de dragers 2/5/12 en onder 4/11, 99 tegels) is statisch invulbaar,
    maar geen van de twaalf gebouwde zetschema's (boete 0/25/60 × 4 seeds, 32-46 runs) overleeft
    de kruiswoordtest. De breedte-4-positie uit §2b bestaat dus wel als rechthoek en niet als
    spelonderdeel.
-6. **Wat wél overeind blijft is klein.** Het enige geverifieerde dichte blok is het onderpaar
-   kolommen 5-6 (E2, 4540). Zodra je daar de rij-4-laan bij zet — nodig om aan 101 tegels en
-   11-12 bingo's te komen — is het weer INFEASIBLE. Dat is de kern van de economische impasse:
-   het blok en de laan willen dezelfde rijen.
+6. **Wat wél overeind blijft is klein en zit ~240 punten te laag.** Geverifieerd zijn de
+   onderparen kolommen 5-6 (E2, **4540**, 98 tegels, 12 bingo's) en 10-11 (G, **4476**,
+   98 tegels). De variant met blokpaar 5-6 *plus* de rij-4-laan (E, 101 tegels, plafond 4682)
+   is INFEASIBLE, net als het bovenpaar 9-10 met laan (F, plafond 4680). Het patroon is
+   consistent: een dicht paar is betaalbaar zolang het bord daaromheen dun blijft, en zodra je
+   de tegels toevoegt die het plafond richting 4800 moeten duwen, verdwijnt de lexicale ruimte.
 7. Voor >= 4819 blijft het beeld van NEWTOPO §6 staan: de rem is de **bingo-breuk** (elke
    structurele toevoeging van 7 tegels kost 50) en het **lexicon op de hoogste m-cellen**, niet
    de geometrie.
