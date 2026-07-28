@@ -1,0 +1,20 @@
+{
+ "steps": [
+  [
+   "1  per-cel, vrije blokken (L1)",
+   15182,
+   ""
+  ],
+  [
+   "2  + orientatie-exclusiviteit (L2)",
+   14649,
+   ""
+  ],
+  [
+   "6  celmodel: L1-L6 (225 cellen)",
+   13917,
+   "[FEASIBLE] modeloptimum >= 10835"
+  ]
+ ],
+ "bound": 13917
+}
