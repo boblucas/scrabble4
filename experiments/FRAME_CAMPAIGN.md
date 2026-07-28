@@ -388,3 +388,16 @@ wel een 11-letterwoord toelaten -- de bovenhelft MOET dus herletterd worden.
 LET OP (gemeten na de LNS-vondsten): op het 4790-bord is de beste laan nog maar +8, want de vloot
 heeft juist de losse tegels opgesoupeerd die het betaalmiddel voor de laan waren. Laan en LNS
 concurreren om dezelfde voorraad; MODE=laan moet dus na elke recordverbetering opnieuw draaien.
+
+## DE ZAK IS DE GRENS (2026-07-29, gemeten): TOEVOEGEN kan niet meer, RUILEN wel
+Alle laan-varianten op het 4790-bord zijn CP-SAT-INFEASIBLE, en het scherpste datapunt is dat EEN
+extra tegel aan de al bestaande rij-4-laan -- geometrisch de goedkoopst denkbare toevoeging -- al
+zak-infeasible is (plafond 4915, +30). Het record gebruikt 99 van de 100 lettertegels plus beide
+blanco's; elke TOEVOEGING dwingt het lexicon tot letters die de zak niet meer heeft.
+SYNTHESE MET DE LNS-VONDSTEN: de nachtvloot tilde het record in dezelfde uren van 4778 naar 4793 --
+maar uitsluitend met RUILEN (sloop een cel, bouw er een andere), waarbij het tegelaantal en dus het
+lettermultiset-budget gelijk blijft. Toevoegingen zijn zak-geblokkeerd, ruilen niet. Dat verklaart
+in een klap waarom elke gerichte structurele ingreep van deze campagne sneuvelde (kolommen, rail,
+dichte blokken, bruggen, lanen -- allemaal TOEVOEGINGEN) terwijl een blinde ruil-zoeker drie
+verbeteringen op rij vond. De zoekruimte die nog leeft is die van de PERMUTATIES van hetzelfde
+tegelbudget, niet die van de uitbreidingen.
