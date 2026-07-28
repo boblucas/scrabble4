@@ -394,11 +394,18 @@ verslaan is 4788/4925 = **97,2 %**; het record zelf realiseert 4787/4889 = **97,
 
 ### Uitkomst: lexicaal levend, maar CP-SAT INFEASIBLE — en de zak is de dader
 
-Met de eindbord-getuige als warme start meldt CP-SAT voor **beide** levende varianten
-(invoegpositie 7 en 8, plafond 4925) **INFEASIBLE**. Dat is een bewijs, geen time-out: er bestaat
-geen letterinvulling die tegelijk alle gescoorde runs *en* de zak *en* de blanco-limiet haalt.
-`lex_feasible` (dezelfde runs, **zonder** zak) zei JA — het verschil tussen die twee is dus
-precies de zak.
+Met de eindbord-getuige als warme start meldt CP-SAT voor de twee getoetste levende varianten
+(invoegpositie 7 en 8, plafond 4925) **INFEASIBLE**. Dat is een bewijs voor díe twee schema's,
+geen time-out: er bestaat geen letterinvulling die tegelijk alle gescoorde runs *en* de zak *en*
+de blanco-limiet haalt. `lex_feasible` (dezelfde runs, **zonder** zak) zei JA — het verschil
+tussen die twee is dus precies de zak.
+
+**Precisering van de bewijskracht.** De schema-*onafhankelijke* variant (alleen de 18 eindruns
+plus de zak, `maskgeom_zakgetuige.log`, model B) bleef binnen 600 s **UNKNOWN**. De BEZETTING is
+dus nog niet formeel weerlegd — alleen de twee getoetste zetschema's zijn dat. De overige vier
+levende posities draaien in `maskgeom_laanfitpos.log`. Wie dit spoor oppakt: draai model B met
+ruime tijd; een INFEASIBLE daar sluit de hele bezetting in één klap, een FEASIBLE wijst
+omgekeerd naar de tijdelijke runs en dan loont het om meer zetvolgordes te proberen.
 
 En die is op dit bord tot op de tegel uitgeput:
 
