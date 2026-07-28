@@ -418,8 +418,18 @@ CP-SAT-infeasible:
 | rij 4, kolom 1 erbij (verlenging van de bestaande laan) | 4915 | INFEASIBLE |
 | rij 4, kolom 0 erbij | 4906 | INFEASIBLE |
 | rij 3, kolommen 2..11 (positie 6) | 4944 | INFEASIBLE |
+| rij 6, kolommen 2..3 | 4896 | UNKNOWN |
+| **rij 3, alleen `(11,3)` erbij** | 4896 | **ok → arbiter 4744** |
 
-**Vier van de vier.** Dat is geen toeval maar hetzelfde mechanisme: elk van deze varianten voegt
+**Precies één variant overleeft de zak, en die is een enkele tegel groot.** `laan[3,10,11]pos4`
+voegt alleen `(11,3)` toe (de run kolom 10..12 op rij 3) en levert een geverifieerd spel op:
+CP-SAT ok, `MG.score_game` = **4744, ok=True**, onafhankelijk nagerekend, weggeschreven naar
+`experiments/results/maskgeom_board_laan3.json`. Maar hij staat **onder het record** — de
+realisatiegraad is 4744/4896 = 96,9 %, want om die ene tegel kwijt te kunnen moet CP-SAT het hele
+bord herletteren en dat kost elders meer dan de toevoeging opbrengt. Dat is de economie van dit
+bord in één regel: er is geen ruimte meer, ook niet voor één tegel.
+
+**Vier van de vier weerlegd.** Dat is geen toeval maar hetzelfde mechanisme: elk van deze varianten voegt
 tegels toe die het lexicon dwingen tot letters die de (uitgeputte) zak niet meer heeft. **Zelfs
 één extra tegel aan de bestaande rij-4-laan** — geometrisch de goedkoopst denkbare toevoeging,
 +30 plafond — is al zak-infeasible. Dat is de scherpste beschikbare meting van hoe strak het
@@ -477,8 +487,11 @@ Draaiende/afgeronde runs en hun logbestanden:
 | `scorebound` | lexicaal-bewuste BOVENGRENS op de score (eindruns + zak, tijdelijke runs gerelaxeerd), laan versus record | `maskgeom_scorebound.log` |
 | `laanfitpos` | `MODE=laanfit` over de vijf levende posities | `maskgeom_laanfitpos.log` |
 
-**Er is in deze sessie geen bord boven 4787 geproduceerd.** `maxgame_BEST.json` en `lns_best.json`
-zijn ongewijzigd; alle uitvoer staat in `experiments/results/maskgeom_*`.
+**Er is in deze sessie geen bord boven het record geproduceerd.** Wél één geverifieerd spel:
+`experiments/results/maskgeom_board_laan3.json`, **4744, `ok=True`** (rij-3-laan beperkt tot
+`(11,3)`, plafond 4896) — ruim onder het record, dat intussen naar 4793 is gelopen.
+`maxgame_BEST.json` en `lns_best.json` zijn ongewijzigd; alle uitvoer staat in
+`experiments/results/maskgeom_*`.
 
 Reproduceren van de kandidaat in één regel:
 
