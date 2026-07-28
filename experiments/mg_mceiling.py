@@ -57,28 +57,46 @@ def multiplicity(moves):
     return m
 
 
-def ceiling(m, fixed=None, bingos=0, cap=101):
+def ceiling(m, fixed=None, bingos=0, cap=101, zero=None):
     """Exacte zak-bovengrens: vaste cellen tellen hun echte waarde, vrije cellen krijgen
-    de beste resterende tegels (hoogste waarde op hoogste m). fixed: {cel: letter-id}."""
+    de beste resterende tegels (hoogste waarde op hoogste m). fixed: {cel: letter-id}.
+    zero: cellen met een BLANCO (waarde 0, kosten geen zaktegel)."""
     fixed = fixed or {}
+    zero = set(zero or ())
     rest = Counter(BAG)
     val_fixed = 0
     for c, ch in fixed.items():
+        if c in zero: continue
         val_fixed += m.get(c, 0) * VAL[ch]
         rest[ch] -= 1
     pool = sorted((VAL[ch] for ch, n in rest.items() for _ in range(max(0, n))), reverse=True)
-    freem = sorted((v for c, v in m.items() if c not in fixed), reverse=True)
+    freem = sorted((v for c, v in m.items() if c not in fixed and c not in zero), reverse=True)
     return val_fixed + sum(a * b for a, b in zip(freem, pool)) + bingos
 
 
-def score_of(moves, fixed=None, cap=101):
+def score_of(moves, fixed=None, cap=101, zero=None):
     m = multiplicity(moves)
     bingos = 50 * sum(1 for mv in moves if len(mv) == 7)
-    return ceiling(m, fixed, bingos, cap), m
+    return ceiling(m, fixed, bingos, cap, zero), m
 
 
-def legal_schedule(moves, need_center=True):
-    """touch-regels: zet 1 dekt center, elke volgende raakt bestaand bord, <=7 tegels."""
+def shape_ok(mv, placed):
+    """ZETVORM: alle nieuwe tegels op EEN lijn, en de run tussen min en max moet volledig
+    gevuld zijn (door de zet zelf of door al liggende tegels).  Zonder deze check zou een
+    'zet' een willekeurige celverzameling mogen zijn -> geen enkel woord."""
+    s = set(mv)
+    xs = {x for x, y in s}; ys = {y for x, y in s}
+    if len(xs) > 1 and len(ys) > 1: return False
+    if len(xs) == 1:
+        x = next(iter(xs)); a, b = min(ys), max(ys)
+        return all((x, y) in placed or (x, y) in s for y in range(a, b + 1))
+    y = next(iter(ys)); a, b = min(xs), max(xs)
+    return all((x, y) in placed or (x, y) in s for x in range(a, b + 1))
+
+
+def legal_schedule(moves, need_center=True, shape=True):
+    """touch-regels: zet 1 dekt center, elke volgende raakt bestaand bord, <=7 tegels,
+    en (shape=True) elke zet heeft een echte zetvorm (een lijn, aaneengesloten run)."""
     placed = set()
     for i, mv in enumerate(moves):
         if not mv or len(mv) > 7: return False
@@ -87,6 +105,7 @@ def legal_schedule(moves, need_center=True):
         elif not any((x + dx, y + dy) in placed for (x, y) in mv for dx, dy in NB):
             return False
         if any(c in placed for c in mv): return False
+        if shape and not shape_ok(mv, placed): return False
         placed |= set(mv)
     return True
 
@@ -106,7 +125,8 @@ def best_schedule(seed_moves, fixed=None, iters=4000, seed=0, keep_tail=True):
         if op < 0.5 and idx:                       # splits een zet in tweeen
             i = rnd.choice(idx); m = cand[i]
             k = rnd.randrange(1, len(m))
-            rnd.shuffle(m)
+            m = sorted(m, key=lambda c: (c[1], c[0]))   # langs de lijn -> deelruns blijven heel
+            if rnd.random() < 0.5: m = m[::-1]
             cand[i:i + 1] = [m[:k], m[k:]]
         elif op < 0.8 and len(cand) > 2:           # verplaats een zet naar achteren
             i = rnd.randrange(len(cand) - 1)
@@ -129,9 +149,14 @@ if __name__ == '__main__':
     grid = D['grid']; moves = [[tuple(c) for c in m] for m in D['moves']]
     blanks = set(tuple(b) for b in D.get('blanks', []))
     fixed = {(x, y): grid[y][x] for y in (0, 7, 14) for x in range(15) if grid[y][x]}
+    alle = {(x, y): grid[y][x] for y in range(15) for x in range(15) if grid[y][x]}
     cap, m = score_of(moves, fixed)
+    exact, _ = score_of(moves, alle, zero=blanks)
     tot, per, ok, msg = MG.score_game([row[:] for row in grid], moves, blanks)
     print(f"gerealiseerd {int(tot)} | plafond huidig schema {cap} | verschil {cap - int(tot)}")
+    # identiteit: met ALLE letters vast is het 'plafond' geen grens meer maar de score zelf
+    print(f"m-calculus EXACT {exact} (== {int(tot)}? {exact == int(tot)}) | "
+          f"vorm-legaal schema: {legal_schedule(moves)}")
     if os.environ.get('SCHED'):
         b, bmv = best_schedule(moves, fixed, iters=int(os.environ.get('ITERS', '4000')))
         print(f"BESTE SCHEMA bij dezelfde bezetting: plafond {b} (+{b - cap} t.o.v. huidig schema)")
