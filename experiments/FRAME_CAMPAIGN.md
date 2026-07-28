@@ -237,3 +237,22 @@ BEGRIPPEN (voor de duidelijkheid vastgelegd): een MASKER is per ankerrij welke 7
 door de slotzet gelegd worden (en dus welke 8 pre-cellen zijn) -- drie keer zeven kolomnummers, geen
 letters en geen bordindeling. Het FOOTPRINT is alle 101 bezette cellen plus de zetvolgorde.
 Onze maskers: rij 0 {0,3,7,8,11,13,14}, rij 7 {0,1,2,3,12,13,14}, rij 14 {0,1,2,3,7,13,14}.
+
+### Bingo-tak GESLOTEN (2026-07-28) — met stelling
+- Samenvoegen van niet-bingo-tegels tot een 12e bingo: van de 24 losse tegels ligt er maar EEN lijn
+  met 7 op een rij (rij 14, x=5,6,8..12) en die heeft een gat op x=7 dat pas door de x27-slotzet
+  gelegd wordt => 0 legale kandidaten over alle 34 invoegposities. Zonder dat gat was de ruil +22
+  waard (50 bonus - 28 herscoring); hij is dus gunstig maar puur geometrisch geblokkeerd.
+- Splitsen van bestaande bingo's: alle 11 x 126 deelverzamelingen x beide volgordes x alle posities,
+  beste -39 (je verliest 50 en wint ~12 herscoring).
+- STELLING: een TWS-lijn waarvan de slotzet x=0,7,14 bevat draagt HOOGSTENS EEN bingo — de overige
+  cellen vallen in twee blokken van 6 en een tweede 7-zet zou over x=7 moeten bruggen, wat er nog
+  niet ligt. Prijs van een TWS-cel uit een slotzet halen: 1166 (rij 0), 1022 (rij 14), 344 (rij 7),
+  tegenover 50 voor een bingo. Rij 14 echt in 2 bingo's splitsen kost 897.
+- Rij 7 is de uitzondering ((7,7) ligt vanaf zet 1, dus daar mag een zet over x=7 bruggen). Via
+  kruis-lijn-herverdeling bestaat er wel degelijk een 12-bingo-spel met DEZELFDE 101 tegels:
+  4767 met dezelfde letters, 4773 na herlettering (arbiter OK, 28 zetten) — dus -5 t.o.v. 4778.
+  Bestanden: experiments/results/bingo12_sched.json en bingo12_refit.json.
+- BOVENGRENS: set-packing over 12.835 vormlegale 7-groepen geeft max 13 disjuncte bingo's, maar elke
+  pakking van 13 splitst rij 0 EN rij 14 (~-2200 voor +100). **12 is het maximum dat de x27-structuur
+  overleeft**, en 12 kost ons 5 punten.
