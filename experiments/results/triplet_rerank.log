@@ -1,0 +1,124 @@
+BORD OK — de 7 herstelde premies staan er.  15-letterwoorden: 118709
+rij-multipliers (nominaal): {0: 27, 7: 18, 14: 27}   (architectuur, midden al gelegd): {0: 27, 7: 9, 14: 27}
+letterprofiel ankerrijen: DL op x=3 en x=11 (identiek voor rij 0, 7 en 14)
+
+=== TOP-20 rij 0 (wm=27) ===
+   1. croquemboucheje     1701
+   2. geschenkcheques     1674
+   3. jacquetkostuums     1674
+   4. flauwekulexcuus     1647
+   5. alfahydroxyzuur     1647
+   6. deuxchevauxtjes     1647
+   7. vluchtreflexjes     1647
+   8. croquetmatchjes     1647
+   9. jacquardweefsel     1620
+  10. cultuurchequeje     1620
+  11. verzamelcheques     1620
+  12. dyscalculicusje     1593
+  13. mytylschooltjes     1593
+  14. circuscomedytje     1593
+  15. jacquardmachine     1593
+  16. chequeformulier     1593
+  17. playbackshowtje     1593
+  18. luchtdrukmaxima     1566
+  19. jezuscomplexjes     1566
+  20. polysyllabische     1566
+  huidige keuze: geschenkcheques = 1674  (rang 2, gat naar #1 = 27)
+
+=== TOP-20 rij 7 (wm=18) ===
+   1. croquemboucheje     1134
+   2. geschenkcheques     1116
+   3. jacquetkostuums     1116
+   4. flauwekulexcuus     1098
+   5. alfahydroxyzuur     1098
+   6. deuxchevauxtjes     1098
+   7. vluchtreflexjes     1098
+   8. croquetmatchjes     1098
+   9. jacquardweefsel     1080
+  10. cultuurchequeje     1080
+  11. verzamelcheques     1080
+  12. dyscalculicusje     1062
+  13. mytylschooltjes     1062
+  14. circuscomedytje     1062
+  15. jacquardmachine     1062
+  16. chequeformulier     1062
+  17. playbackshowtje     1062
+  18. luchtdrukmaxima     1044
+  19. jezuscomplexjes     1044
+  20. polysyllabische     1044
+  huidige keuze: flexwerkstertje = 918  (rang 431, gat naar #1 = 216)
+
+=== TOP-20 rij 14 (wm=27) ===
+   1. croquemboucheje     1701
+   2. geschenkcheques     1674
+   3. jacquetkostuums     1674
+   4. flauwekulexcuus     1647
+   5. alfahydroxyzuur     1647
+   6. deuxchevauxtjes     1647
+   7. vluchtreflexjes     1647
+   8. croquetmatchjes     1647
+   9. jacquardweefsel     1620
+  10. cultuurchequeje     1620
+  11. verzamelcheques     1620
+  12. dyscalculicusje     1593
+  13. mytylschooltjes     1593
+  14. circuscomedytje     1593
+  15. jacquardmachine     1593
+  16. chequeformulier     1593
+  17. playbackshowtje     1593
+  18. luchtdrukmaxima     1566
+  19. jezuscomplexjes     1566
+  20. polysyllabische     1566
+  huidige keuze: polymelkzuurtje = 1512  (rang 50, gat naar #1 = 189)
+
+=== rij 14: defect bord vs correct bord ===
+  polymelkzuurtje: defect 1242 (rang 182)  ->  correct 1512 (rang 50)
+  defecte top-5: [('alfahydroxyzuur', 1512), ('cultuurchequeje', 1458), ('flauwekulexcuus', 1404), ('hyperglykemisch', 1377), ('cryptocurrencys', 1377)]
+  correcte top-5: [('croquemboucheje', 1701), ('geschenkcheques', 1674), ('jacquetkostuums', 1674), ('flauwekulexcuus', 1647), ('alfahydroxyzuur', 1647)]
+
+drempels: MAXA=1701 MAXB=1044 -> vloer rij0/14 1359, vloer rij7 702
+rij-0/14-kandidaten boven de vloer: 434
+  waarvan bezorgbaar (harde fragment-check): 376
+rij-7-kandidaten met venster over x4-kol 4+10 boven de vloer: 2231 (van 9703 met venster)
+
+tripletten met gedegradeerde waarde >= huidig (4104): 14
+HUIDIG ('geschenkcheques', 'flexwerkstertje', 'polymelkzuurtje'): nominaal 4104, tekort 0, gedegradeerd 4104, rang 13
+  bezorgbare (masker-bewuste) waarde huidig: 3573
+
+=== TOP-14 bezorgbare, zak-haalbare tripletten ===
+  1. vluchtreflexjes / babyzwemstertje / verzamelcheques
+     nominaal 4203  tekort 0  blancoverlies 0  gedegradeerd 4203  delta +99 | masker-bewust 3231 (-342)  frag [11, 10]
+  2. vluchtreflexjes / babyzwemstertje / chequeformulier
+     nominaal 4176  tekort 0  blancoverlies 0  gedegradeerd 4176  delta +72 | masker-bewust 3474 (-99)  frag [11, 7]
+  3. verzamelcheques / bouwcuratrixjes / playbackshowtje
+     nominaal 4257  tekort 1  blancoverlies 90  gedegradeerd 4167  delta +63 | masker-bewust 3213 (-360)  frag [10, 7]
+  4. vluchtreflexjes / bodysurfstertje / verzamelcheques
+     nominaal 4167  tekort 0  blancoverlies 0  gedegradeerd 4167  delta +63 | masker-bewust 3213 (-360)  frag [11, 10]
+  5. vluchtreflexjes / babyzwemstertje / jacquardweefsel
+     nominaal 4203  tekort 1  blancoverlies 72  gedegradeerd 4131  delta +27 | masker-bewust 3357 (-216)  frag [11, 5]
+  6. verzamelcheques / flexwerkstertje / playbackshowtje
+     nominaal 4131  tekort 0  blancoverlies 0  gedegradeerd 4131  delta +27 | masker-bewust 3249 (-324)  frag [10, 7]
+  7. vluchtreflexjes / babyzwemstertje / wetenschapsquiz
+     nominaal 4122  tekort 0  blancoverlies 0  gedegradeerd 4122  delta +18 | masker-bewust 3420 (-153)  frag [11, 13]
+  8. vluchtreflexjes / babyzwemstertje / vormingscheques
+     nominaal 4122  tekort 0  blancoverlies 0  gedegradeerd 4122  delta +18 | masker-bewust 3150 (-423)  frag [11, 6]
+  9. jacquardweefsel / babyzwemstertje / luchtdrukmaxima
+     nominaal 4122  tekort 0  blancoverlies 0  gedegradeerd 4122  delta +18 | masker-bewust 3312 (-261)  frag [5, 7]
+ 10. jacquetkostuums / flexwerkstertje / playbackshowtje
+     nominaal 4185  tekort 1  blancoverlies 72  gedegradeerd 4113  delta +9 | masker-bewust 3159 (-414)  frag [6, 7]
+ 11. vluchtreflexjes / babyzeepaardjes / verzamelcheques
+     nominaal 4113  tekort 0  blancoverlies 0  gedegradeerd 4113  delta +9 | masker-bewust 3186 (-387)  frag [11, 10]
+ 12. vluchtreflexjes / babyroofstertje / verzamelcheques
+     nominaal 4113  tekort 0  blancoverlies 0  gedegradeerd 4113  delta +9 | masker-bewust 3186 (-387)  frag [11, 10]
+ 13. geschenkcheques / flexwerkstertje / polymelkzuurtje
+     nominaal 4104  tekort 0  blancoverlies 0  gedegradeerd 4104  delta +0 | masker-bewust 3573 (+0)  frag [10, 11]
+ 14. chequeformulier / flexwerkstertje / playbackshowtje
+     nominaal 4104  tekort 0  blancoverlies 0  gedegradeerd 4104  delta +0 | masker-bewust 3492 (-81)  frag [7, 7]
+
+PASS 2 (masker-bewust): pool rij0/14 = 561, pool rij7 = 9703
+tripletten met bezorgbare waarde >= huidig (3573): 2; rang huidig = 1
+=== TOP-14 op BEZORGBARE (masker-bewuste) waarde ===
+  1. geschenkcheques / flexwerkstertje / polymelkzuurtje   bezorgbaar 3573 (+0)  nominaal 4104  tekort 0  frag [10, 11]
+  2. geschenkcheques / flexwerkstertje / papyruszuiltjes   bezorgbaar 3573 (+0)  nominaal 4050  tekort 0  frag [10, 8]
+
+geschreven: experiments/results/triplet_rerank.jsonl
