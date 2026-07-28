@@ -376,6 +376,7 @@ zetschema en de **zak**.
 |---:|---:|---:|:--|
 | 6 (vóór kolom 2) | **4944** | 41 | **NEE** (CP-SAT INFEASIBLE, 900 s) |
 | 7, 10, 14, 18, 22 (ná kolom 2) | **4925** | 40 | **JA** |
+| pos 7 + ladderverfijning | 4960 | — | ONBEKEND (niet weerlegd, 400 s) |
 
 De oorzaak van dat verschil is precies het mechanisme dat positie 6 zo aantrekkelijk maakte. Daar
 ligt de laan vóór kolom 2, dus de rij-3-run is op dat moment kolom 3..12 (**tien** letters) en

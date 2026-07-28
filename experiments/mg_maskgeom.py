@@ -30,7 +30,8 @@ CLI (alles via env-variabelen; NW = aantal processen):
   MODE=probe    # gerichte probes (hanger/drager/aangrenzing)
   MODE=laan     # deel 4: welke LAAN levert het meeste op als je hem in het BESTAANDE
                 #         recordschema invoegt en met losse tegels betaalt?  (de winnaar)
-  MODE=laanfit  # CP-SAT-invulling + MG.score_game van de laan-kandidaten
+  MODE=laanfit  # CP-SAT-invulling + MG.score_game van de laan-kandidaten (fit_hint)
+  MODE=lokaalfit # LOKALE invulling: alleen de omgeving van de nieuwe cellen vrij (fit_local)
   MODE=fit/fit2/deep  # oudere fit-varianten (portfolio van zetschema's)
 
 Schrijft uitsluitend naar experiments/results/maskgeom_*.json; `maxgame_BEST.json`,
