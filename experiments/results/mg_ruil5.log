@@ -1,0 +1,7 @@
+sloop (10, 8) + add [(7, 11)] -> ok 4500 
+sloop (10, 8) + add [(7, 3)] -> ok 4496 
+sloop (5, 8) + add [(7, 11)] -> ok 4511 
+sloop (5, 8) + add [(7, 3)] -> ok 4517 
+sloop (2, 11) + add [(7, 11)] -> ok 4490 
+sloop (2, 11) + add [(7, 3)] -> ok 4489 
+BEST: (4531, None)
