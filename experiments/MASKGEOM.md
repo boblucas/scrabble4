@@ -276,6 +276,8 @@ Uitputtende sweep over alle verwijderings-deelverzamelingen × alle invoegpositi
 |---|---:|---:|---:|---:|:--:|
 | **record 4787 + rij-3-laan `(3,3)(4,3)(6,3)(7,3)(8,3)(9,3)(11,3)` op positie 6** | **4944** | **+55** | 101 | **12** | schoon |
 | record 4787 (referentie, plafond) | 4889 | 0 | 101 | 11 | schoon |
+| record 4790 + dezelfde laan, positie 6 | 4944 | **+59** | 101 | 12 | schoon |
+| record 4790 (referentie) | 4885 | 0 | 101 | 11 | schoon |
 | record 4778 + dezelfde laan, positie 6 | 4944 | +63 | 101 | 12 | schoon |
 | record 4778 (referentie) | 4881 | 0 | 101 | 11 | schoon |
 
@@ -300,6 +302,12 @@ beste resultaat) laat zien hoe eenzaam die rij is:
 
 Combineren helpt niet: rij-3-laan + `(1,4)` haalt 4925 (de achtste verwijderde tegel kost meer
 dan de negende oplevert), en `maskgeom_laan3plus.json` vindt geen enkele combinatie boven 4944.
+
+> **Stabiel onder recordverbeteringen.** Het record schoof tijdens deze sessie tweemaal op
+> (4778 → 4787 → 4790) en de laan komt er elke keer op dezelfde plek uit, met een groeiende
+> delta: **+63 / +55 / +59**, telkens plafond 4944 en 12 bingo's. Alleen de betaalset schuift mee
+> met de losse-tegelvoorraad. Dat is de reden om `MODE=laan` als vaste stap achter elke
+> LNS-verbetering te zetten (zie `maskgeom_laan4790.log`).
 
 > **Het tegelbudget is aantoonbaar krap.** Geen enkele volle kolom kan weg om de laan te betalen:
 > kolom 2/5/10/12 zijn de gedwongen rij-0-dragers, kolom 4/11 de gedwongen rij-14-dragers,
