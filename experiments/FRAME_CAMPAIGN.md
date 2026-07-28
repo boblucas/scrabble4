@@ -219,3 +219,21 @@ NEGATIEF, met arbiter geverifieerd (niet herhalen):
 NIEUW GEREEDSCHAP: mg_mceiling.py (m-calculus + schemazoeker), mg_schedsearch.py (woordenboek-bewuste
 schemazoeker), mg_schedfit_all.py, mg_tradeoff.py (sloopkosten incl. bingo-breuk), mg_insert.py
 (groep invoegen VOOR de slotzetten), mg_globalbound.py (bovengrens 13917).
+
+## BEWEZEN (2026-07-28): 4778 is optimaal voor dit footprint met deze zetvolgorde
+CP-SAT op het footprint-model (322k variabelen, 14 workers): `STATUS OPTIMAL, obj 4778,
+bovengrens 4778`. Het model is exact -- het reproduceert score_game tot op de punt -- dus dit is
+een echt bewijs, geen 'we vinden niets beters'. De onderste bewijslaag is daarmee gesloten.
+
+DE DRIE LAGEN, met hun bewijskracht:
+1. VAST footprint + VASTE zetvolgorde -> beste letterinvulling: BEWEZEN (CP-SAT OPTIMAL, 4778).
+2. VASTE bezetting + ALLE zetvolgordes: open; branch-and-bound met het m-plafond als toelaatbare
+   grens is de aangewezen route (elk schema met plafond <= 4778 kan zonder solver weg).
+3. Alle geometrieen bij een gegeven triplet+masker: een triplet+masker legt maar 45 van de 101
+   cellen vast; de keuze van de overige 56 uit 180 niet-ankercellen plus de zetindeling is de
+   eigenlijke zoekruimte en ligt ver boven max-turn-N=15 in omvang.
+
+BEGRIPPEN (voor de duidelijkheid vastgelegd): een MASKER is per ankerrij welke 7 van de 15 kolommen
+door de slotzet gelegd worden (en dus welke 8 pre-cellen zijn) -- drie keer zeven kolomnummers, geen
+letters en geen bordindeling. Het FOOTPRINT is alle 101 bezette cellen plus de zetvolgorde.
+Onze maskers: rij 0 {0,3,7,8,11,13,14}, rij 7 {0,1,2,3,12,13,14}, rij 14 {0,1,2,3,7,13,14}.
