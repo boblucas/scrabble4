@@ -1,0 +1,47 @@
+ref record 4777                ok                         tegels  101 bingo  11 seed  4867 ladder 4877 dode-lijnen []
+rail1 (bovenrail)              ok                         tegels  101 bingo  10 seed  4801 ladder 5044 dode-lijnen []
+rail13 (onderrail)             ok                         tegels  101 bingo   8 seed  4760 ladder 5065 dode-lijnen [[['V', 7], 11]]
+rail1+13 (H-frame)             ok                         tegels  101 bingo   9 seed  4858 ladder 5136 dode-lijnen [[['V', 5], 15]]
+rail1+13 + kol14               ok                         tegels  101 bingo   8 seed  5030 ladder 5260 dode-lijnen [[['V', 5], 15], [['V', 14], 15]]
+rail1 + kol14                  onleverbaar: [(8, 14), (9, tegels    - bingo   - seed     - ladder - dode-lijnen -
+rail13 + kol14                 onleverbaar: [(2, 13), (3, tegels    - bingo   - seed     - ladder - dode-lijnen -
+rail+kol14+kol5+kol2           ok                         tegels  101 bingo   8 seed  5009 ladder 5278 dode-lijnen [[['V', 5], 15], [['V', 14], 15]]
+rail+kol14 (99 tegels)         ok                         tegels   99 bingo   7 seed  4984 ladder 5235 dode-lijnen [[['V', 5], 15], [['V', 14], 15]]
+rail+kol14+kol2                ok                         tegels  101 bingo   7 seed  4985 ladder 5240 dode-lijnen [[['V', 5], 15], [['V', 14], 15]]
+rail+kol14+laan4               ok                         tegels  101 bingo   7 seed  4986 ladder 5237 dode-lijnen [[['V', 5], 15], [['V', 14], 15]]
+rail2+12 (lex-veilig)          onleverbaar: [(14, 8), (14 tegels    - bingo   - seed     - ladder - dode-lijnen -
+kol14-ladder (3 klimmers)      onleverbaar: [(8, 0)]      tegels    - bingo   - seed     - ladder - dode-lijnen -
+kol14-ladder-b (4 klimmers)    OVER CAP (108) en niet te  tegels  108 bingo  10 seed     - ladder - dode-lijnen -
+kol14-boven (rijen 1..6)       ok                         tegels  101 bingo  10 seed  4652 ladder 4870 dode-lijnen []
+kol14-onder (rijen 8..13)      OVER CAP (102) en niet te  tegels  102 bingo  10 seed     - ladder - dode-lijnen -
+2 lanen (rij 4+10)             ok                         tegels   98 bingo   6 seed  4425 ladder 4817 dode-lijnen []
+lanen rij 3+11                 onleverbaar: [(8, 14), (9, tegels    - bingo   - seed     - ladder - dode-lijnen -
+lanen rij 2+12                 ok                         tegels  101 bingo  10 seed  4677 ladder 4788 dode-lijnen []
+2 lanen + kol14                onleverbaar: [(4, 14), (5, tegels    - bingo   - seed     - ladder - dode-lijnen -
+kol7-boven (rijen 1..3)        ok                         tegels   97 bingo  10 seed  4682 ladder 4887 dode-lijnen []
+laat-x4 (rij-4-brug laatst)    ok                         tegels  101 bingo   9 seed  4557 ladder 4767 dode-lijnen []
+weefsel (lanen eerst)          onleverbaar: [(4, 14), (5, tegels    - bingo   - seed     - ladder - dode-lijnen -
+x4-stapel (rij 1/4/10/13)      ok                         tegels  101 bingo   7 seed  4773 ladder 5083 dode-lijnen []
+halfkol0 (rijen 8..13)         OVER CAP (103) en niet te  tegels  103 bingo  10 seed     - ladder - dode-lijnen -
+kol5 vol (e..e..e)             ok                         tegels  100 bingo  11 seed  4683 ladder 4845 dode-lijnen []
+kleine rij-0-final             onleverbaar: [(1, 14), (2, tegels    - bingo   - seed     - ladder - dode-lijnen -
+
+referentie ankervast plafond (record) = 4877; gerealiseerd 4777 (realisatiegraad 0.979)
+topologie                         seed   d_ref   ladder  schatting
+rail1+13 + kol14                  5030    +163     5260       4936   DOOD: [[['V', 5], 15], [['V', 14], 15]]
+rail+kol14+kol5+kol2              5009    +142     5278       4916   DOOD: [[['V', 5], 15], [['V', 14], 15]]
+rail+kol14+laan4                  4986    +119     5237       4893   DOOD: [[['V', 5], 15], [['V', 14], 15]]
+rail+kol14+kol2                   4985    +118     5240       4892   DOOD: [[['V', 5], 15], [['V', 14], 15]]
+rail+kol14 (99 tegels)            4984    +117     5235       4891   DOOD: [[['V', 5], 15], [['V', 14], 15]]
+ref record 4777                   4867      +0     4877       4777
+rail1+13 (H-frame)                4858      -9     5136       4768   DOOD: [[['V', 5], 15]]
+rail1 (bovenrail)                 4801     -66     5044       4712
+x4-stapel (rij 1/4/10/13)         4773     -94     5083       4684
+rail13 (onderrail)                4760    -107     5065       4671   DOOD: [[['V', 7], 11]]
+kol5 vol (e..e..e)                4683    -184     4845       4596
+kol7-boven (rijen 1..3)           4682    -185     4887       4595
+lanen rij 2+12                    4677    -190     4788       4590
+kol14-boven (rijen 1..6)          4652    -215     4870       4565
+laat-x4 (rij-4-brug laatst)       4557    -310     4767       4472
+2 lanen (rij 4+10)                4425    -442     4817       4343
+-> /home/bob/programming/scrabble4/experiments/results/newtopo.json
