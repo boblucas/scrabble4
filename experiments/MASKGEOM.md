@@ -484,13 +484,26 @@ MODE=laanfit NW=5 TLIM=2400 LEX=1 IN=experiments/results/maskgeom_laanpos.json \
    (plafond 4944) eist dat rij 3 tegelijk een 10-letterwoord en diens 1-letter-uitbreiding is;
    `lex_feasible` zegt daar **NEE**. De posities 7 en later (plafond **4925**, +36 op het
    recordplafond, 12 bingo's) zeggen **JA**, en het eindbord is zelfs OPTIMAL invulbaar
-   (`bodeverhaal` / `isolatieglas` over de herletterde bovenhelft). De laatste horde — zak plus
-   doelfunctie op een model van 4-5·10⁵ variabelen — is binnen deze sessie niet genomen.
-7. **Wat de volgende ronde moet doen.** (a) `MODE=laanfit` op `maskgeom_laanpos.json` afmaken met
-   ruime tijd en de eindbord-getuige als hint; (b) de laan-invoeging combineren met de
-   LNS-vloot in plaats van ernaast — de vloot herlettert, deze motor herstructureert, en dat zijn
-   complementaire zetten; (c) `MODE=laan` na elke recordverbetering opnieuw draaien, want de
-   losse-tegel-voorraad (de betaalmiddelen) verschuift mee.
+   (`bodeverhaal` / `isolatieglas` over de herletterde bovenhelft).
+7. **En dan sneuvelt hij op de ZAK.** Met de eindbord-getuige als warme start meldt CP-SAT voor
+   beide levende varianten **INFEASIBLE** — een bewijs, geen time-out. Het verschil met de
+   `lex_feasible`-JA is exact de zaklimiet. Het record gebruikt **99 van de 100 lettertegels en
+   beide blanco's**; alle `e`, `n`, `o`, `d`, `r`, `s`, `t`, `g`, `i` zijn vergeven en er ligt
+   precies één `a` los. Een blok van twee volle middenrijen over tien kolommen — een 11- en een
+   12-letterwoord die elkaar in tien kolomwoorden kruisen — kan dat lettermultiset niet spellen.
+   Het m-plafond ziet dat niet: het is zak-*bewust* (het legt de beste resterende tegels op de
+   hoogste m) maar niet zak-**lexicaal** (het weet niet dat de woorden ándere letters eisen dan
+   de zak nog heeft). Dat is een nieuwe, meetbare vorm van het zak-druk-lemma, en hij verklaart
+   ook waarom de rij-11-laan eerder al zak-infeasible bleek.
+8. **Wat de volgende ronde moet doen.** (a) De maat waarop topologieën worden gerangschikt moet
+   het lettermultiset meenemen: een variant van `ceiling()` die niet de beste *zaktegels* maar de
+   beste *lexicaal haalbare* letters oplegt. Praktisch: draai `static_feasible` **mét zak** als
+   derde zeef, tussen `lex_feasible` en de volledige `fit`; hij is veel goedkoper dan de fit en
+   weerlegt precies deze klasse. (b) De laan-invoeging combineren met de LNS-vloot in plaats van
+   ernaast: de vloot herlettert, deze motor herstructureert. (c) `MODE=laan` na elke
+   recordverbetering opnieuw draaien — de losse-tegelvoorraad (het betaalmiddel) verschuift mee.
+   (d) De rij-3-laan blijft de beste bekende kandidaat zodra er *lettering* vrijkomt, bijvoorbeeld
+   bij een ankertriplet dat minder `e`/`n` opeist.
 
 > **Waarschuwing voor wie hierop doorbouwt.** Het m-plafond blijft misleidend: van de vier
 > laan-varianten met plafond > 4900 is er één lexicaal dood (pos 6), één CP-SAT-infeasible
