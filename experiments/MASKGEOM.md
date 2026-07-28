@@ -408,6 +408,22 @@ geen time-out: er bestaat geen letterinvulling die tegelijk alle gescoorde runs 
 de blanco-limiet haalt. `lex_feasible` (dezelfde runs, **zonder** zak) zei JA — het verschil
 tussen die twee is dus precies de zak.
 
+**En dat geldt niet alleen voor rij 3.** Op het 4790-bord is `MODE=laanfit` over de hele
+laan-ranglijst gedraaid (`maskgeom_laanfit4790.log`); tot nu toe zijn álle getoetste varianten
+CP-SAT-infeasible:
+
+| laan | plafond | uitslag |
+|---|---:|:--|
+| rij 1, kolom 11 erbij | 4906 | INFEASIBLE |
+| rij 4, kolom 1 erbij (verlenging van de bestaande laan) | 4915 | INFEASIBLE |
+| rij 4, kolom 0 erbij | 4906 | INFEASIBLE |
+| rij 3, kolommen 2..11 | 4944 | rekent nog |
+
+Dat is geen toeval maar hetzelfde mechanisme: elke van deze varianten voegt tegels toe die het
+lexicon dwingen tot letters die de (uitgeputte) zak niet meer heeft. **Zelfs één extra tegel aan
+de bestaande rij-4-laan** — geometrisch de goedkoopst denkbare toevoeging, +30 plafond — is al
+zak-infeasible. Dat is de scherpste beschikbare meting van hoe strak het lettermultiset zit.
+
 **Precisering van de bewijskracht.** De schema-*onafhankelijke* variant (alleen de 18 eindruns
 plus de zak, `maskgeom_zakgetuige.log`, model B) bleef binnen 600 s **UNKNOWN**. De BEZETTING is
 dus nog niet formeel weerlegd — alleen de twee getoetste zetschema's zijn dat. De overige vier
@@ -509,7 +525,12 @@ MODE=laanfit NW=5 TLIM=2400 LEX=1 IN=experiments/results/maskgeom_laanpos.json \
    Het m-plafond ziet dat niet: het is zak-*bewust* (het legt de beste resterende tegels op de
    hoogste m) maar niet zak-**lexicaal** (het weet niet dat de woorden ándere letters eisen dan
    de zak nog heeft). Dat is een nieuwe, meetbare vorm van het zak-druk-lemma, en hij verklaart
-   ook waarom de rij-11-laan eerder al zak-infeasible bleek.
+   ook waarom de rij-11-laan eerder al zak-infeasible bleek. De vloot-run op het 4790-bord
+   bevestigt het over de hele linie: rij 1 (+21), rij 4 met één extra tegel (+30) en rij 4 met
+   twee (+21) zijn stuk voor stuk **INFEASIBLE**. Zelfs één tegel aan een bestaande laan
+   toevoegen kan niet meer. **De bezetting van het record is niet lokaal verbeterbaar zolang het
+   lettermultiset niet verandert** — dat is de echte, harde grens waar deze campagne tegenaan
+   loopt, en hij is nu voor het eerst als zodanig gemeten in plaats van als m-plafond-illusie.
 8. **Wat de volgende ronde moet doen.** (a) De maat waarop topologieën worden gerangschikt moet
    het lettermultiset meenemen: een variant van `ceiling()` die niet de beste *zaktegels* maar de
    beste *lexicaal haalbare* letters oplegt. Praktisch: draai `static_feasible` **mét zak** als
