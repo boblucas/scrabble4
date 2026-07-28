@@ -417,12 +417,20 @@ CP-SAT-infeasible:
 | rij 1, kolom 11 erbij | 4906 | INFEASIBLE |
 | rij 4, kolom 1 erbij (verlenging van de bestaande laan) | 4915 | INFEASIBLE |
 | rij 4, kolom 0 erbij | 4906 | INFEASIBLE |
-| rij 3, kolommen 2..11 | 4944 | rekent nog |
+| rij 3, kolommen 2..11 (positie 6) | 4944 | INFEASIBLE |
 
-Dat is geen toeval maar hetzelfde mechanisme: elke van deze varianten voegt tegels toe die het
-lexicon dwingen tot letters die de (uitgeputte) zak niet meer heeft. **Zelfs één extra tegel aan
-de bestaande rij-4-laan** — geometrisch de goedkoopst denkbare toevoeging, +30 plafond — is al
-zak-infeasible. Dat is de scherpste beschikbare meting van hoe strak het lettermultiset zit.
+**Vier van de vier.** Dat is geen toeval maar hetzelfde mechanisme: elk van deze varianten voegt
+tegels toe die het lexicon dwingen tot letters die de (uitgeputte) zak niet meer heeft. **Zelfs
+één extra tegel aan de bestaande rij-4-laan** — geometrisch de goedkoopst denkbare toevoeging,
++30 plafond — is al zak-infeasible. Dat is de scherpste beschikbare meting van hoe strak het
+lettermultiset zit.
+
+Samen met mijn eigen toetsen op het 4787-bord (positie 7 en 8, beide INFEASIBLE) en de lex-NEE
+van positie 6 is daarmee **elke doorgerekende variant van de rij-3-laan gesloten**. Wat formeel
+nog open staat is één combinatie: de rij-3-laan op **positie ≥ 7 van het 4790-bord** (de
+vloot-lijst bevat per laan alleen de beste positie, dus positie 6). Gezien de zak
+board-onafhankelijk is en de 4787-tegenhangers al infeasible zijn, is de verwachting duidelijk —
+maar het is geen bewijs.
 
 **Precisering van de bewijskracht.** De schema-*onafhankelijke* variant (alleen de 18 eindruns
 plus de zak, `maskgeom_zakgetuige.log`, model B) bleef binnen 600 s **UNKNOWN**. De BEZETTING is
@@ -526,9 +534,9 @@ MODE=laanfit NW=5 TLIM=2400 LEX=1 IN=experiments/results/maskgeom_laanpos.json \
    hoogste m) maar niet zak-**lexicaal** (het weet niet dat de woorden ándere letters eisen dan
    de zak nog heeft). Dat is een nieuwe, meetbare vorm van het zak-druk-lemma, en hij verklaart
    ook waarom de rij-11-laan eerder al zak-infeasible bleek. De vloot-run op het 4790-bord
-   bevestigt het over de hele linie: rij 1 (+21), rij 4 met één extra tegel (+30) en rij 4 met
-   twee (+21) zijn stuk voor stuk **INFEASIBLE**. Zelfs één tegel aan een bestaande laan
-   toevoegen kan niet meer. **De bezetting van het record is niet lokaal verbeterbaar zolang het
+   bevestigt het over de hele linie: rij 1 (+21), rij 4 met één extra tegel (+30), rij 4 met
+   twee (+21) én rij 3 (+59) zijn **vier van de vier INFEASIBLE**. Zelfs één tegel aan een
+   bestaande laan toevoegen kan niet meer. **De bezetting van het record is niet lokaal verbeterbaar zolang het
    lettermultiset niet verandert** — dat is de echte, harde grens waar deze campagne tegenaan
    loopt, en hij is nu voor het eerst als zodanig gemeten in plaats van als m-plafond-illusie.
 8. **Wat de volgende ronde moet doen.** (a) De maat waarop topologieën worden gerangschikt moet
