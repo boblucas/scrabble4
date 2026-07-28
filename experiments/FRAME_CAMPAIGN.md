@@ -288,3 +288,41 @@ dat de zak die combinatie niet toelaat (V11 145 vs plafond 221, V9 87/143, V8 10
 VOLGENDE STAP die hieruit volgt: de decompositie-identiteit is niet aan DEZE bezetting gebonden.
 Per-lijn-grenzen maken het mogelijk om hele GEOMETRIEKLASSEN te begrenzen in plaats van losse borden
 — dat is de aangewezen route naar laag 3 (alle geometrieen bij gegeven triplet+masker).
+
+## KLASSEGRENS (2026-07-28): het triplet wordt hierlangs NIET gedood — en de diagnose wijst de weg
+STELLING B: elke klassegrens uit de per-lijn-decompositie is >= 4847 > 4819. Bewijs: de klasse bevat
+onze eigen bezetting; fixeer die en het klassemodel reduceert tot het stelling-3-model, waarvan
+CP-SAT het optimum OPTIMAAL = 4847 bewees; een maximum over een grotere verzameling is niet kleiner.
+Er bestaat dus geen versie van deze route die onder 4819 uitkomt. (De agent heeft de zware berekening
+daarom NIET gedraaid — hij kon bewijsbaar niets beslissen.)
+
+STELLING A (bewezen, sterk): de drie ankerrijen dragen onvoorwaardelijk hoogstens 3865 bij --
+1743 + 561 + 1561 -- over ALLE bezettingen, maskers, vrije letters en zetvolgordes. Het eiland-,
+fragment- en x27-maskerlemma zijn hierdoor overbodig gemaakt (niet genegeerd): ze beperken allemaal
+de toegestane geschiedenissen van een ankerrij, en hier wordt over de volledige verzameling gemaximeerd.
+Rekenkundig gevolg: record 3840 (ankers) + 938 (27 overige lijnen) = 4778; het ankerplafond laat nog
++25 toe, dus het HELE gat van +41 naar 4819 moet uit de NIET-ANKERLIJNEN komen (938 -> >=979).
+
+FRAME-VRAAG DEFINITIEF BESLIST (en contra-intuitief): de 9 kruispunten geven hun x3 maar EEN keer --
+of aan de rij-final, of aan de kolomzet.
+  scenario A (rij-finals pakken de x3): ankerrijen 3865 + kolommen 0/7/14 samen 766 = 4631
+  scenario B (zuivere FRAME, kolomzetten pakken de x3): 787 + 2422 = 3209
+A wint met 1422. De zuivere frame-klasse is voor dit triplet aantoonbaar SLECHTER; geschenkcheques en
+polymelkzuurtje als x27-rij-final zijn meer waard dan welk kolomwoord ook. Wat wel werkt is de
+hybride: het kolomwoord x3-voltooid door de rij-final als LOSSE tegel -- dat zit in scenario A en
+levert 766 op de framekolommen, waar ons bord er 74 haalt.
+
+DE DIAGNOSE (per lijn, bij exact dezelfde tegelinzet als het record):
+  kolommen        648 -> 1227   (kol 10 +111, kol 11 +94, kol 4 +86, kol 5 +69, kol 7 +62)
+  niet-ankerrijen 290 ->  936   (rij 8 +90, rij 5 +76, rij 6 +69, rij 3 +68, rij 2 +65)
+Grootste post: de rijen 1/3/5/6/9/10/11/12/13 leveren NUL punten terwijl ze elk 2-5 tegels
+verbruiken. Oorzaak, visueel bevestigd: onze verticale woorden staan in de kolommen 2,4,5,7,10,11,12
+en liggen te ver uit elkaar, dus de middenrijen bevatten losse niet-aangrenzende tegels die geen
+horizontaal woord vormen. Alleen rij 2 ('aft') en rij 8 ('in','na') scoren, precies waar kolommen wel
+naast elkaar liggen. Een tegel die in EN een verticaal EN een horizontaal woord ligt wordt twee keer
+gescoord; onze verticale tegels worden nu maar een keer geteld.
+=> VOLGENDE CONSTRUCTIE: dichte-blok-topologie met AANGRENZENDE kolommen, zodat de middenrijen zelf
+lange horizontale woorden vormen. Spanningsveld: elke aangrenzende kolom maakt kruiswoorden met zijn
+buur die allemaal geldig moeten zijn.
+NB: de per-lijn-plafonds in de diagnose zijn gecertificeerde ONDERgrenzen op het lijnplafond en
+negeren zak, kruispuntconsistentie en volgorde -- indicaties, geen grenzen.
