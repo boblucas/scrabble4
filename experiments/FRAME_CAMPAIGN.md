@@ -360,3 +360,31 @@ De realisatiegraad is NIET het probleem (E2 haalt 4540 uit plafond 4580 = 99,1%)
 => VOLGENDE: masker en geometrie GEZAMENLIJK optimaliseren. Het masker is tot nu toe alleen
 geoptimaliseerd op wat het voor de ankerrij zelf oplevert; wat het afdwingt aan dragende kolommen --
 en dus aan productiviteit van de middenrijen -- zat in geen enkele maat.
+
+## MASKER-GEOMETRIE (2026-07-28 nacht): de gedwongen spreiding is een VOORWAARDE, geen handicap
+EILAND-LEMMA BEWEZEN: elk eiland van de pre-set eist minstens een dragende kolom BINNEN dat eiland
+(de eerste zet die het eiland raakt kan op die rij niets anders raken en moet dus via de buurrij
+binden). Omdat {0,7,14} altijd in het masker van rij 0/14 zit, valt de pre-set altijd in >=2 eilanden
+uiteen: minimaal 2 dragers per x27-rij. Rij 7 krijgt het centrum-eiland gratis.
+KERNVRAAG NEGATIEF MET BEWIJS: aangrenzende dragers BESTAAN NIET. Dragers uit verschillende eilanden
+zijn per constructie door een maskercel gescheiden; binnen een eiland is er maar een nodig en een
+tweede ernaast is precies het dichte blok dat al weerlegd was. Uitputtende sweep over 39/39/36
+legbare maskers: ons recordmasker is niet alleen maximaal in ankerwaarde maar ook het ENIGE
+rij-0-masker waarvan alle vier de gedwongen dragers een rijke 8-letter kolomtabel hebben
+(kol 2:1242, 5:390, 10:390, 12:368). Minder dragers kost 120 (4->3) of 234 (4->2) ankerpunten tegen
+~8 punten per vrijgekomen tegel. Alleen een rij-7-maskerwissel is positief (+37 tegen -10).
+DE INVERSIE (de vondst): de vier gedwongen rij-0-dragers (kol 2/5/10/12) kruisen elke bovenrij op
+vier plaatsen -- precies wat een x4-LAAN nodig heeft om in EEN bingo-zet gelegd te worden. De
+maskergedwongen spreiding is voor een laan dus de VOORWAARDE. Daaruit volgt ook direct de boven/onder-
+asymmetrie van het record: rij 14 heeft maar twee pijlers, dus de onderhelft is laan-arm.
+GEMETEN op het 4778-bord: laan op rij 3 = +55 ankervast plafond (4889 -> 4944), 12 bingo's i.p.v. 11,
+101 tegels, betaald met de zeven losse tegels van de kolom-2-extensieketen (geen bingo gebroken).
+Laan-sweep: rij 3 +55, rij 4 +29, rij 1 +17, rij 6 +14, al het andere <= 0.
+LEXICAAL: invoegpositie 6 (plafond 4944) is NEE (de rij-3-run wordt eerst 10 en dan 11 letters, dus
+rij 3 zou tegelijk een 10-letterwoord en diens 1-letter-uitbreiding moeten zijn); posities
+7/10/14/18/22 (plafond 4925) zijn JA en het eindbord is CP-SAT OPTIMAL (bodeverhaal/isolatieglas).
+De recordletters op rij 3 geven patroon r??d????d?a met 0 woorden, terwijl 35.216 pijlersignaturen
+wel een 11-letterwoord toelaten -- de bovenhelft MOET dus herletterd worden.
+LET OP (gemeten na de LNS-vondsten): op het 4790-bord is de beste laan nog maar +8, want de vloot
+heeft juist de losse tegels opgesoupeerd die het betaalmiddel voor de laan waren. Laan en LNS
+concurreren om dezelfde voorraad; MODE=laan moet dus na elke recordverbetering opnieuw draaien.

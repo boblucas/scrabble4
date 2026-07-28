@@ -392,6 +392,40 @@ kolom 2 er al: de laan maakt in één keer de run kolom 2..12, nog steeds met **
 op dit model (4-5·10⁵ variabelen) urenwerk is. De realisatiegraad die nodig is om 4787 te
 verslaan is 4788/4925 = **97,2 %**; het record zelf realiseert 4787/4889 = **97,9 %**.
 
+### Uitkomst: lexicaal levend, maar CP-SAT INFEASIBLE — en de zak is de dader
+
+Met de eindbord-getuige als warme start meldt CP-SAT voor **beide** levende varianten
+(invoegpositie 7 en 8, plafond 4925) **INFEASIBLE**. Dat is een bewijs, geen time-out: er bestaat
+geen letterinvulling die tegelijk alle gescoorde runs *en* de zak *en* de blanco-limiet haalt.
+`lex_feasible` (dezelfde runs, **zonder** zak) zei JA — het verschil tussen die twee is dus
+precies de zak.
+
+En die is op dit bord tot op de tegel uitgeput:
+
+| letter | in de zak | in de 3 ankerwoorden | in het record | over ná de ankers |
+|---|---:|---:|---:|---:|
+| e | 18 | 10 | **18** | 8 |
+| n | 10 | 1 | **10** | 9 |
+| o | 6 | 1 | **6** | 5 |
+| d / r / s / t | 5 | 0-3 | **5** | 2-5 |
+| i | 4 | 0 | **4** | 4 |
+| g / k / l / m / u | 3 | 1-3 | **3** | 0-2 |
+| a | 6 | 0 | 5 | 6 |
+| b c f h j p v w z q x y | 1-2 | 0-2 | **alles** | 0-2 |
+
+Het record gebruikt **99 van de 100 lettertegels plus beide blanco's**; alleen één `a` blijft
+liggen (en één tegel houdt de tegenstander). Elke nieuwe structuur moet dus vrijwel exact
+hetzelfde lettermultiset spellen als de bestaande. Het m-plafond ziet dat niet: het legt de
+beste resterende zaktegels op de hoogste m, maar weet niet dat het *lexicon* op rij 3 en rij 4
+andere letters afdwingt dan de zak nog heeft.
+
+> **Zak-druk-lemma, nu scherp.** De rij-3-laan maakt van de rijen 3 en 4 een blok van twee volle
+> rijen over tien kolommen: een 11-letterwoord en een 12-letterwoord die elkaar in tien
+> kolomwoorden kruisen. Zo'n blok is lexicaal ruim (het eindbord is OPTIMAL invulbaar) maar
+> letterlijk duur — en met een zak waarin álle `e`, `n`, `o`, `d`, `r`, `s`, `t` al vergeven zijn,
+> is er geen ruimte meer. Dat is dezelfde muur die DENSEBLOCK op de bouwvolgorde vond, maar dan
+> één laag dieper: hier bestaan de bouwvolgorde én het eindbord, en sneuvelt de **zak**.
+
 ### Wat er nog draaide bij het afsluiten
 
 De laatste stap — zak + doelfunctie op het volle model — is niet afgerond binnen deze sessie.
