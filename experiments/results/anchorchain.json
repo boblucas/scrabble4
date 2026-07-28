@@ -1,0 +1,3276 @@
+{
+ "ijking": {
+  "0": {
+   "masker": [
+    0,
+    3,
+    7,
+    8,
+    11,
+    13,
+    14
+   ],
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12
+   ],
+   "keten": 19,
+   "wortels": 4
+  },
+  "14": {
+   "masker": [
+    0,
+    1,
+    2,
+    3,
+    7,
+    13,
+    14
+   ],
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "keten": 53,
+   "wortels": 2
+  }
+ },
+ "ranglijst": [
+  {
+   "w": "geschenkcheques",
+   "maat": 1693,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "flauwekulexcuus",
+   "maat": 1687,
+   "keten": 40,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "jacquardmachine",
+   "maat": 1611,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "cultuurchequeje",
+   "maat": 1595,
+   "keten": 29,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12
+   ]
+  },
+  {
+   "w": "quichebuffetjes",
+   "maat": 1562,
+   "keten": 23,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "dyscalculischen",
+   "maat": 1558,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "chequebedragjes",
+   "maat": 1557,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "babyglimlachjes",
+   "maat": 1556,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "craqueleachtigs",
+   "maat": 1556,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "jacquardweefsel",
+   "maat": 1543,
+   "keten": 31,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    13
+   ]
+  },
+  {
+   "w": "vluchtreflexjes",
+   "maat": 1540,
+   "keten": 28,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "lewylichaampjes",
+   "maat": 1539,
+   "keten": 27,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "cliquetsystemen",
+   "maat": 1537,
+   "keten": 25,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "wetenschapsquiz",
+   "maat": 1530,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    8,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "craqueleachtige",
+   "maat": 1529,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "aliquotvleugels",
+   "maat": 1528,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "playboyachtigst",
+   "maat": 1515,
+   "keten": 30,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "polymelkzuurtje",
+   "maat": 1511,
+   "keten": 53,
+   "wortels": 2,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "playboyachtiger",
+   "maat": 1509,
+   "keten": 24,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychodynamisch",
+   "maat": 1509,
+   "keten": 24,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    5,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "chiquelingetjes",
+   "maat": 1503,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "perscommuniques",
+   "maat": 1500,
+   "keten": 15,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "playbackshowtje",
+   "maat": 1498,
+   "keten": 40,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "babywenkbrauwen",
+   "maat": 1488,
+   "keten": 30,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "papyruszuiltjes",
+   "maat": 1484,
+   "keten": 26,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "maaltijdcheques",
+   "maat": 1483,
+   "keten": 25,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "playboyachtigen",
+   "maat": 1482,
+   "keten": 24,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "quichebuffetten",
+   "maat": 1479,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "quizmasterschap",
+   "maat": 1478,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "lunchgezelschap",
+   "maat": 1477,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "luchtwegwijzers",
+   "maat": 1477,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "vetzuurmolecuul",
+   "maat": 1476,
+   "keten": 18,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "quicheachtigers",
+   "maat": 1474,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "verrekencheques",
+   "maat": 1471,
+   "keten": 13,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "gymjuffrouwtjes",
+   "maat": 1469,
+   "keten": 38,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "luchtmachtchefs",
+   "maat": 1467,
+   "keten": 36,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "publieksjurytje",
+   "maat": 1462,
+   "keten": 31,
+   "wortels": 3,
+   "pre": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12
+   ]
+  },
+  {
+   "w": "zelfhulpmodulus",
+   "maat": 1460,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "bouwcuratrixjes",
+   "maat": 1458,
+   "keten": 27,
+   "wortels": 4,
+   "pre": [
+    2,
+    3,
+    5,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "polychromatisch",
+   "maat": 1458,
+   "keten": 27,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "onychomycosetje",
+   "maat": 1458,
+   "keten": 27,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "lymflichaampjes",
+   "maat": 1458,
+   "keten": 27,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "becquerelletjes",
+   "maat": 1456,
+   "keten": 25,
+   "wortels": 3,
+   "pre": [
+    1,
+    5,
+    6,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "ijshockeyclubje",
+   "maat": 1455,
+   "keten": 24,
+   "wortels": 4,
+   "pre": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "cyberhuwelijkje",
+   "maat": 1455,
+   "keten": 24,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12
+   ]
+  },
+  {
+   "w": "yoctobecquerels",
+   "maat": 1454,
+   "keten": 23,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "hydroxylgroepje",
+   "maat": 1453,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "securitycheckje",
+   "maat": 1453,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "polyhybridetjes",
+   "maat": 1451,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychotechnisch",
+   "maat": 1451,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "polyglottischen",
+   "maat": 1451,
+   "keten": 20,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "buxusbedrijfjes",
+   "maat": 1450,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "babyzwemmertjes",
+   "maat": 1450,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "apocalypticusje",
+   "maat": 1450,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "cultuurverschil",
+   "maat": 1449,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "beschermzuchtig",
+   "maat": 1449,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "slotcommuniques",
+   "maat": 1449,
+   "keten": 18,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "barycentrumpjes",
+   "maat": 1448,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "croquethamertje",
+   "maat": 1447,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    13
+   ]
+  },
+  {
+   "w": "croquetballetje",
+   "maat": 1447,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    13
+   ]
+  },
+  {
+   "w": "quicheachtigere",
+   "maat": 1447,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "schuurschijfjes",
+   "maat": 1446,
+   "keten": 42,
+   "wortels": 3,
+   "pre": [
+    2,
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "vacuumextractie",
+   "maat": 1446,
+   "keten": 15,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "fenylethylamine",
+   "maat": 1446,
+   "keten": 15,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "vrouwtjesguppys",
+   "maat": 1445,
+   "keten": 41,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "luchtschachtjes",
+   "maat": 1445,
+   "keten": 41,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "bouquetreeksjes",
+   "maat": 1444,
+   "keten": 13,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "zwijgcultuurtje",
+   "maat": 1442,
+   "keten": 38,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "huurmaximumpjes",
+   "maat": 1442,
+   "keten": 38,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "crucifixklokjes",
+   "maat": 1441,
+   "keten": 37,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "polychromeurtje",
+   "maat": 1440,
+   "keten": 36,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "vrouwenlobbytje",
+   "maat": 1438,
+   "keten": 61,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    10
+   ]
+  },
+  {
+   "w": "thuiscomplexjes",
+   "maat": 1438,
+   "keten": 34,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    8,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "mucolyticumpjes",
+   "maat": 1437,
+   "keten": 33,
+   "wortels": 3,
+   "pre": [
+    2,
+    3,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "textielcyclusje",
+   "maat": 1435,
+   "keten": 31,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "psycholepticums",
+   "maat": 1434,
+   "keten": 30,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "ketchupschapjes",
+   "maat": 1433,
+   "keten": 29,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "papyrusscheepje",
+   "maat": 1433,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "calqueerplaatje",
+   "maat": 1433,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "polymyalgietjes",
+   "maat": 1432,
+   "keten": 28,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "cultuurclashjes",
+   "maat": 1429,
+   "keten": 25,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "concertchequeje",
+   "maat": 1428,
+   "keten": 24,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    8,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "babydollachtigs",
+   "maat": 1427,
+   "keten": 23,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "vruchtenyoghurt",
+   "maat": 1426,
+   "keten": 49,
+   "wortels": 2,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9
+   ]
+  },
+  {
+   "w": "whiskyoverschot",
+   "maat": 1426,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "plaquevorminkje",
+   "maat": 1426,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    6,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "snuffelmolecuul",
+   "maat": 1426,
+   "keten": 22,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "executiegeschil",
+   "maat": 1425,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "ubiquitistetjes",
+   "maat": 1425,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "conflictcoachje",
+   "maat": 1425,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12
+   ]
+  },
+  {
+   "w": "cyberrecherches",
+   "maat": 1424,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "polyhydridetjes",
+   "maat": 1424,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "hillbillymuziek",
+   "maat": 1424,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "jachtgezelschap",
+   "maat": 1423,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychiatrischen",
+   "maat": 1422,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "kauwgummiachtig",
+   "maat": 1422,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "apocalyptischer",
+   "maat": 1421,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "voordeelcheques",
+   "maat": 1421,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "cultuurwatchers",
+   "maat": 1420,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "cambriczwachtel",
+   "maat": 1420,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "apocalyptischte",
+   "maat": 1420,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "gedichtencyclus",
+   "maat": 1419,
+   "keten": 15,
+   "wortels": 4,
+   "pre": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "babysabbaticals",
+   "maat": 1419,
+   "keten": 15,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "kluchtfiguurtje",
+   "maat": 1417,
+   "keten": 40,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "cybercultuurtje",
+   "maat": 1415,
+   "keten": 38,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "cowboygezichtje",
+   "maat": 1411,
+   "keten": 34,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "croquetmatchjes",
+   "maat": 1410,
+   "keten": 33,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "geschutvuurtjes",
+   "maat": 1410,
+   "keten": 33,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "yoghurtcultures",
+   "maat": 1408,
+   "keten": 31,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "frescocyclusjes",
+   "maat": 1408,
+   "keten": 31,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    5,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "aquacultuurtjes",
+   "maat": 1408,
+   "keten": 31,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    3,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "vakantiecheques",
+   "maat": 1407,
+   "keten": 30,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "cultuurcoachjes",
+   "maat": 1406,
+   "keten": 29,
+   "wortels": 4,
+   "pre": [
+    3,
+    4,
+    5,
+    6,
+    8,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "hyperexclusiefs",
+   "maat": 1406,
+   "keten": 29,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "wervelschijfjes",
+   "maat": 1406,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "babyweegschalen",
+   "maat": 1405,
+   "keten": 55,
+   "wortels": 2,
+   "pre": [
+    4,
+    5,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "tyltylschooltje",
+   "maat": 1405,
+   "keten": 28,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "zelfbeschouwing",
+   "maat": 1405,
+   "keten": 28,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "zelfbeschouwers",
+   "maat": 1405,
+   "keten": 28,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "vluchtburchtjes",
+   "maat": 1405,
+   "keten": 28,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "verzamelcheques",
+   "maat": 1404,
+   "keten": 54,
+   "wortels": 2,
+   "pre": [
+    4,
+    5,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychopathische",
+   "maat": 1404,
+   "keten": 27,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    11,
+    13
+   ]
+  },
+  {
+   "w": "jukeboxmusicals",
+   "maat": 1404,
+   "keten": 27,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "luchtdrukmaxima",
+   "maat": 1403,
+   "keten": 53,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "campingchequeje",
+   "maat": 1402,
+   "keten": 25,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12
+   ]
+  },
+  {
+   "w": "babyparfummetje",
+   "maat": 1402,
+   "keten": 25,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "psychothrillers",
+   "maat": 1401,
+   "keten": 24,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "vruchtenmuffins",
+   "maat": 1400,
+   "keten": 23,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "huichelaarschap",
+   "maat": 1400,
+   "keten": 23,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "buffalowurmpjes",
+   "maat": 1400,
+   "keten": 23,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "babydollachtige",
+   "maat": 1400,
+   "keten": 23,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "psychoanalytici",
+   "maat": 1399,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    8,
+    9,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychoanalytica",
+   "maat": 1399,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    8,
+    9,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "safesexpartytje",
+   "maat": 1399,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "quicheachtigste",
+   "maat": 1399,
+   "keten": 22,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    9,
+    10,
+    11,
+    13
+   ]
+  },
+  {
+   "w": "aquicultuurtjes",
+   "maat": 1398,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    2,
+    3,
+    5,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "bedrijfscheckup",
+   "maat": 1398,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "bouwvakkersfuif",
+   "maat": 1398,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychotropische",
+   "maat": 1398,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "psychoscopistje",
+   "maat": 1398,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "hyperglykemisch",
+   "maat": 1398,
+   "keten": 21,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    8,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "vruchtenpunchje",
+   "maat": 1397,
+   "keten": 47,
+   "wortels": 2,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9
+   ]
+  },
+  {
+   "w": "schuldquotetjes",
+   "maat": 1397,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "cultuurschokjes",
+   "maat": 1397,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychanalysetje",
+   "maat": 1397,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "cultuurshockjes",
+   "maat": 1397,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "snuffelvluchten",
+   "maat": 1397,
+   "keten": 20,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "psychotherapeut",
+   "maat": 1396,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "halfcultuurtjes",
+   "maat": 1396,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "playoffticketje",
+   "maat": 1396,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    8,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "bomwaarschuwing",
+   "maat": 1396,
+   "keten": 19,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "papyrusfragment",
+   "maat": 1396,
+   "keten": 19,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "lynchgerechtjes",
+   "maat": 1395,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    13
+   ]
+  },
+  {
+   "w": "boswachterschap",
+   "maat": 1395,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "cyclusachtigers",
+   "maat": 1395,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "hexylresorcinol",
+   "maat": 1395,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "chocolatruffels",
+   "maat": 1395,
+   "keten": 18,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "vetzuurmolecule",
+   "maat": 1395,
+   "keten": 18,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "yuccastammetjes",
+   "maat": 1394,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "polysulfidetjes",
+   "maat": 1394,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "royaltywatchers",
+   "maat": 1394,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    8,
+    9,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "babydochtertjes",
+   "maat": 1394,
+   "keten": 17,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "babybouncertjes",
+   "maat": 1393,
+   "keten": 16,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "recyclagepapier",
+   "maat": 1392,
+   "keten": 15,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "arachnodactylie",
+   "maat": 1392,
+   "keten": 15,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "twiggyfiguurtje",
+   "maat": 1390,
+   "keten": 40,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "schouwburgwacht",
+   "maat": 1390,
+   "keten": 40,
+   "wortels": 3,
+   "pre": [
+    2,
+    3,
+    4,
+    5,
+    8,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "hydrocultuurtje",
+   "maat": 1388,
+   "keten": 38,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "etiquettedocent",
+   "maat": 1388,
+   "keten": 11,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "jezuscomplexjes",
+   "maat": 1387,
+   "keten": 37,
+   "wortels": 4,
+   "pre": [
+    1,
+    5,
+    6,
+    8,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "afschuwelijkers",
+   "maat": 1387,
+   "keten": 37,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "cowboysheriffje",
+   "maat": 1386,
+   "keten": 36,
+   "wortels": 4,
+   "pre": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    12
+   ]
+  },
+  {
+   "w": "crucifixklokken",
+   "maat": 1385,
+   "keten": 35,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "brachycefaaltje",
+   "maat": 1385,
+   "keten": 35,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "afschuwelijkste",
+   "maat": 1384,
+   "keten": 34,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "hotelcomplexjes",
+   "maat": 1384,
+   "keten": 34,
+   "wortels": 3,
+   "pre": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "labyrintvochtje",
+   "maat": 1384,
+   "keten": 34,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "snuffelvluchtje",
+   "maat": 1384,
+   "keten": 34,
+   "wortels": 2,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  {
+   "w": "hydroxylgroepen",
+   "maat": 1383,
+   "keten": 33,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "yoghurtculturen",
+   "maat": 1381,
+   "keten": 31,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "zelfhulpnetwerk",
+   "maat": 1380,
+   "keten": 30,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "hyperexclusieve",
+   "maat": 1379,
+   "keten": 29,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "halfschaduwtjes",
+   "maat": 1379,
+   "keten": 29,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "zwaluwenvleugel",
+   "maat": 1379,
+   "keten": 29,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "flexcontractjes",
+   "maat": 1379,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    1,
+    4,
+    5,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "zelfhulpmodules",
+   "maat": 1379,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "chocolaschimmel",
+   "maat": 1379,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "chocolaschilfer",
+   "maat": 1379,
+   "keten": 29,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "lymfweefseltjes",
+   "maat": 1378,
+   "keten": 28,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "plasmafysicusje",
+   "maat": 1378,
+   "keten": 28,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "w": "computercowboys",
+   "maat": 1377,
+   "keten": 54,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "ketchupschappen",
+   "maat": 1377,
+   "keten": 27,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    9,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "varkenscyclusje",
+   "maat": 1377,
+   "keten": 27,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    8,
+    10,
+    12
+   ]
+  },
+  {
+   "w": "luxeverblijfjes",
+   "maat": 1377,
+   "keten": 27,
+   "wortels": 3,
+   "pre": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "babyzwemstertje",
+   "maat": 1377,
+   "keten": 27,
+   "wortels": 3,
+   "pre": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  {
+   "w": "rugbycircuitjes",
+   "maat": 1376,
+   "keten": 26,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    6,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "kabeljauwquotum",
+   "maat": 1376,
+   "keten": 26,
+   "wortels": 4,
+   "pre": [
+    1,
+    2,
+    3,
+    4,
+    8,
+    10,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "polymeerchemici",
+   "maat": 1375,
+   "keten": 25,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "polymeerchemica",
+   "maat": 1375,
+   "keten": 25,
+   "wortels": 4,
+   "pre": [
+    1,
+    4,
+    5,
+    6,
+    8,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "w": "aquariumclubjes",
+   "maat": 1374,
+   "keten": 51,
+   "wortels": 2,
+   "pre": [
+    4,
+    5,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  }
+ ],
+ "triplet": {
+  "huidig": 3690,
+  "n": 1,
+  "top": [
+   {
+    "maat": 3690,
+    "r0": "geschenkcheques",
+    "r7": "flexwerkstertje",
+    "r14": "polymelkzuurtje"
+   }
+  ]
+ },
+ "census": [
+  {
+   "triplet": [
+    "geschenkcheques",
+    "flexwerkstertje",
+    "polymelkzuurtje"
+   ],
+   "dood": 1,
+   "top": 3542,
+   "bodem": 1531
+  }
+ ]
+}

@@ -270,3 +270,13 @@ pre-run op elke lijn is een geneste keten; de waarde van een ankerwoord is
 ketencomponent hoort in elke toekomstige triplet- of topologieranker (`chain_value` in
 `mg_row7.py` is herbruikbaar); hij is voor rij 0 en rij 14 nog niet berekend en daar zijn de
 pre-sets groter en de multipliers drie keer zo hoog.
+
+---
+
+## Vervolg: rij 0 en rij 14
+
+De ketenmaat is doorgetrokken naar de twee x27-rijen — zie **`experiments/ANCHORCHAIN.md`**
+(machinerie `experiments/mg_anchorchain.py`). Kort: eiland-decompositielemma (kolom 7 is altijd
+maskercel, dus de pre-set valt in twee onafhankelijke eilanden), ketens 19 (rij 0) en 53
+(rij 14) exact gereproduceerd, en op de volledige maat `27*(S+DL-bonus)+keten` is ons triplet
+het ENIGE dat 3690 haalt. De maskers van het record zijn al optimaal voor beide woorden.
