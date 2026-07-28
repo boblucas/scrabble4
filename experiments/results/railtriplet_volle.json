@@ -1,0 +1,98 @@
+[
+ {
+  "ankerwaarde": 2241,
+  "rij0": "carrouselbankje",
+  "rij7": "voordeelcheques",
+  "rij14": "familiegoederen",
+  "rail1": "orientatiefasen",
+  "rail13": "asobestendigere"
+ },
+ {
+  "ankerwaarde": 2160,
+  "rij0": "carrouselbankje",
+  "rij7": "voordeelcheques",
+  "rij14": "antiekboetieken",
+  "rail1": "orientatiefasen",
+  "rail13": "veertienhalzige"
+ },
+ {
+  "ankerwaarde": 2133,
+  "rij0": "veertienhelmige",
+  "rij7": "verzamelcheques",
+  "rij14": "orientatiefases",
+  "rail1": "antiekboetieken",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 2133,
+  "rij0": "veertienhalzige",
+  "rij7": "voordeelcheques",
+  "rij14": "orientatiefases",
+  "rail1": "antiekboetieken",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 2106,
+  "rij0": "veertienhelmige",
+  "rij7": "verzamelcheques",
+  "rij14": "orientatiefasen",
+  "rail1": "antiekboetieken",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 2106,
+  "rij0": "veertienhalzige",
+  "rij7": "voordeelcheques",
+  "rij14": "orientatiefasen",
+  "rail1": "antiekboetieken",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 2079,
+  "rij0": "veertienhalmige",
+  "rij7": "voordeelcheques",
+  "rij14": "orientatiefases",
+  "rail1": "antiekboetieken",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 2052,
+  "rij0": "veertienhalmige",
+  "rij7": "voordeelcheques",
+  "rij14": "orientatiefasen",
+  "rail1": "antiekboetieken",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 2016,
+  "rij0": "asobestendigere",
+  "rij7": "vluchtburchtjes",
+  "rij14": "maansatellieten",
+  "rail1": "familiegoederen",
+  "rail13": "ongeanimeerdere"
+ },
+ {
+  "ankerwaarde": 1971,
+  "rij0": "asobestendigere",
+  "rij7": "vluchtheuveltje",
+  "rij14": "orientatiefases",
+  "rail1": "familiegoederen",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 1944,
+  "rij0": "asobestendigere",
+  "rij7": "voordeelcheques",
+  "rij14": "orientatiefasen",
+  "rail1": "familiegoederen",
+  "rail13": "carrouselbankje"
+ },
+ {
+  "ankerwaarde": 1935,
+  "rij0": "ongeanimeerdere",
+  "rij7": "vluchtburchtjes",
+  "rij14": "familiegoederen",
+  "rail1": "maansatellieten",
+  "rail13": "asobestendigere"
+ }
+]

@@ -1,8 +1,18 @@
 # NIEUWE TOPOLOGIEEN — generator, meting en verdict (2026-07-28)
 
-Motor: `experiments/mg_newtopo.py` bovenop `experiments/mg_mceiling.py`.
-Uitvoer: `experiments/results/newtopo.json`, `newtopo_minzet.json`, logs `newtopo_*.log`.
-Referentie: record **4777** (`experiments/results/mg_lexresched.json`); doel >= 4819.
+Motoren: `experiments/mg_newtopo.py` (topologiegenerator) en `experiments/mg_railtriplet.py`
+(rail-filter op de tripletkeuze + volle-TWS-kolom-stelling), beide bovenop
+`experiments/mg_mceiling.py`.
+Uitvoer: `experiments/results/newtopo*.json`, `railtriplet*.json`, logs `newtopo_*.log`.
+Referentie: record **4777/4778**; doel >= 4819.  `maxgame_BEST.json` is NIET aangeraakt.
+
+**Samenvatting in drie regels.**  De rail-familie (rij 1 / rij 13 als steunrail) is de grootste
+structurele sprong die ooit voor dit probleem is gemeten (+167..+401 plafond), maar is langs
+twee onafhankelijke wegen weerlegd: het ankerwoord dat de rail toelaat is 837 punten minder
+waard (de `q` van geschenkcheques heeft geen 2-letter-opvolger), en ladderloos levert de rail
+op zichzelf nul op.  De volle TWS-kolom 14 bestaat wel (2-3 woorden, m-opbrengst 69-87 van
+maximaal 126) maar kost 12 tegels en dus twee bingo's: netto **-133**.  Kolom 0 en kolom 7
+bestaan als volle kolom helemaal niet.
 
     .venv/bin/python experiments/mg_newtopo.py                 # de hele tabel
     MINZET=1 .venv/bin/python experiments/mg_newtopo.py        # eerlijke (ladderloze) schema's
@@ -132,45 +142,144 @@ rij 14 waarvan elke letter er een afsluit.*  `geschenkcheques` faalt op de `q`,
 
 ---
 
-## 4. HARDE WEERLEGGING: de volle kolom 14 bestaat niet
+## 4. De volle TWS-kolom: de bouwvolgorde-stelling
 
-Dit is het belangrijkste negatieve resultaat en het raakt de aanbeveling uit `CLASSCEILING.md`
-(§5, "kolom 7/14 vol") en het lopende `mg_insert`-spoor.
+Een volle kolom op x = 0, 7 of 14 wordt drie keer x3 herscoord doordat de rij-7-, rij-0- en
+rij-14-final elk een van de drie TWS-cellen nieuw leggen: maximaal 39 + 42 + 45 = **126
+m-eenheden voor 12 tegels** — met afstand de beste tegel/m-verhouding van de hele vrije helft.
+Dat maximum is echter alleen bereikbaar bij EEN bepaalde bouwvolgorde, en elke volgorde levert
+andere tussenruns op die stuk voor stuk zelf woord moeten zijn.
 
-Een volle TWS-kolom wordt drie keer x3 herscoord doordat de rij-7-, rij-0- en rij-14-final elk
-een van de drie TWS-cellen nieuw leggen: 39 + 42 + 45 = **126 m-eenheden voor 12 tegels**, met
-afstand de beste tegel/m-verhouding van de hele vrije helft.  Lexicaal leeft alleen kolom 14
-(`s......e......e`, 600 woorden).  Maar bij ELKE bouwvolgorde ontstaan tussenruns die zelf
-woord moeten zijn, en die overleeft geen enkel woord:
+De kolom wordt met vijf zetten gelegd: bovenstuk **U** (rijen 1..6), onderstuk **D**
+(rijen 8..13) en de drie slotzetten **F0 / F7 / F14**.  `mg_railtriplet.column_profile()`
+loopt alle 120 volgordes af, bepaalt per volgorde de tussenruns en de m-opbrengst, en zoekt het
+beste woord.  Board-breed:
 
-| deelrun (rijen) | lengte | van de 600 woorden |
-|---|---:|---:|
-| 1..6 (bovenstuk) | 6 | 6 |
-| 8..13 (onderstuk) | 6 | 26 |
-| **1..13 (samengevoegd door de rij-7-final)** | 13 | **0** |
-| 0..13 (na de rij-0-final) | 14 | 68 |
-| 1..7 / 7..13 (halve samenvoegingen) | 7 | 17 / 1 |
+| m-opbrengst | volgorde | tussenruns | 15-letterwoorden |
+|---:|---|---|---:|
+| **126** (maximum) | U, D, F7, F14, F0 | (1,6) (8,13) (1,13) (0,14) | **17** van 118709 |
+| 108 | U, F0, D, F7, F14 | (1,6) (0,6) (0,13) (0,14) (8,13) | 708 |
+| 90 | U, F0, F7, D, F14 | (1,6) (0,6) (0,7) (0,13) (0,14) | 270 |
 
-| bouwvolgorde | woorden die het halen |
-|---|---:|
-| boven+onder, dan (14,7), (14,0), (14,14) | **0** |
-| boven, (14,7), (14,0), onder, (14,14) | **0** |
-| boven, (14,0), (14,7), onder, (14,14) | **0** |
-| onder, (14,7), (14,14), boven, (14,0) | **0** |
-| onder, (14,14), (14,7), boven, (14,0) | **0** |
+Board-breed zijn **48.596 van de 118.709** 15-letterwoorden als volle TWS-kolom realiseerbaar
+via *enige* volgorde, verdeeld over 3.956 letter-signaturen.  De maximale opbrengst 126 is dus
+lexicaal haalbaar — maar alleen voor 17 woorden.
 
-**Conclusie: de volle kolom 14 is onmogelijk, niet moeilijk.**  Hetzelfde `diagnose`-argument
-sloopt ook de volle kolom 5.  Wat WEL bestaat:
+### Voor ONS triplet
+
+| kolom | signatuur | hoogst haalbare m-opbrengst | woorden |
+|---|---|---:|---|
+| 0 | `g . f . p` | **geen enkele volgorde** | — |
+| 7 | `k . k . k` | **geen enkele volgorde** | — |
+| 14 | `s . e . e` | **87** (van 126) | `schaamtelijkere`, `schaamtevollere` |
+| 14 (zonder verbindingscel nodig) | `s . e . e` | **69** | + `schaamtelijkste` |
+
+De 87-variant (volgorde D, F0, U, F7, F14) legt het ONDERstuk als eerste en heeft dus een
+verbindingscel in kolom 13 nodig.  De 69-variant (volgorde **F0, U, F7, D, F14**) heeft er
+géén nodig: U hangt aan de zojuist gelegde `(14,0)` en D aan `(14,7)`.  Dat is de praktische
+uitvoering.
+
+### En toch is het NETTO NEGATIEF
+
+Kolom 14 kost 12 tegels, en het bord zit op de cap van 101.  Gemeten op het echte record
+(greedy sloop van de goedkoopste cellen, legaal én woordbaar, daarna kolom 14 ingevoegd met de
+juiste finalvolgorde):
+
+| geofferde tegels | tegels | bingo's | ankervast plafond | delta |
+|---:|---:|---:|---:|---:|
+| record | 101 | 11 | **4867** | 0 |
+| 12 | 101 | 9 | 4734 | **-133** |
+| 13 | 100 | 9 | 4733 | -134 |
+| 14 | 99 | 8 | 4664 | -203 |
+
+Kolom 14 levert ~90 m-eenheden op voor 12 tegels (7,5 per tegel tegen een vrij-gemiddelde van
+4,3), maar de 12 tegels die eruit moeten breken **twee bingo's** (kolom 4 en kolom 11) = -100,
+en dat kantelt het saldo.  **Conclusie: de volle kolom 14 is lexicaal mogelijk maar economisch
+verlieslatend op dit bord** — het lopende `mg_insert`-spoor (kolom 7 / 11 / 14) zal niets
+vinden, wat overeenkomt met de infeasible-meldingen in `mg_col7_*.log`, `mg_col14*.log` en
+`mg_col11.log`.
+
+Wat wel bestaat maar te klein is:
 
 * **kolom 14 bovenhelft** (rijen 0..7, `s??????e`): 73 woorden overleven de deelruns
-  (`sturende`, `slentere`, `stommele`, ...).  Twee x3-gebeurtenissen over 7 en 8 cellen = 45 m
-  voor 6 tegels.  Gemeten: ankervast **4870** — dat is 7 onder het record, dus **netto negatief**.
-* **kolom 14 onderhelft** (rijen 7..14, `e??????e`): precies 1 woord (`ebeniste`).
+  (`sturende`, `slentere`, ...).  Ankervast **4870** = 7 onder het record.
 * **kolom 7 bovenhelft** (rijen 0..10, `k......k???`): 547 woorden, waarvan 5 ook de
   centrumbingo-run (rijen 4..10) en de samenvoegrun (rijen 1..10) overleven
   (`kwijtinkjes`, `koorstukjes`, `klemminkjes`, `kruilinkjes`).  Ankervast **4887** (+10) bij
-  97 tegels — het enige positieve, lexicaal levende signaal in de hele tabel, maar CP-SAT vindt
-  de bijbehorende volledige geometrie infeasible (net als `mg_col7_boven.log` eerder al).
+  97 tegels — CP-SAT vindt de volledige geometrie infeasible.
+
+---
+
+## 4b. HET RAIL-TRIPLET: gezocht, gevonden, en te duur
+
+Motor: `experiments/mg_railtriplet.py` (bitsets over de woordenlijst, hele filter in 6 s).
+Uitvoer: `experiments/results/railtriplet*.json`.
+
+    .venv/bin/python experiments/mg_railtriplet.py     # tellingen + zak-haalbare tripletten
+    KOLOM=1 .venv/bin/python experiments/mg_railtriplet.py   # TWS-kolomprofiel van een triplet
+
+### De 26x26-matrix
+
+| relatie | letters ZONDER partner |
+|---|---|
+| opvolger (rail ONDER rij 0: `rij0[x] + rail1[x]` moet een woord zijn) | **q, x** |
+| voorganger (rail BOVEN rij 14: `rail13[x] + rij14[x]`) | **c, j, q, v, y, z** |
+
+### Hoeveel ankerwoorden laten een rail toe?
+
+| eis | haalbare 15-letter ankerwoorden | beste woord | ankerwaarde (27/9/27-model) |
+|---|---:|---|---:|
+| rij 0, VOLLE rail1 (kol 0..14) | **16** van 118709 | `carrouselbankje` | 999 |
+| rij 0, DWS-rail1 (kol 1..13) | **644** van 118709 | `babbelzuchtiger` | 1188 |
+| rij 0, geen rail (huidig) | 118709 | `croquemboucheje` | 1701 |
+| rij 0 = `geschenkcheques` | — | — | **1674** |
+| rij 14, VOLLE rail13 | **16** | `positiebepaling` | 837 |
+| rij 14, DWS-rail13 | **449** | `consulaatsbuurt` | 1161 |
+| rij 14 = `polymelkzuurtje` | — | — | **1512** |
+
+De rail-eis is dus inderdaad **het dominante selectiecriterium**: hij snijdt 99,5 % van het
+lexicon weg (DWS-rail) of 99,99 % (volle rail).  Er zijn 1497 zak-haalbare combinaties
+(3 ankerwoorden + 2 railwoorden = 75 van de 101 tegels); de top staat in
+`experiments/results/railtriplet_dws-rail.json`.  De 12 beste met een VOLLE rail staan in
+`railtriplet_volle.json`.
+
+### De rekening
+
+| post | waarde |
+|---|---:|
+| rij 0: `geschenkcheques` (1674) -> beste rail-woord (1188) | **-486** |
+| rij 14: `polymelkzuurtje` (1512) -> beste rail-woord (1161) | **-351** |
+| samen | **-837 ankerwaarde** |
+| daartegenover: de rail-topologie zelf, ladderloos gemeten | **+135** |
+
+Gemeten in plaats van geschat — het ankervaste plafond van de RECORDgeometrie met de letters
+van een rail-triplet erin:
+
+| triplet | ankervast plafond |
+|---|---:|
+| `geschenkcheques / flexwerkstertje / polymelkzuurtje` | **4867** |
+| `babbelzuchtiger / croquemboucheje / consulaatsbuurt` | 4324 (-543) |
+| `mottengewichtje / verzamelcheques / waskaarskleurig` | 4064 (-803) |
+| `carrouselbankje / vluchtheuveltje / familiegoederen` (volle rail) | 3706 (-1161) |
+
+De reden is één cel: de **`q` op (11,0)** is een DLS op de x27-rij, m = 54, waarde 10 =
+**540 punten uit één tegel**.  De `q` heeft geen enkele 2-letter-opvolger, dus elke rail
+verbiedt hem.  Hetzelfde geldt voor de `x` (8 punten) en, boven rij 14, voor `y`/`z`/`j`/`v`
+(8/4/4/4 punten) — precies de letters die de x27-rijen waardevol maken.
+
+**Er is nog een tweede, onafhankelijke reden.** Het ladderloze plafond van de rail-topologie
+zonder kolom 14 is 4858 tegen 4867 voor het record: **de rail levert op zichzelf nul op.**
+De hele +135 kwam van de volle kolom 14, en die is (sectie 4) op zijn beurt netto -133 vanwege
+de bingo-breuk.  De rail-familie is dus langs twee onafhankelijke wegen weerlegd:
+
+1. het ankerwoord dat de rail toelaat is 837 punten minder waard, en
+2. de rail zelf voegt (ladderloos) niets toe; alleen de kolom die hij ontsluit deed dat, en die
+   kost meer tegels dan hij oplevert.
+
+Bovendien struikelen de rail-tripletten over het **fragment-lemma**: bij
+`croquemboucheje` als rij-7-woord bestaat er geen enkele keuze van slotzetcellen waarbij alle
+pre-groepen woorden zijn (`mg_newtopo.auto_finals` geeft `None`).  Van de vijf doorgerekende
+rail-tripletten had er geen enkele een leverbare rij-7.
 
 ---
 
@@ -223,8 +332,12 @@ ongewijzigd.
    overschat om dezelfde reden.
 2. **Lijnconsistentie is een sterker filter dan run-woordbaarheid.**  `table_nonempty` keurt
    elke run apart; `diagnose` eist dat alle runs op een lijn door EEN woord worden gedekt.
-   Dat verschil is het verschil tussen "kolom 14 vol = 600 woorden" en "kolom 14 vol = 0".
+   Voor kolom 14 (`s..e..e`) is dat het verschil tussen 600 woorden en 2.
    **Aanbeveling: `diagnose` als standaardfilter in elke generator gebruiken vóór CP-SAT.**
+   *Let op de valkuil die deze campagne zelf maakte:* `diagnose` beoordeelt EEN gegeven
+   zetschema.  Om te bepalen of een LIJN uberhaupt bestaat moet je alle bouwvolgordes aflopen
+   (`mg_railtriplet.column_profile`); een eerdere versie van dit verslag concludeerde uit vijf
+   handmatig gekozen volgordes ten onrechte dat kolom 14 onmogelijk was.
 3. **x4-lanen zijn structureel te zwak.**  4 m per cel tegen een vrij-gemiddelde van 4,3 en
    een bordgemiddelde van 13,4.  Rijen 2/3/4/10/11/12 leveren dus per definitie niets op; alle
    vier de lane-varianten zijn negatief gemeten.  Alleen de rij-4-laan uit het record loont, en
@@ -244,7 +357,8 @@ ongewijzigd.
 
 | prioriteit | actie | verwachte winst |
 |--:|---|---|
-| 1 | **Rail-filter in de triplet-generator.**  Zoek een rij-0-woord waarvan elke letter een 2-letterwoord begint en een rij-14-woord waarvan elke letter er een afsluit.  Dan wordt de rail-familie (+130 minzet, +400 ladder) bereikbaar. | +130 .. +400 plafond |
-| 2 | **`diagnose` toepassen op alle lopende sporen** (`mg_insert` kolom-7/11/14).  De volle kolom 14 is bewezen onmogelijk; die runs kunnen gestopt worden. | bespaart rekentijd |
-| 3 | Kolom-7-bovenhelft (`kwijtinkjes`-klasse, 5 woorden) nog eens met een ANDERE omliggende geometrie dan het record proberen — het is het enige lexicaal levende plus-signaal. | +10 plafond |
-| 4 | De frontier blijft het LEXICON op de 14 hoogste m-cellen (`CLASSCEILING.md` §6.3, ~700 punten), niet de geometrie. | — |
+| 1 | **Rail-spoor SLUITEN.**  Uitgevoerd en langs twee onafhankelijke wegen weerlegd (sectie 4b): het rail-triplet kost 837 ankerpunten, en de rail zelf levert ladderloos nul op.  Niet opnieuw openen zonder een lexicon met een 2-letterwoord op `q`. | gesloten |
+| 2 | **Kolom-14/7/11-inserts stoppen.**  De volle kolom 14 bestaat (69 of 87 m-opbrengst, 2-3 woorden) maar is netto **-133** op het record door de bingo-breuk; kolom 0 en 7 bestaan helemaal niet. | bespaart rekentijd |
+| 3 | **De bingo-breuk is de echte rem, niet de m.**  Elke structurele toevoeging van 12 tegels sloopt twee 7-tegelzetten (-100).  Een topologie die 12 tegels vrijmaakt ZONDER bingo's te breken maakt kolom 14 (+90 m, ~+135 punten) meteen positief.  Dat is de scherpst geformuleerde open vraag. | +100 .. +135 |
+| 4 | Kolom-7-bovenhelft (`kwijtinkjes`-klasse, 5 woorden) met een ANDERE omliggende geometrie dan het record — het enige lexicaal levende plus-signaal in de tabel. | +10 plafond |
+| 5 | De frontier blijft verder het LEXICON op de 14 hoogste m-cellen (`CLASSCEILING.md` §6.3, ~700 punten), niet de geometrie. | — |

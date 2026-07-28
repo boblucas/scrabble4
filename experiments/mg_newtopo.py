@@ -34,7 +34,8 @@ import mg_mceiling as M
 CAP = 101
 BEST = '/home/bob/programming/scrabble4/experiments/results/maxgame_BEST.json'
 RESCHED = '/home/bob/programming/scrabble4/experiments/results/mg_lexresched.json'
-TRIPLET = ('geschenkcheques', 'flexwerkstertje', 'polymelkzuurtje')
+TRIPLET = tuple(os.environ.get('TRIPLET',
+                'geschenkcheques,flexwerkstertje,polymelkzuurtje').split(','))
 ROWY = {0: 0, 1: 7, 2: 14}
 
 r = MG.r
@@ -296,6 +297,41 @@ def R(a, b): return list(range(a, b + 1))
 #                                                          -> die kolommen minstens 3 lang
 #   * volle 15-letterkolommen bestaan alleen op x = 14 (600), 5 (104), 2 (27), 12 (3), 7 (2)
 #     -- kolom 0 (g..f..p), 11 (q..r..r) en de rest hebben er NUL.
+def auto_finals(y, support=None, maxpre=4):
+    """Kies de slotzet-cellen van ankerrij y zo dat (a) de drie TWS erin zitten, (b) elke
+    PRE-groep zelf een woord is (of 1 cel lang) en (c) de DLS-cellen (3,y)/(11,y) zo mogelijk
+    in de final vallen (die krijgen dan m=54 in plaats van ~28).  Zonder deze keuze is een
+    ankerrij vaak onleverbaar: de pre-groepen zijn deelwoorden van het ankerwoord en die
+    moeten bestaan (bij geschenkcheques is {8,9,10} = 'che' en dus verboden)."""
+    import itertools
+    w = [FIXED[(x, y)] for x in range(15)]
+    val = {i: r.scores[i] for i in range(1, 27)}
+    best, bestkey = None, None
+    for extra in itertools.combinations([x for x in range(15) if x not in (0, 7, 14)], 4):
+        F = sorted({0, 7, 14} | set(extra))
+        groups, cur = [], []
+        for x in range(15):
+            if x in F:
+                if cur:
+                    groups.append(cur)
+                cur = []
+            else:
+                cur.append(x)
+        if cur:
+            groups.append(cur)
+        if len(groups) > maxpre:
+            continue
+        if support is not None and any(not (set(g) & support) for g in groups):
+            continue        # elke pre-groep heeft een eigen dragende kolom nodig
+        if any(len(g) > 1 and tuple(w[x] for x in g) not in _WSET.get(len(g), ()) for g in groups):
+            continue
+        dls = sum(val[w[x]] for x in (3, 11) if x in F)
+        key = (dls, -len(groups), -max((len(g) for g in groups), default=0))
+        if bestkey is None or key > bestkey:
+            best, bestkey = (F, groups), key
+    return best
+
+
 def t_record():
     """(ref) ons record 4777: 3 ankerrijen, 4 klimkolommen boven (2/5/10/12), 2 onder (4/11),
     rij-4-laan x4.  Referentiepunt voor alle delta's."""
@@ -578,6 +614,45 @@ def t_kol7_boven():
     })
 
 
+def _autofin(sup=None):
+    """sup: {rij: verzameling kolommen die die rij kunnen dragen}."""
+    sup = sup or {}
+    f = {}
+    for y in (0, 7, 14):
+        b = auto_finals(y, sup.get(y))
+        if b is None:
+            raise ValueError(f'rij {y}: geen leverbare finalkeuze (fragment-/pre-groep-lemma)')
+        f[y] = b[0]
+    return f
+
+
+def t_rail_auto():
+    """(rail-auto) DE RAIL-TOPOLOGIE VOOR EEN WILLEKEURIG TRIPLET: rijen 0,1,7,13,14 vol,
+    ruggengraat kolom 5, volle kolom 14, en de slotzetten per rij automatisch gekozen zodat de
+    pre-groepen woorden zijn (`auto_finals`).  Gebruik met TRIPLET=<w0>,<w7>,<w14>."""
+    return build({
+        'cols': {5: R(2, 6) + R(8, 12), 14: R(2, 6) + R(8, 12), 3: [12], 8: [12], 13: [12],
+                 11: [2]},
+        'rails': {1: R(0, 14), 13: R(0, 14)},
+        'brug': [[(0, 1), (1, 1), (13, 1), (14, 1)],
+                 [(0, 13), (1, 13), (13, 13), (14, 13)]],
+        # de rails dragen rij 0 en rij 14 VOLLEDIG -> geen klimkolommen nodig
+        'final': _autofin({0: set(range(15)), 14: set(range(15)), 7: {5, 14}}),
+    })
+
+
+def t_record_auto():
+    """(record-auto) de RECORDtopologie met automatisch gekozen slotzetten -- de eerlijke
+    vergelijkingsbasis als je het triplet verwisselt."""
+    return build({
+        'center': V(7, R(4, 10)),
+        'cols': {2: R(1, 6), 5: R(1, 6), 10: R(1, 6), 12: R(1, 6),
+                 4: R(8, 13), 11: R(8, 13)},
+        'rails': {4: R(2, 13)},
+        'final': _autofin({0: {2, 5, 10, 12}, 14: {4, 11}, 7: {2, 4, 5, 10, 11, 12}}),
+    })
+
+
 # --- overige nieuwe ideeen -------------------------------------------------------
 def t_lane_late():
     """(laat-x4) de rij-4-laan wordt PAS gesloten als de rij vol is: de twee DWS (4,4)/(10,4)
@@ -678,6 +753,8 @@ TOPOS = [
     ('lanen rij 2+12', t_lanen_2_12),
     ('2 lanen + kol14', t_lanen_kol14),
     ('kol7-boven (rijen 1..3)', t_kol7_boven),
+    ('rail-auto (per triplet)', t_rail_auto),
+    ('record-auto (per triplet)', t_record_auto),
     ('laat-x4 (rij-4-brug laatst)', t_lane_late),
     ('weefsel (lanen eerst)', t_weave),
     ('x4-stapel (rij 1/4/10/13)', t_x4stack),

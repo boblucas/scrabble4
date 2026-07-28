@@ -1,0 +1,55 @@
+lexicon: 118709 15-letterwoorden, 153033 13-letterwoorden, 93 2-letterwoorden
+letters ZONDER opvolger (blokkeren een rail ONDER rij 0):  ['q', 'x']
+letters ZONDER voorganger (blokkeren een rail BOVEN rij 14): ['c', 'j', 'q', 'v', 'y', 'z']
+bitsets gebouwd (2.5s)
+rij0 + VOLLE rail1                :     16 van 118709 ankerwoorden haalbaar  (3.5s)
+      bv. bijbelhandelaar + rail energietoerisme  (ankerwaarde 999)
+      bv. carrouselbankje + rail orientatiefasen  (ankerwaarde 999)
+      bv. veertienhalzige + rail antiekboetieken  (ankerwaarde 972)
+rij14 + VOLLE rail13              :     16 van 118709 ankerwoorden haalbaar  (4.2s)
+      bv. positiebepaling + rail operatiedonatie  (ankerwaarde 837)
+      bv. fantasiebeelden + rail oliemiljardaire  (ankerwaarde 810)
+      bv. hagiotherapieen + rail energietekortje  (ankerwaarde 783)
+rij0 + DWS-rail1 (kol 1..13)      :    644 van 118709 ankerwoorden haalbaar  (5.7s)
+      bv. babbelzuchtiger + rail herniotomieen  (ankerwaarde 1188)
+      bv. babbelzuchtigen + rail herniotomieen  (ankerwaarde 1161)
+      bv. vrouwengebabbel + rail impetuositeit  (ankerwaarde 1161)
+rij14 + DWS-rail13 (kol 1..13)    :    447 van 118709 ankerwoorden haalbaar  (6.7s)
+      bv. consulaatsbuurt + rail nekherniaatje  (ankerwaarde 1161)
+      bv. valutafraudeurs + rail penapparaatje  (ankerwaarde 1134)
+      bv. valutafraudeuse + rail penapparaatje  (ankerwaarde 1107)
+
+=== TRIPLETTEN die BEIDE rails halen (volle rail) ===
+kandidaten: 16 x 16
+  12 zak-haalbare combinaties; top-15 op ankerwaarde:
+     2241  rij0=carrouselbankje rij7=voordeelcheques rij14=familiegoederen | rail1=orientatiefasen rail13=asobestendigere
+     2160  rij0=carrouselbankje rij7=voordeelcheques rij14=antiekboetieken | rail1=orientatiefasen rail13=veertienhalzige
+     2133  rij0=veertienhelmige rij7=verzamelcheques rij14=orientatiefases | rail1=antiekboetieken rail13=carrouselbankje
+     2133  rij0=veertienhalzige rij7=voordeelcheques rij14=orientatiefases | rail1=antiekboetieken rail13=carrouselbankje
+     2106  rij0=veertienhelmige rij7=verzamelcheques rij14=orientatiefasen | rail1=antiekboetieken rail13=carrouselbankje
+     2106  rij0=veertienhalzige rij7=voordeelcheques rij14=orientatiefasen | rail1=antiekboetieken rail13=carrouselbankje
+     2079  rij0=veertienhalmige rij7=voordeelcheques rij14=orientatiefases | rail1=antiekboetieken rail13=carrouselbankje
+     2052  rij0=veertienhalmige rij7=voordeelcheques rij14=orientatiefasen | rail1=antiekboetieken rail13=carrouselbankje
+     2016  rij0=asobestendigere rij7=vluchtburchtjes rij14=maansatellieten | rail1=familiegoederen rail13=ongeanimeerdere
+     1971  rij0=asobestendigere rij7=vluchtheuveltje rij14=orientatiefases | rail1=familiegoederen rail13=carrouselbankje
+     1944  rij0=asobestendigere rij7=voordeelcheques rij14=orientatiefasen | rail1=familiegoederen rail13=carrouselbankje
+     1935  rij0=ongeanimeerdere rij7=vluchtburchtjes rij14=familiegoederen | rail1=maansatellieten rail13=asobestendigere
+
+=== TRIPLETTEN die BEIDE DWS-rails halen (kolommen 1..13) ===
+kandidaten: 400 x 400
+  1469 zak-haalbare combinaties; top-15 op ankerwaarde:
+     2781  rij0=mottengewichtje rij7=verzamelcheques rij14=waskaarskleurig | rail1=neuroanatomie rail13=souvlakietjes
+     2727  rij0=collegegebouwen rij7=verrekencheques rij14=huiskamertafels | rail1=pianobeloftes rail13=traumateampje
+     2700  rij0=heemweeachtiger rij7=verzamelcheques rij14=waskaarskleurig | rail1=ineengroeiden rail13=souvlakietjes
+     2700  rij0=geelpootmeeuwen rij7=croquemboucheje rij14=waskaarskleurig | rail1=graanmeetster rail13=souvlakietjes
+     2691  rij0=zeeleeuwerikjes rij7=geschenkcheques rij14=wandelbuffetten | rail1=trinitarissen rail13=weideapparaat
+     2682  rij0=lowbudgetreizen rij7=croquetmatchjes rij14=waskaarskleurig | rail1=harpoeneerden rail13=souvlakietjes
+     2673  rij0=yogamethodetjes rij7=croquemboucheje rij14=wandelbuffetten | rail1=politieseries rail13=weideapparaat
+     2673  rij0=vrouwengebabbel rij7=verzamelcheques rij14=koffieleessters | rail1=impetuositeit rail13=doorgegroeide
+     2673  rij0=verdeelzuiltjes rij7=jacquardweefsel rij14=campusbeheerder | rail1=nierbiopsieen rail13=woonkamerraam
+     2673  rij0=mottengewichtje rij7=verzamelcheques rij14=buffetbediendes | rail1=neuroanatomie rail13=kopieerarbeid
+     2673  rij0=moederplichtjes rij7=croquemboucheje rij14=wandelbuffetten | rail1=stereoisomeer rail13=weideapparaat
+     2673  rij0=komediegebouwen rij7=verzamelcheques rij14=consulaatsbuurt | rail1=fagotregister rail13=nekherniaatje
+     2664  rij0=verdeelzuiltjes rij7=geschenkcheques rij14=wandelbuffetten | rail1=nierbiopsieen rail13=weideapparaat
+     2655  rij0=collegegebouwen rij7=deuxchevauxtjes rij14=grotemensenhuis | rail1=pianobeloftes rail13=animatieteams
+     2646  rij0=yogamethodetjes rij7=quichebuffetjes rij14=campusbeheerder | rail1=politieseries rail13=woonkamerraam
