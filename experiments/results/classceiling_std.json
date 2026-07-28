@@ -1,0 +1,807 @@
+[
+ {
+  "naam": "a  anker3 (synth)",
+  "tegels": 100,
+  "uniek": 100,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5472,
+  "bingos_seed": 10,
+  "min2_gedropte_cellen": 24,
+  "vrij": 5640,
+  "min2": 1920,
+  "minzet": 5526,
+  "bingos_vrij": 10,
+  "m_som": 1346,
+  "m_nonanker": [
+   [
+    1,
+    6
+   ],
+   [
+    2,
+    11
+   ],
+   [
+    3,
+    11
+   ],
+   [
+    4,
+    9
+   ],
+   [
+    5,
+    7
+   ],
+   [
+    6,
+    4
+   ],
+   [
+    7,
+    3
+   ],
+   [
+    8,
+    2
+   ],
+   [
+    10,
+    1
+   ],
+   [
+    11,
+    1
+   ]
+  ],
+  "ladder_delta": 3720
+ },
+ {
+  "naam": "a2 anker3 (min2-lever)",
+  "tegels": 99,
+  "uniek": 99,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5322,
+  "bingos_seed": 6,
+  "min2_gedropte_cellen": 0,
+  "vrij": 5642,
+  "min2": 5422,
+  "minzet": 5344,
+  "bingos_vrij": 6,
+  "m_som": 1468,
+  "m_nonanker": [
+   [
+    2,
+    9
+   ],
+   [
+    3,
+    3
+   ],
+   [
+    4,
+    10
+   ],
+   [
+    5,
+    9
+   ],
+   [
+    6,
+    5
+   ],
+   [
+    7,
+    5
+   ],
+   [
+    8,
+    1
+   ],
+   [
+    9,
+    4
+   ],
+   [
+    11,
+    2
+   ],
+   [
+    12,
+    2
+   ],
+   [
+    13,
+    1
+   ],
+   [
+    15,
+    1
+   ],
+   [
+    16,
+    1
+   ],
+   [
+    17,
+    1
+   ]
+  ],
+  "ladder_delta": 220
+ },
+ {
+  "naam": "a' anker3 (record 4531)",
+  "tegels": 101,
+  "uniek": 101,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5677,
+  "bingos_seed": 11,
+  "min2_gedropte_cellen": 56,
+  "vrij": 5757,
+  "min2": 861,
+  "minzet": 5748,
+  "bingos_vrij": 11,
+  "m_som": 1376,
+  "m_nonanker": [
+   [
+    1,
+    2
+   ],
+   [
+    2,
+    15
+   ],
+   [
+    3,
+    16
+   ],
+   [
+    4,
+    4
+   ],
+   [
+    5,
+    5
+   ],
+   [
+    7,
+    4
+   ],
+   [
+    8,
+    5
+   ],
+   [
+    9,
+    1
+   ],
+   [
+    10,
+    3
+   ],
+   [
+    11,
+    1
+   ]
+  ],
+  "ladder_delta": 4896
+ },
+ {
+  "naam": "b  FRAME 0/7/14",
+  "tegels": 105,
+  "uniek": 105,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 4,
+  "seed": 5135,
+  "bingos_seed": 8,
+  "min2_gedropte_cellen": 0,
+  "vrij": 5692,
+  "min2": 5289,
+  "minzet": 5177,
+  "bingos_vrij": 8,
+  "m_som": 1624,
+  "m_nonanker": [
+   [
+    2,
+    10
+   ],
+   [
+    4,
+    15
+   ],
+   [
+    5,
+    3
+   ],
+   [
+    6,
+    2
+   ],
+   [
+    7,
+    5
+   ],
+   [
+    8,
+    2
+   ],
+   [
+    9,
+    2
+   ],
+   [
+    10,
+    1
+   ],
+   [
+    11,
+    1
+   ],
+   [
+    13,
+    3
+   ],
+   [
+    14,
+    8
+   ],
+   [
+    16,
+    4
+   ],
+   [
+    17,
+    2
+   ],
+   [
+    18,
+    2
+   ]
+  ],
+  "ladder_delta": 403
+ },
+ {
+  "naam": "b2 FRAME 2/7/12",
+  "tegels": 101,
+  "uniek": 101,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5254,
+  "bingos_seed": 8,
+  "min2_gedropte_cellen": 0,
+  "vrij": 5689,
+  "min2": 5373,
+  "minzet": 5272,
+  "bingos_vrij": 9,
+  "m_som": 1449,
+  "m_nonanker": [
+   [
+    1,
+    8
+   ],
+   [
+    2,
+    10
+   ],
+   [
+    3,
+    5
+   ],
+   [
+    4,
+    7
+   ],
+   [
+    5,
+    3
+   ],
+   [
+    6,
+    1
+   ],
+   [
+    7,
+    2
+   ],
+   [
+    8,
+    11
+   ],
+   [
+    9,
+    1
+   ],
+   [
+    10,
+    3
+   ],
+   [
+    12,
+    1
+   ],
+   [
+    13,
+    1
+   ],
+   [
+    14,
+    1
+   ],
+   [
+    15,
+    1
+   ],
+   [
+    17,
+    1
+   ]
+  ],
+  "ladder_delta": 316
+ },
+ {
+  "naam": "b3 FRAME 0/14 partieel",
+  "tegels": 99,
+  "uniek": 99,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5013,
+  "bingos_seed": 8,
+  "min2_gedropte_cellen": 0,
+  "vrij": 5483,
+  "min2": 5150,
+  "minzet": 5013,
+  "bingos_vrij": 8,
+  "m_som": 1480,
+  "m_nonanker": [
+   [
+    2,
+    16
+   ],
+   [
+    4,
+    14
+   ],
+   [
+    5,
+    2
+   ],
+   [
+    6,
+    2
+   ],
+   [
+    7,
+    4
+   ],
+   [
+    8,
+    2
+   ],
+   [
+    9,
+    2
+   ],
+   [
+    13,
+    2
+   ],
+   [
+    14,
+    2
+   ],
+   [
+    16,
+    4
+   ],
+   [
+    17,
+    2
+   ],
+   [
+    18,
+    2
+   ]
+  ],
+  "ladder_delta": 333
+ },
+ {
+  "naam": "c  x4-lanen puur",
+  "tegels": 95,
+  "uniek": 95,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 2065,
+  "bingos_seed": 5,
+  "min2_gedropte_cellen": 0,
+  "vrij": 2962,
+  "min2": 2488,
+  "minzet": 2427,
+  "bingos_vrij": 5,
+  "m_som": 904,
+  "m_nonanker": [
+   [
+    1,
+    1
+   ],
+   [
+    2,
+    1
+   ],
+   [
+    4,
+    5
+   ],
+   [
+    5,
+    1
+   ],
+   [
+    6,
+    10
+   ],
+   [
+    7,
+    5
+   ],
+   [
+    8,
+    15
+   ],
+   [
+    9,
+    15
+   ],
+   [
+    10,
+    11
+   ],
+   [
+    11,
+    7
+   ],
+   [
+    12,
+    1
+   ],
+   [
+    13,
+    8
+   ],
+   [
+    14,
+    2
+   ],
+   [
+    15,
+    2
+   ],
+   [
+    16,
+    3
+   ],
+   [
+    17,
+    1
+   ],
+   [
+    18,
+    1
+   ],
+   [
+    20,
+    2
+   ],
+   [
+    23,
+    1
+   ]
+  ],
+  "ladder_delta": 474
+ },
+ {
+  "naam": "d  hybride",
+  "tegels": 97,
+  "uniek": 97,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 4968,
+  "bingos_seed": 8,
+  "min2_gedropte_cellen": 0,
+  "vrij": 5332,
+  "min2": 5066,
+  "minzet": 5052,
+  "bingos_vrij": 9,
+  "m_som": 1435,
+  "m_nonanker": [
+   [
+    2,
+    9
+   ],
+   [
+    3,
+    2
+   ],
+   [
+    4,
+    6
+   ],
+   [
+    5,
+    9
+   ],
+   [
+    6,
+    1
+   ],
+   [
+    7,
+    3
+   ],
+   [
+    8,
+    5
+   ],
+   [
+    9,
+    2
+   ],
+   [
+    10,
+    3
+   ],
+   [
+    11,
+    3
+   ],
+   [
+    12,
+    2
+   ],
+   [
+    13,
+    1
+   ],
+   [
+    14,
+    4
+   ],
+   [
+    26,
+    2
+   ]
+  ],
+  "ladder_delta": 266
+ },
+ {
+  "naam": "e  herscoringszwaar",
+  "tegels": 101,
+  "uniek": 101,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5276,
+  "bingos_seed": 5,
+  "min2_gedropte_cellen": 35,
+  "vrij": 5581,
+  "min2": 1612,
+  "minzet": 5534,
+  "bingos_vrij": 5,
+  "m_som": 1471,
+  "m_nonanker": [
+   [
+    2,
+    9
+   ],
+   [
+    3,
+    8
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    5,
+    7
+   ],
+   [
+    6,
+    4
+   ],
+   [
+    7,
+    13
+   ],
+   [
+    8,
+    3
+   ],
+   [
+    9,
+    4
+   ],
+   [
+    11,
+    2
+   ],
+   [
+    12,
+    2
+   ],
+   [
+    14,
+    2
+   ]
+  ],
+  "ladder_delta": 3969
+ },
+ {
+  "naam": "f  anker3 + volle kol 7",
+  "tegels": 101,
+  "uniek": 101,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5632,
+  "bingos_seed": 10,
+  "min2_gedropte_cellen": 24,
+  "vrij": 5873,
+  "min2": 1939,
+  "minzet": 5674,
+  "bingos_vrij": 10,
+  "m_som": 1452,
+  "m_nonanker": [
+   [
+    1,
+    6
+   ],
+   [
+    2,
+    7
+   ],
+   [
+    3,
+    10
+   ],
+   [
+    4,
+    9
+   ],
+   [
+    5,
+    8
+   ],
+   [
+    6,
+    3
+   ],
+   [
+    7,
+    1
+   ],
+   [
+    8,
+    2
+   ],
+   [
+    10,
+    1
+   ],
+   [
+    11,
+    1
+   ],
+   [
+    12,
+    1
+   ],
+   [
+    13,
+    1
+   ],
+   [
+    14,
+    4
+   ],
+   [
+    18,
+    1
+   ],
+   [
+    19,
+    1
+   ]
+  ],
+  "ladder_delta": 3934
+ },
+ {
+  "naam": "f2 f in min2-uitvoering",
+  "tegels": 101,
+  "uniek": 101,
+  "legaal": true,
+  "msg": "ok",
+  "over_cap": 0,
+  "seed": 5231,
+  "bingos_seed": 6,
+  "min2_gedropte_cellen": 0,
+  "vrij": 5595,
+  "min2": 5309,
+  "minzet": 5254,
+  "bingos_vrij": 6,
+  "m_som": 1524,
+  "m_nonanker": [
+   [
+    1,
+    1
+   ],
+   [
+    2,
+    3
+   ],
+   [
+    3,
+    4
+   ],
+   [
+    4,
+    7
+   ],
+   [
+    5,
+    9
+   ],
+   [
+    6,
+    3
+   ],
+   [
+    7,
+    9
+   ],
+   [
+    8,
+    5
+   ],
+   [
+    9,
+    4
+   ],
+   [
+    11,
+    2
+   ],
+   [
+    12,
+    3
+   ],
+   [
+    13,
+    2
+   ],
+   [
+    15,
+    2
+   ],
+   [
+    16,
+    1
+   ],
+   [
+    17,
+    1
+   ]
+  ],
+  "ladder_delta": 286
+ }
+]
