@@ -433,3 +433,25 @@ De schema-onafhankelijke zaktoets voor de rij-3-laan-bezetting liep af zonder oo
 uitkomst staat wel vast: alle zes de laan-varianten op het actuele bord zijn los getoetst en op een
 na CP-SAT-weerlegd, en de overlevende (enkele cel (11,3), als TOEVOEGING) levert 4744 -- onder het
 record. Losse draad, geen open kans.
+
+## LETTERBUDGET (2026-07-29): de triplet-deur is DICHT, met een gemeten wisselkoers
+Vraag was: bestaat er een triplet dat ankerwaarde inlevert maar zoveel meer bindletters overlaat dat
+de 56 vrije cellen productiever worden? Antwoord: NEE, en nu kwantitatief.
+MULTIPLIER-ASYMMETRIELEMMA (de kern): de 45 ankercellen hebben m-som 1115 (gemiddeld 24,8) en de 56
+vrije cellen m-som 238 (gemiddeld 4,25). De ankerrijen dragen dus 82,4% van al het scoringsgewicht.
+Een tegel die je 'voor de zak bewaart' landt op een cel die gemiddeld 5,83x minder waard is. Voor
+rij 0 en 14 is dat HARD: hun laagste m is 27 en de hoogste vrije m is 11, dus elke letterwaarde die
+je daar weghaalt levert hoogstens 11/27 = 0,41 terug. Alleen rij 7 (min m 9) kan theoretisch boven 1.
+GEMETEN WISSELKOERS: 0,31 restpunt per ingeleverd ankerpunt (regressie over 476 kandidaten), beste
+enkele geval 0,44, bovengrens 0,66 -- break-even vereist 1,00. Het triplet zet 134 punten letterwaarde
+om in 3763 (28,1x); de restzak zet 96 punten om in 480 (5,0x).
+RESTZAK van ons triplet: 55 tegels, 17-letterig alfabet, c/h/j/k/l/q/u/x/y VOLLEDIG op, nog 21,9% van
+de 8-letterwoorden bouwbaar. Arm dus -- maar dat is een GEVOLG van waar de punten zitten, geen oorzaak.
+Ons triplet is rang 1 op beide sporen (ankerrijpools onder de fragmenteis, en voetafdruk-vrij).
+WAT ER NOG WEL LIGT: 96 punten op DIT voetafdruk, in de LETTERING. De restzak haalt 480 van de 576 die
+de zakgrens toelaat (83% realisatiegraad). De harde bovengrens van dit voetafdruk met ons triplet is
+3763 + 576 + 550 = 4889, en 4819 ligt daaronder -- 4819 is dus NIET uitgesloten op deze bezetting,
+alleen niet bereikbaar via een ander triplet.
+=> LOPENDE BINDENDE TOETS: exact_fill in beslissingsvorm op het huidige voetafdruk, target = record+1
+(experiments/results/mg_decide.log, 5400s). INFEASIBLE bewijst dat 4793 optimaal is voor deze
+bezetting; FEASIBLE levert direct een beter bord.
