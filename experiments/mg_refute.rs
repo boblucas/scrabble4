@@ -2182,6 +2182,31 @@ fn col_values_sharp(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>
     out
 }
 
+/// lexicaal BLINDE kolomwaarden: alleen de structuur (MAXVLEN + FULL) telt.  Voor het tellen
+/// van de omvang van een stratum -- een bezetting hoort ook bij haar stratum als geen enkele
+/// lijn ervan te letteren is (die is dan a fortiori weerlegd).
+fn col_values_struct() -> Vec<Vec<Option<(u8, i64)>>> {
+    let maxv: usize = env::var("MAXVLEN").ok().and_then(|s| s.parse().ok()).unwrap_or(15);
+    let fullm = full_cols_env();
+    let mut out = Vec::with_capacity(15);
+    for x in 0..15 {
+        let must_full = fullm.map_or(false, |f| f >> x & 1 != 0);
+        let no_full = fullm.map_or(false, |f| f >> x & 1 == 0);
+        let mut v = Vec::with_capacity(1 << 12);
+        for m in 0..(1u32 << 12) {
+            if (must_full && m != 0xfff) || (no_full && m == 0xfff) {
+                v.push(None);
+                continue;
+            }
+            let cm = mask12_to_col(m);
+            let ok = must_full || vruns(cm).iter().all(|(a, b)| b - a + 1 <= maxv);
+            v.push(if ok { Some((m.count_ones() as u8, 0i64)) } else { None });
+        }
+        out.push(v);
+    }
+    out
+}
+
 // ---------------------------------------------------------------- VERSCHERPING 3: bingoplafond
 // U_L telt +50 voor elke groep van 7 nieuwe tegels op L, zonder globaal maximum.  Er liggen
 // hoogstens 101 tegels op het bord (zak 100 + 2 blanco, tegenstander houdt >= 1 tegel vast) en
@@ -2941,6 +2966,7 @@ fn cmd_stratx(dir: &str) {
                       t0.elapsed().as_secs_f64());
         }
     }
+    calib_stratum_contains_record(dir, active, best);
     println!("STRATUM(v3, +kruispunt-Lagrange) ACT={:012b} MAXVLEN={} FULL={} -> \
               BOVENGRENS {}  (zonder theta {}, winst {})  ({})",
              active, env::var("MAXVLEN").unwrap_or_else(|_| "15".into()),
@@ -3029,6 +3055,59 @@ fn cmd_framediag(dir: &str) {
     }
     println!("  -> kolommen die vol KUNNEN zijn: {:?}", cands);
     println!("  -> FRAME-deelstrata: alle 2^{} deelverzamelingen daarvan", cands.len());
+}
+
+/// IJKING op stratumniveau: ligt de recordbezetting IN dit stratum (haar actieve rijen zitten
+/// in A, geen volle kolom, en al haar verticale runs passen binnen MAXVLEN), dan MOET de
+/// stratumgrens >= de recordscore zijn -- anders is de relaxatie ergens te scherp.
+fn calib_stratum_contains_record(dir: &str, active: u16, ub: i64) {
+    let path = format!("{}/occ_record.txt", dir);
+    if !std::path::Path::new(&path).exists() {
+        return;
+    }
+    let rec: i64 = env::var("RECORD").ok().and_then(|s| s.parse().ok()).unwrap_or(4793);
+    let maxv: usize = env::var("MAXVLEN").ok().and_then(|s| s.parse().ok()).unwrap_or(15);
+    let nmax: usize = env::var("NFREE").ok().and_then(|s| s.parse().ok()).unwrap_or(56);
+    let fullm = full_cols_env();
+    for (name, cols) in read_occs(&path) {
+        let mut a = 0u16;
+        for (i, &y) in FREEROWS.iter().enumerate() {
+            if !hruns_of(&cols, y).is_empty() {
+                a |= 1 << i;
+            }
+        }
+        let mut fits = a & !active == 0;
+        let mut fm = 0u16;
+        let mut nfree = 0usize;
+        for x in 0..15 {
+            nfree += (cols[x] & !((1 << 0) | (1 << 7) | (1 << 14))).count_ones() as usize;
+            if (cols[x] & 0x7ffe & !(1 << 7)) == (0x7ffe & !(1 << 7)) {
+                fm |= 1 << x;
+            }
+            for (aa, bb) in vruns(cols[x]) {
+                if fm >> x & 1 == 0 && bb - aa + 1 > maxv {
+                    fits = false;
+                }
+            }
+        }
+        if nfree > nmax {
+            fits = false;
+        }
+        if let Some(f) = fullm {
+            if f != fm {
+                fits = false;
+            }
+        }
+        if !fits {
+            continue;
+        }
+        if ub < rec {
+            panic!("IJKING(stratum) GEFAALD: {} ligt in dit stratum maar de grens is {} < {}",
+                   name, ub, rec);
+        }
+        eprintln!("IJKING(stratum) OK: {} ligt in dit stratum, grens {} >= record {}",
+                  name, ub, rec);
+    }
 }
 
 // ------------------------------------------------------------------ strat: stratumgrens v2
@@ -3127,6 +3206,32 @@ fn cmd_strat(dir: &str) {
         }
         eprintln!("  it {:3}  ub {}  best {}", it, ub, best);
     }
+    if let Ok(p) = env::var("SURVOUT") {
+        // OVERLEVENDEN: de bezettingen van dit stratum waarvan de DP-grens de drempel haalt
+        let cap: u64 = env::var("MAXSURV").ok().and_then(|s| s.parse().ok()).unwrap_or(2000);
+        let colv = col_values_sharp(&tabs, &sharp, &bestlam);
+        let konst = lam_const(&d, &bestlam);
+        let g = gdp2_build(&colv, &pwr, active, nmax);
+        let need = (target - anch) * SCALE - konst;
+        let mut c = Surv2 { g: &g, colv: &colv, active, need, found: 0, cap,
+                            cols: [0u16; 15], out: Vec::new() };
+        dfs2(&mut c, 0, 0, nmax, 0, 0);
+        let mut fo = BufWriter::new(File::create(&p).unwrap());
+        let mut sid = 0usize;
+        for cols in c.out.iter() {
+            let b = bound_of(cols, &tabs, &at, &d, &bestlam);
+            if !b.feasible || b.ub < target {
+                continue;
+            }
+            sid += 1;
+            write!(fo, "s{}", sid).unwrap();
+            for x in 0..15 {
+                write!(fo, " {}", cols[x] & !((1 << 0) | (1 << 7) | (1 << 14))).unwrap();
+            }
+            writeln!(fo, "  # scherp {}", b.ub).unwrap();
+        }
+        eprintln!("OVERLEVENDEN ruw {} -> scherp {} -> {}", c.found, sid, p);
+    }
     if let Ok(p) = env::var("BESTOUT") {
         let colv = col_values_sharp(&tabs, &sharp, &bestlam);
         let konst = lam_const(&d, &bestlam);
@@ -3170,9 +3275,13 @@ fn cmd_strat(dir: &str) {
                       anch + (sv + sh + konst).div_euclid(SCALE));
         }
     }
+    calib_stratum_contains_record(dir, active, best);
     let mut ncnt = String::from("-");
     if env::var("COUNT").is_ok() {
-        let colv = col_values_sharp(&tabs, &sharp, &bestlam);
+        // STRUCTURELE telling: alle bezettingen met deze stratumparameters (A, MAXVLEN, FULL),
+        // het tegelbudget en het eiland-lemma -- ZONDER de lexicale toets, want ook een
+        // bezetting waarvan geen enkele lijn te letteren is wordt door dit stratum afgedekt.
+        let colv = col_values_struct();
         ncnt = format!("{:.4e}", count_family(&colv, active, nmax));
     }
     println!("LAM={}", bestlam.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
@@ -3432,6 +3541,31 @@ fn xbound(lines: &Vec<XLine>, nx: usize, d: &Data, at: &AnchTab, cols: &[u16; 15
     (base, best)
 }
 
+/// IJKING voor verscherping 2: op de recordbezetting moet OOK de kruispunt-Lagrange
+/// (theta geoptimaliseerd) nog >= 4793 uitkomen.  Zou de theta-term ergens de verkeerde kant
+/// op werken, dan zakt deze grens onder de arbiter-geverifieerde recordscore.
+fn calib_assert_x(dir: &str, d: &Data, dp: &mut Dp, tabs: &HashMap<(Key, u8), Tab>,
+                  at: &AnchTab, lam: &[i64; 26], iters: usize, step: f64,
+                  cache: &mut HashMap<(Key, u16), Option<Arc<Vec<(i32, [u8; 15])>>>>) {
+    let path = format!("{}/occ_record.txt", dir);
+    if !std::path::Path::new(&path).exists() {
+        eprintln!("IJKING(kruispunt) OVERGESLAGEN: {} ontbreekt", path);
+        return;
+    }
+    let rec: i64 = env::var("RECORD").ok().and_then(|s| s.parse().ok()).unwrap_or(4793);
+    for (name, cols) in read_occs(&path) {
+        let (lines, nx) = xlines_of(d, dp, tabs, &cols, cache)
+            .unwrap_or_else(|| panic!("IJKING(kruispunt) GEFAALD: {} heeft een dode lijn", name));
+        let (_b, best) = xbound(&lines, nx, d, at, &cols, lam, iters, step);
+        if best < rec {
+            panic!("IJKING(kruispunt) GEFAALD: {} krijgt met theta grens {} < {} -- \
+                    verscherping 2 is ONSOUND", name, best, rec);
+        }
+        eprintln!("IJKING(kruispunt) OK: {} ({} kruispunten) -> grens {} >= record {}",
+                  name, nx, best, rec);
+    }
+}
+
 fn cmd_xsharp(dir: &str, occfile: &str) {
     let d = load(dir);
     let tabs = read_tabs(&format!("{}/tables.bin", dir));
@@ -3443,6 +3577,7 @@ fn cmd_xsharp(dir: &str, occfile: &str) {
     calib_assert(dir, &tabs, &at, &d, &lam);
     let mut dp = Dp::new();
     let mut cache: HashMap<(Key, u16), Option<Arc<Vec<(i32, [u8; 15])>>>> = HashMap::new();
+    calib_assert_x(dir, &d, &mut dp, &tabs, &at, &lam, iters.min(200), step, &mut cache);
     let t0 = std::time::Instant::now();
     for (name, cols) in read_occs(occfile) {
         match xlines_of(&d, &mut dp, &tabs, &cols, &mut cache) {
