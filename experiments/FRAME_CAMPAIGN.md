@@ -518,3 +518,33 @@ STRUCTUURBEELD: het record staat op een smal optimum van een RUIL tussen plafond
 robuustheid (4860 plafond EN lijnconsistent); de sweep vond er geen tweede van.
 SCHERPSTE OPENSTAANDE HEFBOOM die hieruit volgt: kolom 2 is lexicaal tot ketenlengte 8 verlengbaar
 terwijl het record er maar 4 gebruikt -- daar is de BEZETTING de rem, niet het lexicon.
+
+## CONFIGURATIE-GENERATOR (2026-07-29): 337,8 miljoen parameterpunten, nul boven 4793
+experiments/mg_configgen.py somt STRUCTUURPARAMETERS op in plaats van celmutaties: laan, kolom-7-
+intervallen, dragers per pre-eiland met hun dieptes, extra kolommen, laanhangers en peel-lengte.
+IJKING: het record is aantoonbaar een punt van de opsomming (skelet 54 tegels + hangers (11,3),(13,5)).
+FILTERTELLINGEN over 337.798.080 punten (26,4 CPU-uur): tegelbudget doodde 311,8M (92,3%),
+eiland/bezorging 38k, de ZAK-LEXICALE runtoets 16,0M (61,6% van de rest), schema-bouw 9,9M, plafondband
+8,2M. Daarna 8.916 gespreide configuraties verfijnd -> 1.285 lijnconsistent, beste plafond 5005.
+fit_decide(4794): 2.612 NEE, 24 ONBEKEND, 0 JA; de negen hoogste ONBEKENDs met de maximaliserende
+solver nagelopen en alle negen INFEASIBLE.
+DRIE METHODISCHE UITKOMSTEN:
+1. De bindende beperking is verschoven naar de LEXICALE INVULBAARHEID VAN DE HELE BEZETTING -- niet
+   meer geometrie en niet meer de zak alleen. 85,6% van de verfijnde bezettingen is al lijn-
+   inconsistent; van de rest is elke geteste bezetting CP-SAT-infeasible, meestal via presolve.
+2. Het m-plafond is als RANGSCHIKKING uitgewerkt (correlatie 0,35-0,47 binnen een familie, 0,70 over
+   topologieen heen) en top-K erop selecteert systematisch LADDERILLUSIES: 120k bewaarde configuraties
+   lagen in band 5050-5316 terwijl het record op 4868 zit.
+3. 'BINGO'S DOMINEREN' IS ONJUIST (correctie door bob aangekaart, daarna gemeten): de kolom-2-
+   verlengketen levert 16,0 punt per tegel tegen 12,8 voor een gewone bingo. Wat betaalt is
+   HERSCORINGSMASSA op lange runs, niet het aantal 7-tegelzetten. De eerdere afschrijving van het
+   twee-lanen-spoor berustte op een oneerlijke tegelvergelijking (93/97 tegen 101); bij gelijke inzet
+   is dat spoor lexicaal juist kerngezond (400 van 401 lijnconsistent tegen 9,5% elders) maar blijft
+   het plafond op 4813 steken.
+NIEUW GEREEDSCHAP: chain_len/sub_ok (is een verlengketen lexicaal mogelijk?) en ext_potential als
+expliciete as; zonder sub_ok is 0 van 60 bezettingen lijnconsistent te plannen.
+KOLOM-2-HEFBOOM GETOETST EN GESLOTEN: kolom 2 laat 27 volledige 15-letterwoorden toe (top
+scharnierbeugel) en wordt door twee slotzetten gekruist; rijen 12-13 zijn leeg, dus de rij-14-final
+scoort er nu niets. Maar 'smarotsenden' is niet verder verlengbaar (0 ketens) en het volledig vullen
+van kolom 2 is in alle geteste ruilen CP-SAT-infeasible: het 15-letterwoord dwingt letters af op
+twaalf cellen die alle door horizontale bingo's gekruist worden.
