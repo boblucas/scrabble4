@@ -426,3 +426,10 @@ kunnen moet CP-SAT het hele bord herletteren, en dat kost elders meer dan de toe
 BEVESTIGING VAN HET RUIL-LEMMA: diezelfde cel (11,3) is precies wat de LNS-vloot een uur eerder
 gebruikte -- maar als RUIL tegen (11,2), en dat gaf 4793. Dezelfde cel, 49 punten verschil, alleen
 omdat de ruil binnen het tegelbudget past en de toevoeging niet.
+
+### Model B: UNKNOWN (2026-07-29, 5400s)
+De schema-onafhankelijke zaktoets voor de rij-3-laan-bezetting liep af zonder oordeel
+(MODEL_B_UITSLAG: UNKNOWN). De rij-3-bezetting is dus niet formeel gesloten, maar de praktische
+uitkomst staat wel vast: alle zes de laan-varianten op het actuele bord zijn los getoetst en op een
+na CP-SAT-weerlegd, en de overlevende (enkele cel (11,3), als TOEVOEGING) levert 4744 -- onder het
+record. Losse draad, geen open kans.
