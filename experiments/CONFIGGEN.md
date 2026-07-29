@@ -337,7 +337,84 @@ Het beeld is nu scherp en het is een ANDER beeld dan het eerste (foute) verhaal 
 
 ---
 
-## 4. Gebruik
+## 3g. Fase D — dezelfde sweep, maar met een ONVERTEKENDE steekproef uit de realistische band
+
+Fase A opnieuw gedraaid (identieke 337,8 M parameterpunten), nu met `CEILMAX=4980` en
+`SAMPLE=1` (reservoirsteekproef) zodat de bewaarde 60.000 configuraties een echte doorsnede van
+de band 4830-4980 zijn in plaats van de ladderstaart.
+
+```
+knopen                                 337.798.080
+F0 tegelbudget                         311.821.416
+F2 onbereikbaar                             38.220
+F3 zak-lexicaal                         16.001.620
+F4 schema gebouwd                        9.936.824
+F5 plafond < 4830                        1.780.139
+F5 plafond > 4980 (buiten de band)       1.495.090
+F5 in de band                            8.156.685
+reservoirsteekproef bewaard                 60.000        (10,24 CPU-uur)
+```
+
+Verfijning (ketenbewuste bouwer) van 8.916 gespreide configuraties uit die steekproef:
+
+```
+lijnconsistent                    1.285 van 8.916   (14,4 %; fase A haalde 9,5 %)
+beste lijnconsistente plafond      5005              (record met dezelfde bouwer: 4860)
+```
+
+Beslissing `fit_decide(schema, 4794)` — loopt door, stand bij het schrijven:
+
+```
+NEE (bewezen)   2.196
+ONBEKEND           22
+JA                  0
+mediane tijd      1,6 s
+```
+
+De 9 ONBEKEND-gevallen met het hoogste plafond (4911-4965) zijn apart met de MAXIMALISERENDE
+solver (`mg_newtopo.fit`, 900 s) nagelopen: **alle negen INFEASIBLE in 83-142 s** — er bestaat
+voor die bezettingen helemaal geen lettering, laat staan een betere. De ONBEKEND-uitslagen zijn
+dus tijdslimiet-artefacten, geen open kansen.
+
+---
+
+## 4. Conclusie
+
+**Geen enkel bord boven 4793.** Wat er wel ligt is een gemeten beeld van het landschap:
+
+1. **De zak-lexicale runtoets is de zwaarste zeef na het tegelbudget**: 16,0 M van de 26,0 M
+   budget-geldige configuraties sneuvelt omdat één maximale run geen woord toelaat dat nog uit de
+   restzak (55 tegels, 17-letterig alfabet) te bouwen is. Dat is de zeef die in eerder werk
+   ontbrak, en hij is goedkoop (100 us, gecachet).
+2. **Het m-plafond is geen bruikbare rangschikking meer.** Binnen een familie correleert het
+   nauwelijks (0,47 / 0,35), de 192 record-buren liggen binnen 30 punten van elkaar, en de
+   top-K-selectie erop levert systematisch ladderillusies. Over alle topologieën heen is het wel
+   informatief (0,70).
+3. **De bindende beperking is de LEXICALE INVULBAARHEID van de hele bezetting**, niet de
+   geometrie en niet meer de zak alleen. Van 8.916 verfijnde configuraties is 85,6 % al
+   lijn-inconsistent, en van wat overblijft is elke geteste configuratie CP-SAT-infeasible —
+   meestal binnen twee seconden, dus door presolve, dus structureel.
+4. **Het record staat op een smal optimum van een RUIL.** Lange kolommen geven hoge plafonds maar
+   zijn lexicaal broos (9,5-14,4 % lijnconsistent); korte stubs met twee lanen zijn lexicaal
+   kerngezond (99,8 %) maar hun plafond blijft op 4813 steken. 4860 plafond én lijnconsistent —
+   dat is de combinatie die het record maakt, en de sweep vond er geen tweede van.
+5. **Verlengketens verslaan bingo's per tegel** (16,0 tegen 12,8 punt/tegel op het record), maar
+   ze vragen dat elke tussenstand een woord is. `chain_len` / `sub_ok` maken dat vooraf toetsbaar;
+   het record haalt ext_potential 10 terwijl kolom 2 lexicaal tot L=8 zou kunnen — de BEZETTING
+   is daar de rem, niet het lexicon. Dat is de scherpste openstaande hefboom die deze module
+   aanwijst: een bezetting die de kolom-2-keten dieper maakt zonder elders in te leveren.
+
+### Wat NIET is uitgesloten
+
+* De sweep is uitputtend over de **parameters** maar niet over alle bezettingen: hoogstens één
+  niet-'full' drager (`MAXNF=1`), hoogstens één laan per band, laanspanwijdtes uit
+  {0,2,4} x {10,12,14}, en de verfijning/beslissing draaide op een gespreide steekproef van
+  8.916 van de 8,16 M configuraties in de band.
+* De twee-lanen-familie is niet weerlegd (ONBEKEND, 90-100 s), alleen te laag bevonden (4813).
+* Andere maskers en andere tripletten zijn hier niet opnieuw opgesomd; die zijn in
+  `MASKGEOM.md` en `LETTERBUDGET.md` afgesloten.
+
+## 5. Gebruik
 
 ```
 MODE=calib                                     .venv/bin/python experiments/mg_configgen.py
