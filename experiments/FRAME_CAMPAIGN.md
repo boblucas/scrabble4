@@ -482,3 +482,39 @@ CONCLUSIE: de lage trefkans van de LNS is inherent aan het probleem, geen instel
 van vannacht (4787/4790/4793) waren het laaghangend fruit van een bord dat daarna aantoonbaar
 letter-vergrendeld is. Toegevoegde zeven (lexicale sloopzeef, bouwzeef, krimp-modus, simulated
 annealing) verhogen de doorvoer maar veranderen die grens niet.
+
+## CONFIGURATIE-GENERATOR (2026-07-29): 337,8 M structuurparameters, NUL bord boven 4793
+Volledig verslag: `experiments/CONFIGGEN.md`, gereedschap `experiments/mg_configgen.py`.
+In plaats van celverzamelingen te muteren (waar de LNS-vloot in vastliep: 0 van 24 mutaties haalt
+de arbiter) somt deze module de STRUCTUURPARAMETERS op: laan, kolom 7, de vier rij-0-dragers en
+de twee rij-14-dragers met hun dieptes, extra kolommen, laanhangers en de peel. Het record is
+aantoonbaar een punt van die opsomming (skelet van 54 tegels + de hangers (11,3) en (13,5)).
+TELLINGEN (twee volle draaien van 337.798.080 parameterpunten, samen 26,4 CPU-uur):
+  tegelbudget != 56 vrije cellen  311.821.416 weg (92,3%)
+  eiland/bezorging                     38.220 weg
+  ZAK-LEXICALE runtoets            16.001.620 weg (61,6% van de rest) <- de ontbrekende zeef
+  schema gebouwd                    9.936.824
+  plafond in de band 4830-4980      8.156.685
+Daarna 8.916 gespreide configuraties verfijnd met een NIEUWE ketenbewuste bouwer: 1.285
+lijnconsistent (14,4%), beste plafond 5005 (record 4860 met dezelfde bouwer). fit_decide(4794):
+2.350 NEE, 22 ONBEKEND, 0 JA. De negen hoogste ONBEKEND-gevallen zijn met de maximaliserende
+solver nagelopen: ALLE NEGEN INFEASIBLE -- geen enkele lettering bestaat.
+DE BINDENDE BEPERKING IS VERSCHOVEN: niet meer de geometrie, en niet meer de zak alleen, maar de
+LEXICALE INVULBAARHEID VAN DE HELE BEZETTING. 85,6% van de verfijnde bezettingen is al
+lijn-inconsistent en van de rest is elke geteste bezetting CP-SAT-infeasible, meestal via presolve
+binnen twee seconden. Het m-plafond is daarmee als rangschikking uitgewerkt (correlatie met het
+verfijnde plafond 0,35-0,47 binnen een familie; 0,70 over alle topologieen heen), en top-K erop
+selecteert systematisch LADDERILLUSIES -- fase D draait daarom met een reservoirsteekproef binnen
+een realistische plafondband.
+TWEE CORRECTIES OP EERDERE INTUITIE, allebei gemeten:
+ * 'bingo's domineren' is FOUT: op het record levert de kolom-2-verlengketen 16,0 punt/tegel tegen
+   12,8 voor een gewone bingo. Wat betaalt is HERSCORINGSMASSA op lange runs, niet het aantal
+   bingo's. Nieuw gereedschap: chain_len/sub_ok (is een keten lexicaal mogelijk?) en ext_potential.
+ * het twee-lanen-spoor met korte (laan-gewortelde) dragers is NIET dood door gebrek aan bingo's;
+   bij gelijke tegelinzet is het lexicaal juist kerngezond (400 van 401 lijnconsistent tegen 9,5%
+   voor de enkellaans top) maar het plafond blijft op 4813 steken, en om daarvandaan boven 4793 te
+   komen is 99,6% realisatiegraad nodig terwijl het record zelf 98,0% haalt.
+STRUCTUURBEELD: het record staat op een smal optimum van een RUIL tussen plafond en lexicale
+robuustheid (4860 plafond EN lijnconsistent); de sweep vond er geen tweede van.
+SCHERPSTE OPENSTAANDE HEFBOOM die hieruit volgt: kolom 2 is lexicaal tot ketenlengte 8 verlengbaar
+terwijl het record er maar 4 gebruikt -- daar is de BEZETTING de rem, niet het lexicon.
