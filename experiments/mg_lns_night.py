@@ -165,6 +165,39 @@ def solve(g, mv, occ, grid0, blanks0):
     return g2, {c for c in free if sol.value(BL[c])}
 
 
+_TABCACHE = {}
+def _tab_ok(run, fixed):
+    """bestaat er een woord van deze lengte dat op de vaste ankerletters van deze run past?"""
+    key = (len(run),) + tuple((i, fixed[c]) for i, c in enumerate(run) if c in fixed)
+    hit = _TABCACHE.get(key)
+    if hit is None:
+        fx = key[1:]
+        hit = any(all(w[i] == v for i, v in fx) for w in BYLEN.get(len(run), ()))
+        _TABCACHE[key] = hit
+    return hit
+
+
+def drop_lexok(grid, occ, fixed, c):
+    """Is deze cel LEXICAAL sloopbaar? Na verwijdering moeten alle runs die erdoor veranderen nog
+    een woord kunnen zijn. Zonder deze zeef kiest de zoeker vrijwel altijd cellen die een woord
+    onbestaanbaar korten -- dat is de reden dat de vloot na de eerste vondsten stilviel."""
+    o = set(occ); o.discard(c)
+    x, y = c
+    for dx, dy in ((1, 0), (0, 1)):
+        for step in (-1, 1):
+            n = (x + dx * step, y + dy * step)
+            if n not in o: continue
+            x0, y0 = n
+            while (x0 - dx, y0 - dy) in o: x0 -= dx; y0 -= dy
+            x1, y1 = n
+            while (x1 + dx, y1 + dy) in o: x1 += dx; y1 += dy
+            ln = max(x1 - x0, y1 - y0) + 1
+            if ln < 2: continue
+            run = [(x0 + i * dx, y0 + i * dy) for i in range(ln)]
+            if not _tab_ok(run, fixed): return False
+    return True
+
+
 def candidates(D):
     """sloopkosten en marginale plafondwinst, met de m-calculus (microseconden)"""
     grid = D['grid']; moves = [[tuple(c) for c in m] for m in D['moves']]
@@ -182,6 +215,9 @@ def candidates(D):
         cost = m[c] * v + (50 if len(moves[owner[c]]) == 7 else 0)
         drops.append((cost, c))
     drops.sort()
+    # lexicale zeef: houd alleen cellen over waarvan de sloop geen woord onbestaanbaar kort
+    lexdrops = [(cost, c) for cost, c in drops if drop_lexok(grid, occ, fixed, c)]
+    if lexdrops: drops = lexdrops
     fi = min(i for i, mm in enumerate(moves)
              if len(mm) == 7 and len({y for (_, y) in mm}) == 1 and mm[0][1] in (0, 7, 14)
              and i >= len(moves) - 12)
@@ -196,17 +232,37 @@ def candidates(D):
 
 
 tried = 0; wins = 0
-print(f"[w{WORKER}] start, deadline over {int((DEADLINE-time.time())/60)} min", flush=True)
+SA = os.environ.get('SA')          # simulated annealing: eigen werkbord, accepteer soms slechter
+TEMP = int(os.environ.get('TEMP', '25'))
+local = None
+print(f"[w{WORKER}] start{' (SA)' if SA else ''}, deadline over {int((DEADLINE-time.time())/60)} min", flush=True)
 while time.time() < DEADLINE:
     try:
-        D = load_best()
+        if SA:
+            if local is None: local = load_best()
+            gb = load_best()
+            # af en toe terug naar de globale top, anders verder vanaf het eigen werkbord
+            if gb['total'] > local['total'] and rnd.random() < 0.25: local = gb
+            D = local
+        else:
+            D = load_best()
         drops_all, adds_all, base = candidates(D)
-        cheap = [c for cost, c in drops_all[:12]]
-        top = [(gain, c, na) for gain, c, na in adds_all[:30] if gain > 0]
+        WIDE = os.environ.get('WIDE')
+        cheap = [c for cost, c in drops_all[:(20 if WIDE else 12)]]
+        # BOUW-ZEEF: meer dan de helft van de mutaties strandde doordat het slopen van een cel
+        # de aanraakketen van een latere zet verbrak. Dat is gratis vooraf te testen -- build()
+        # is pure Python -- en verdubbelt zo het aantal mutaties dat de solver uberhaupt haalt.
+        cheap = [c for c in cheap if build(D, [c], [], []) is not None] or cheap
+        top = [(gain, c, na) for gain, c, na in adds_all[:(60 if WIDE else 30)] if gain > 0]
         if not top: time.sleep(5); continue
-        k = rnd.choice([1, 1, 2, 2, 3, 4])
+        # WIDE-modus: grotere ruilen (k cellen slopen EN k bijbouwen, tegelaantal constant).
+        # De zak is de bindende beperking -- toevoegen is infeasible, dus alleen permutaties
+        # van hetzelfde tegelbudget zijn nog levend, en grotere k komt verder van het optimum af.
+        k = rnd.choice([4, 5, 5, 6, 6, 7]) if WIDE else rnd.choice([1, 1, 2, 2, 3, 4])
+        krimp = (rnd.random() < 0.45) if os.environ.get('SA') else False
         drops = rnd.sample(cheap, min(k, len(cheap)))
-        picks = rnd.sample(top, min(k, len(top)))
+        nadd = max(0, len(drops) - rnd.choice([1, 1, 2])) if krimp else len(drops)
+        picks = rnd.sample(top, min(nadd, len(top)))
         groups = []; tail = []
         for gain, c, prefer_na in picks:
             if prefer_na or rnd.random() < 0.4: tail.append(c)
@@ -228,6 +284,14 @@ while time.time() < DEADLINE:
         if not res: continue
         g2, blset = res
         tot, per, ok, msg = MG.score_game([row[:] for row in g2], mv, blset)
+        if SA and ok:
+            cand = {'grid': g2, 'moves': [[list(c) for c in m] for m in mv],
+                    'blanks': [list(b) for b in sorted(blset)], 'total': int(tot),
+                    'triple': D.get('triple', ['geschenkcheques','flexwerkstertje','polymelkzuurtje']),
+                    'plan': f'SA w{WORKER}: sloop {sorted(drops)} bouw {groups}{tail}'}
+            d = int(tot) - int(local['total'])
+            if d > 0 or (d > -TEMP and rnd.random() < 0.35):
+                local = cand
         if ok and int(tot) > int(D['total']):
             out = {'grid': g2, 'moves': [[list(c) for c in m] for m in mv],
                    'blanks': [list(b) for b in sorted(blset)], 'total': int(tot),

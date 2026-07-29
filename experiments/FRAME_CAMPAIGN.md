@@ -470,3 +470,15 @@ bezetting is letter-vergrendeld.
 BIJVANGST (reproduceerbaarheidsbug, gefixt): r.words_str is een SET, dus de BYLEN-volgorde was
 hash-afhankelijk en gelijkspel-keuzes verschilden per proces (+/-5 punten in schattingen, en
 overlappende shards). Nu gesorteerd en deterministisch.
+
+### Waarom de LNS na drie vondsten stilviel (gemeten, 2026-07-29 ochtend)
+Diagnose over 24 willekeurige mutaties op het 4793-bord: 13 stranden bij de BOUW (het slopen van een
+cel verbreekt de aanraakketen van een latere zet -- maar dat is pure Python en kost dus niets), 11
+komen leeg terug uit de SOLVER, en NUL halen de arbiter. Per-cel is dat niet te verhelpen: van de 12
+goedkoopste sloopcellen is er maar EEN die de bouw breekt en zijn er 56 van de 56 vrije cellen
+lexicaal sloopbaar. De bouwfouten komen dus van COMBINATIES, en de solver-fouten van de
+zak-vergrendeling die we los al bewezen hadden.
+CONCLUSIE: de lage trefkans van de LNS is inherent aan het probleem, geen instelfout. De drie vondsten
+van vannacht (4787/4790/4793) waren het laaghangend fruit van een bord dat daarna aantoonbaar
+letter-vergrendeld is. Toegevoegde zeven (lexicale sloopzeef, bouwzeef, krimp-modus, simulated
+annealing) verhogen de doorvoer maar veranderen die grens niet.
