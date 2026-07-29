@@ -344,8 +344,17 @@ claim boven 4793 komt van de zakgrens die op het record 20% te ruim bleek.
 6. **Exact getoetst, niet alleen gemodelleerd.** Van de 476 tripletten die de harde bovengrens
    halen zijn er 323 bewezen dood (35 `nowords`, 288 `INFEASIBLE` op de vraag ">= 4794"); geen
    enkele heeft ook maar één geldige invulling boven het record opgeleverd.  De 152 onbesliste
-   staan allemaal op een schatting van 4742 of lager.  De toets is hervatbaar (`JOUT`) en loopt
-   door; `experiments/results/letterbudget_toets.json` bevat de stand.
+   staan allemaal op een schatting van 4742 of lager.  De toets is hervatbaar; hij slaat elke
+   al beslissende uitslag over.  Doorgaan waar hij gebleven is:
+
+   ```
+   for k in 0 1 2; do PART=2,4 TLIM=900 WORKERS=2 SHARD=$k NSHARD=3 \
+       JOUT=experiments/results/letterbudget_toets.jsonl \
+       .venv/bin/python experiments/mg_letterbudget.py & done
+   ```
+
+   Stand: `experiments/results/letterbudget_toets.jsonl` (ruwe regels) en
+   `experiments/results/letterbudget_toets.json` (ontdubbeld, op schatting gesorteerd).
 7. **NIEUW EN BINDEND: 4793 is optimaal voor zijn eigen voetafdruk.**
    `exact_fill(CUR, target=4794)` = INFEASIBLE.  Geen enkele andere lettering van de 56 vrije
    cellen — met blanco's vrij plaatsbaar — brengt deze bezetting boven 4793.
