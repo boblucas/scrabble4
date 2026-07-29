@@ -1,0 +1,6177 @@
+[
+ {
+  "triplet": [
+   "geschenkcheques",
+   "waagwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4743,
+  "A_m": 3664,
+  "ub": 4842,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "profboksstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4743,
+  "A_m": 3643,
+  "ub": 4847,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filmmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4742,
+  "A_m": 3644,
+  "ub": 4844,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 216.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veldwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4742,
+  "A_m": 3665,
+  "ub": 4850,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "grofwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4742,
+  "A_m": 3673,
+  "ub": 4858,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "stafwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4739,
+  "A_m": 3664,
+  "ub": 4856,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "grafdelfstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4738,
+  "A_m": 3655,
+  "ub": 4850,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "viltwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4735,
+  "A_m": 3665,
+  "ub": 4850,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vlaswerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4733,
+  "A_m": 3655,
+  "ub": 4840,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "waszweetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4728,
+  "A_m": 3672,
+  "ub": 4848,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 79.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "gaasweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4727,
+  "A_m": 3630,
+  "ub": 4828,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "melkvaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4725,
+  "A_m": 3636,
+  "ub": 4843,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 195.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "grafmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4724,
+  "A_m": 3634,
+  "ub": 4841,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zorgwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4720,
+  "A_m": 3669,
+  "ub": 4854,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 46.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "teerwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4719,
+  "A_m": 3619,
+  "ub": 4830,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vijfkampstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4718,
+  "A_m": 3662,
+  "ub": 4854,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "fuifgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4717,
+  "A_m": 3625,
+  "ub": 4827,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4717,
+  "A_m": 3637,
+  "ub": 4832,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "gipswerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4714,
+  "A_m": 3656,
+  "ub": 4850,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wildbreistertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4713,
+  "A_m": 3622,
+  "ub": 4826,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "slatwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4713,
+  "A_m": 3637,
+  "ub": 4838,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4713,
+  "A_m": 3637,
+  "ub": 4832,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bankbeveiligers",
+   "polymelkzuurtje"
+  ],
+  "schat": 4712,
+  "A_m": 3614,
+  "ub": 4829,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 119.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vormgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4711,
+  "A_m": 3643,
+  "ub": 4841,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "aardwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4711,
+  "A_m": 3624,
+  "ub": 4835,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 44.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rietwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4711,
+  "A_m": 3619,
+  "ub": 4830,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 44.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "melkrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4709,
+  "A_m": 3605,
+  "ub": 4829,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 40.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "normbevestigend",
+   "polymelkzuurtje"
+  ],
+  "schat": 4709,
+  "A_m": 3599,
+  "ub": 4828,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 248.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vijftienvlakken",
+   "polymelkzuurtje"
+  ],
+  "schat": 4708,
+  "A_m": 3638,
+  "ub": 4830,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boommaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4708,
+  "A_m": 3607,
+  "ub": 4826,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "gangmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4708,
+  "A_m": 3607,
+  "ub": 4826,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 66.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "werkgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4707,
+  "A_m": 3652,
+  "ub": 4840,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "koopbevestiging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4706,
+  "A_m": 3612,
+  "ub": 4827,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bootwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4706,
+  "A_m": 3628,
+  "ub": 4832,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "telewerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4705,
+  "A_m": 3629,
+  "ub": 4833,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 53.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vuurwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4705,
+  "A_m": 3614,
+  "ub": 4810,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bronbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4705,
+  "A_m": 3587,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bandweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4704,
+  "A_m": 3630,
+  "ub": 4828,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 260.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "viltbereidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4704,
+  "A_m": 3601,
+  "ub": 4818,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "palmboombastjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4703,
+  "A_m": 3648,
+  "ub": 4850,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rompbouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4703,
+  "A_m": 3641,
+  "ub": 4839,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "slagwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4703,
+  "A_m": 3655,
+  "ub": 4849,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zorgmijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4703,
+  "A_m": 3614,
+  "ub": 4829,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 118.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pandgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4702,
+  "A_m": 3602,
+  "ub": 4819,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 44.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "geldwerfstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4702,
+  "A_m": 3669,
+  "ub": 4854,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filmkalendertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4701,
+  "A_m": 3597,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 89.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "spelmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4701,
+  "A_m": 3616,
+  "ub": 4832,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vormmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4701,
+  "A_m": 3630,
+  "ub": 4837,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "goudwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4701,
+  "A_m": 3614,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bermbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3628,
+  "ub": 4836,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zinkwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3616,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 42.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "verbreedstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3603,
+  "ub": 4824,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bangmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3607,
+  "ub": 4826,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 62.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zelfbevestiging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3667,
+  "ub": 4854,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veenwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3619,
+  "ub": 4817,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 43.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pelswerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3656,
+  "ub": 4850,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veldrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4700,
+  "A_m": 3596,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 56.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pijpwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4699,
+  "A_m": 3625,
+  "ub": 4833,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doorwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4698,
+  "A_m": 3619,
+  "ub": 4830,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "baanwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4698,
+  "A_m": 3610,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rookbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4698,
+  "A_m": 3605,
+  "ub": 4823,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zinkwalsstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4698,
+  "A_m": 3653,
+  "ub": 4841,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 77.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pezeweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4697,
+  "A_m": 3654,
+  "ub": 4836,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "turfmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4697,
+  "A_m": 3621,
+  "ub": 4836,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 77.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "strowerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4697,
+  "A_m": 3624,
+  "ub": 4832,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "nabewerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4697,
+  "A_m": 3620,
+  "ub": 4827,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "frisdenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4696,
+  "A_m": 3593,
+  "ub": 4814,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "handweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4696,
+  "A_m": 3603,
+  "ub": 4812,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filemijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4696,
+  "A_m": 3592,
+  "ub": 4810,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boekbindstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4695,
+  "A_m": 3594,
+  "ub": 4820,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doemdenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4695,
+  "A_m": 3584,
+  "ub": 4817,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "verfmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4695,
+  "A_m": 3619,
+  "ub": 4827,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 45.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "verfbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4695,
+  "A_m": 3599,
+  "ub": 4816,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "waarmerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4694,
+  "A_m": 3618,
+  "ub": 4822,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "glaswerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4694,
+  "A_m": 3646,
+  "ub": 4840,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kroplijderessen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4694,
+  "A_m": 3599,
+  "ub": 4825,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "halsbrekerijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4694,
+  "A_m": 3591,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "stofbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4694,
+  "A_m": 3576,
+  "ub": 4809,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kroplijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4693,
+  "A_m": 3600,
+  "ub": 4824,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hoogbeveiligden",
+   "polymelkzuurtje"
+  ],
+  "schat": 4693,
+  "A_m": 3579,
+  "ub": 4808,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zelfbouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4693,
+  "A_m": 3677,
+  "ub": 4850,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 22.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "grafbruiloftjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4693,
+  "A_m": 3649,
+  "ub": 4841,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "trasmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4693,
+  "A_m": 3589,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "korfmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4692,
+  "A_m": 3612,
+  "ub": 4830,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veelweetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4691,
+  "A_m": 3631,
+  "ub": 4829,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filemeldstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4691,
+  "A_m": 3584,
+  "ub": 4802,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "medewerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4691,
+  "A_m": 3624,
+  "ub": 4828,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zelfdenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4691,
+  "A_m": 3648,
+  "ub": 4846,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "waarmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4691,
+  "A_m": 3607,
+  "ub": 4814,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "raadgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4691,
+  "A_m": 3593,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vlagbelettering",
+   "polymelkzuurtje"
+  ],
+  "schat": 4690,
+  "A_m": 3584,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vrijmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4689,
+  "A_m": 3607,
+  "ub": 4825,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "spekzoutstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4689,
+  "A_m": 3606,
+  "ub": 4821,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "meerkampstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4687,
+  "A_m": 3611,
+  "ub": 4827,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "maatwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4687,
+  "A_m": 3628,
+  "ub": 4832,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "lijnwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4687,
+  "A_m": 3616,
+  "ub": 4824,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "oliewerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4687,
+  "A_m": 3610,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boogmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4687,
+  "A_m": 3607,
+  "ub": 4826,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "raambeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4687,
+  "A_m": 3605,
+  "ub": 4823,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "naamgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4687,
+  "A_m": 3602,
+  "ub": 4822,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overwaarderende",
+   "polymelkzuurtje"
+  ],
+  "schat": 4686,
+  "A_m": 3569,
+  "ub": 4796,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wielmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4686,
+  "A_m": 3625,
+  "ub": 4825,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "afspringstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4686,
+  "A_m": 3616,
+  "ub": 4830,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 25.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vormbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4686,
+  "A_m": 3581,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorwalsstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3635,
+  "ub": 4830,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zegekaapstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3608,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 16.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "deegmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3598,
+  "ub": 4824,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vrijdenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3593,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zalmbiefstukjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3663,
+  "ub": 4848,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "verdringstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3598,
+  "ub": 4819,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "valsmuntstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3600,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wielrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3595,
+  "ub": 4810,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veelrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4685,
+  "A_m": 3586,
+  "ub": 4811,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "deelbouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4684,
+  "A_m": 3613,
+  "ub": 4821,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vlakbreistertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4684,
+  "A_m": 3621,
+  "ub": 4828,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "windmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4684,
+  "A_m": 3607,
+  "ub": 4814,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "versvaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4684,
+  "A_m": 3613,
+  "ub": 4825,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "haarwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4684,
+  "A_m": 3601,
+  "ub": 4816,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overweegstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4684,
+  "A_m": 3626,
+  "ub": 4824,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "windbrekerijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4683,
+  "A_m": 3608,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 40.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "werkmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4683,
+  "A_m": 3610,
+  "ub": 4817,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 45.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "leesbevestiging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4683,
+  "A_m": 3594,
+  "ub": 4816,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "huisweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4682,
+  "A_m": 3594,
+  "ub": 4803,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doorgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4682,
+  "A_m": 3593,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wildparkerenden",
+   "polymelkzuurtje"
+  ],
+  "schat": 4682,
+  "A_m": 3592,
+  "ub": 4811,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "leermaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4682,
+  "A_m": 3589,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 53.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boommeetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4681,
+  "A_m": 3594,
+  "ub": 4820,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kaaiwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4681,
+  "A_m": 3583,
+  "ub": 4801,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wildkamperenden",
+   "polymelkzuurtje"
+  ],
+  "schat": 4681,
+  "A_m": 3603,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zeembereidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4681,
+  "A_m": 3591,
+  "ub": 4811,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "baaivangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4681,
+  "A_m": 3585,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "reukwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4681,
+  "A_m": 3584,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "werkzoekstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4680,
+  "A_m": 3614,
+  "ub": 4813,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 27.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bergrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4680,
+  "A_m": 3591,
+  "ub": 4822,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "taaldenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3584,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "varsvaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3613,
+  "ub": 4825,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wijkteamcheffin",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3636,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "klikwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3598,
+  "ub": 4806,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "beugvaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3594,
+  "ub": 4812,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zeepbereidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3591,
+  "ub": 4811,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 43.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "knikbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3587,
+  "ub": 4809,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "tuigmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4679,
+  "A_m": 3589,
+  "ub": 4816,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "waarborgstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4678,
+  "A_m": 3618,
+  "ub": 4822,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "stukwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4678,
+  "A_m": 3593,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 2.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kustbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4678,
+  "A_m": 3601,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "landwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4677,
+  "A_m": 3628,
+  "ub": 4832,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pijpzeikstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4677,
+  "A_m": 3600,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vijftienvlakjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4677,
+  "A_m": 3647,
+  "ub": 4836,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filerijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4677,
+  "A_m": 3578,
+  "ub": 4803,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kleidelfstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4677,
+  "A_m": 3583,
+  "ub": 4801,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 53.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overborstelende",
+   "polymelkzuurtje"
+  ],
+  "schat": 4677,
+  "A_m": 3565,
+  "ub": 4801,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 32.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "eedzweerstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4676,
+  "A_m": 3636,
+  "ub": 4841,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bontwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4676,
+  "A_m": 3628,
+  "ub": 4832,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "tweekampstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4676,
+  "A_m": 3620,
+  "ub": 4817,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rietmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4676,
+  "A_m": 3580,
+  "ub": 4813,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zelfkaasstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4676,
+  "A_m": 3649,
+  "ub": 4847,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "diepzeekabeltje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4675,
+  "A_m": 3631,
+  "ub": 4837,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vlasbeukstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4675,
+  "A_m": 3605,
+  "ub": 4813,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kerkgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4675,
+  "A_m": 3594,
+  "ub": 4821,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kerkwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4675,
+  "A_m": 3594,
+  "ub": 4809,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "deurbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4674,
+  "A_m": 3573,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zwemmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4674,
+  "A_m": 3623,
+  "ub": 4814,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voetgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4674,
+  "A_m": 3598,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overdenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4674,
+  "A_m": 3584,
+  "ub": 4808,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "roergangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4673,
+  "A_m": 3580,
+  "ub": 4813,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 53.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "diepdoenstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4673,
+  "A_m": 3558,
+  "ub": 4801,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zinkwalserijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4673,
+  "A_m": 3641,
+  "ub": 4836,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 11.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "klapwaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4673,
+  "A_m": 3626,
+  "ub": 4827,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overlaadstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4672,
+  "A_m": 3585,
+  "ub": 4809,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "klepzeikstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4672,
+  "A_m": 3612,
+  "ub": 4823,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "knopvariatietje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4672,
+  "A_m": 3579,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "tuinwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4672,
+  "A_m": 3592,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "seingeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4672,
+  "A_m": 3575,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "baanbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4672,
+  "A_m": 3578,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doorgeefkastjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4671,
+  "A_m": 3606,
+  "ub": 4823,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "passlijpstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4671,
+  "A_m": 3573,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "spinbowlstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4671,
+  "A_m": 3624,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "reepmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4671,
+  "A_m": 3598,
+  "ub": 4824,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zandbereidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3573,
+  "ub": 4800,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veertienvlakkig",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3578,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 2.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "geurmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3575,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 2.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "weerbruiloftjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3622,
+  "ub": 4814,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rouwdouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3621,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "goudzoekstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3589,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "valsmunterijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3588,
+  "ub": 4809,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "houtwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4670,
+  "A_m": 3587,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "databeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4669,
+  "A_m": 3583,
+  "ub": 4808,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kaasmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4669,
+  "A_m": 3562,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "leerwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4669,
+  "A_m": 3628,
+  "ub": 4832,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorbereidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4669,
+  "A_m": 3573,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wijnbouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4668,
+  "A_m": 3610,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "goudmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4668,
+  "A_m": 3575,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4668,
+  "A_m": 3568,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "railwalserijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4668,
+  "A_m": 3590,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zaalbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4668,
+  "A_m": 3587,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "sekswerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4667,
+  "A_m": 3608,
+  "ub": 4820,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "raambelettering",
+   "polymelkzuurtje"
+  ],
+  "schat": 4667,
+  "A_m": 3575,
+  "ub": 4813,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "solorijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4666,
+  "A_m": 3560,
+  "ub": 4801,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vierkampstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4666,
+  "A_m": 3620,
+  "ub": 4827,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "stelmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4666,
+  "A_m": 3607,
+  "ub": 4830,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "waagmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4666,
+  "A_m": 3596,
+  "ub": 4806,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "tongzoenstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4666,
+  "A_m": 3586,
+  "ub": 4813,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 25.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "deelwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4666,
+  "A_m": 3637,
+  "ub": 4841,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "opgekalfaterden",
+   "polymelkzuurtje"
+  ],
+  "schat": 4666,
+  "A_m": 3597,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 12.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kadewerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4665,
+  "A_m": 3597,
+  "ub": 4812,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "adembehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4665,
+  "A_m": 3549,
+  "ub": 4794,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pompwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4665,
+  "A_m": 3647,
+  "ub": 4845,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "taftweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4665,
+  "A_m": 3663,
+  "ub": 4849,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "weefmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4664,
+  "A_m": 3614,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "darmbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4664,
+  "A_m": 3563,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vormvariatietje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4664,
+  "A_m": 3602,
+  "ub": 4813,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 41.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "perstelegrammen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4664,
+  "A_m": 3595,
+  "ub": 4823,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boekbinderijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4664,
+  "A_m": 3582,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 31.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "maatgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4663,
+  "A_m": 3602,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "adembenemenders",
+   "polymelkzuurtje"
+  ],
+  "schat": 4663,
+  "A_m": 3551,
+  "ub": 4799,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 46.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "amokmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4663,
+  "A_m": 3568,
+  "ub": 4798,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 2.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "brugbouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4663,
+  "A_m": 3617,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "duikmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4663,
+  "A_m": 3560,
+  "ub": 4797,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "uitzwaaistertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4661,
+  "A_m": 3614,
+  "ub": 4823,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 21.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4661,
+  "A_m": 3598,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wegedoornbessen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4661,
+  "A_m": 3565,
+  "ub": 4794,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 7.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorarmspiertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4660,
+  "A_m": 3590,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doordenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4660,
+  "A_m": 3566,
+  "ub": 4806,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veelbetekenends",
+   "polymelkzuurtje"
+  ],
+  "schat": 4660,
+  "A_m": 3563,
+  "ub": 4795,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "maagbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4660,
+  "A_m": 3558,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "blokmaalstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4660,
+  "A_m": 3598,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 2.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "roofparasietjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4660,
+  "A_m": 3591,
+  "ub": 4818,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "opgekalefaterde",
+   "polymelkzuurtje"
+  ],
+  "schat": 4659,
+  "A_m": 3581,
+  "ub": 4803,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 10.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "warmdoorslagjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4659,
+  "A_m": 3643,
+  "ub": 4840,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "aandringstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4659,
+  "A_m": 3557,
+  "ub": 4800,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hoepmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4659,
+  "A_m": 3580,
+  "ub": 4810,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wetsbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4659,
+  "A_m": 3572,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doorjaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4659,
+  "A_m": 3558,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "handbikestertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4659,
+  "A_m": 3558,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 29.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pondgaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4658,
+  "A_m": 3576,
+  "ub": 4809,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boommeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4658,
+  "A_m": 3578,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "roodrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4658,
+  "A_m": 3550,
+  "ub": 4797,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doorrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4658,
+  "A_m": 3550,
+  "ub": 4797,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kantjaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4658,
+  "A_m": 3567,
+  "ub": 4804,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 35.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zelfmeldstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4657,
+  "A_m": 3638,
+  "ub": 4837,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zalmbiefstukken",
+   "polymelkzuurtje"
+  ],
+  "schat": 4657,
+  "A_m": 3614,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filmreportertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4657,
+  "A_m": 3626,
+  "ub": 4833,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "modemaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4657,
+  "A_m": 3585,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 41.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "megawattpiekjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4657,
+  "A_m": 3642,
+  "ub": 4835,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "loonwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4656,
+  "A_m": 3610,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "dijkwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4656,
+  "A_m": 3604,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "loerjaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4656,
+  "A_m": 3567,
+  "ub": 4804,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "liftbeveiliging",
+   "polymelkzuurtje"
+  ],
+  "schat": 4656,
+  "A_m": 3611,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "buitzoekstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4656,
+  "A_m": 3594,
+  "ub": 4812,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "semialfabetetje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4656,
+  "A_m": 3589,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rookbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4656,
+  "A_m": 3549,
+  "ub": 4794,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "postrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4655,
+  "A_m": 3573,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 30.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "priklimonadetje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4654,
+  "A_m": 3586,
+  "ub": 4808,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rijswerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4654,
+  "A_m": 3625,
+  "ub": 4837,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rustzoekstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4654,
+  "A_m": 3599,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 11.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filmtechniekjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4654,
+  "A_m": 3577,
+  "ub": 4794,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "liefdoenstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4654,
+  "A_m": 3585,
+  "ub": 4812,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "toongeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4654,
+  "A_m": 3575,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rouwtelegrammen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4653,
+  "A_m": 3612,
+  "ub": 4825,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "handwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4653,
+  "A_m": 3601,
+  "ub": 4816,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kilowattpiekjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4653,
+  "A_m": 3615,
+  "ub": 4819,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "taalvariatietje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4653,
+  "A_m": 3570,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mestbehandeling",
+   "polymelkzuurtje"
+  ],
+  "schat": 4653,
+  "A_m": 3554,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "lastwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4653,
+  "A_m": 3642,
+  "ub": 4843,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 31.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "inktwerpstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4653,
+  "A_m": 3638,
+  "ub": 4842,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "inspringstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3589,
+  "ub": 4822,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 20.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorliegstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3598,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hartlijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3560,
+  "ub": 4801,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "drilmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3578,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "drukdoenstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3553,
+  "ub": 4794,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "giftmengstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3631,
+  "ub": 4838,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "donswerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3619,
+  "ub": 4830,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pensjaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4652,
+  "A_m": 3567,
+  "ub": 4804,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 30.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mijnwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4651,
+  "A_m": 3616,
+  "ub": 4824,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "driekampstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4651,
+  "A_m": 3593,
+  "ub": 4816,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "basejumpstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4651,
+  "A_m": 3572,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bankwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4651,
+  "A_m": 3607,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "dijkmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4651,
+  "A_m": 3575,
+  "ub": 4812,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "godslasterender",
+   "polymelkzuurtje"
+  ],
+  "schat": 4650,
+  "A_m": 3556,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 31.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "deadliftstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4650,
+  "A_m": 3600,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pelsmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4650,
+  "A_m": 3617,
+  "ub": 4833,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "nierlijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4650,
+  "A_m": 3555,
+  "ub": 4799,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "toerzeilstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4650,
+  "A_m": 3594,
+  "ub": 4818,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "geinmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4650,
+  "A_m": 3571,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "adembenemendste",
+   "polymelkzuurtje"
+  ],
+  "schat": 4650,
+  "A_m": 3552,
+  "ub": 4800,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kantwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4649,
+  "A_m": 3601,
+  "ub": 4816,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zeilmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4649,
+  "A_m": 3616,
+  "ub": 4826,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "krasmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4648,
+  "A_m": 3569,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pompmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4647,
+  "A_m": 3608,
+  "ub": 4828,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "ventjaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4647,
+  "A_m": 3576,
+  "ub": 4804,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mondademstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4647,
+  "A_m": 3574,
+  "ub": 4807,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "inseparabelsten",
+   "polymelkzuurtje"
+  ],
+  "schat": 4647,
+  "A_m": 3549,
+  "ub": 4797,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 16.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "halfgeleidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4647,
+  "A_m": 3579,
+  "ub": 4803,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 8.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "glasbelettering",
+   "polymelkzuurtje"
+  ],
+  "schat": 4647,
+  "A_m": 3557,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vlasweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4646,
+  "A_m": 3657,
+  "ub": 4836,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "slikmeetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4646,
+  "A_m": 3603,
+  "ub": 4826,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rietteelstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4646,
+  "A_m": 3566,
+  "ub": 4806,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zaaggeleidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4646,
+  "A_m": 3602,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "paasgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4646,
+  "A_m": 3589,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "weesmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4646,
+  "A_m": 3578,
+  "ub": 4795,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 42.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kurkboorstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4646,
+  "A_m": 3572,
+  "ub": 4806,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filmpolemiekjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4645,
+  "A_m": 3624,
+  "ub": 4824,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "persmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4645,
+  "A_m": 3574,
+  "ub": 4807,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 42.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "blokmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4645,
+  "A_m": 3586,
+  "ub": 4806,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doordouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4645,
+  "A_m": 3581,
+  "ub": 4803,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "achtkampstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4645,
+  "A_m": 3570,
+  "ub": 4797,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "lintweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4645,
+  "A_m": 3630,
+  "ub": 4828,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "deeltentamentje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4645,
+  "A_m": 3556,
+  "ub": 4795,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "tienkampstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4644,
+  "A_m": 3584,
+  "ub": 4810,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kostgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4644,
+  "A_m": 3603,
+  "ub": 4826,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 20.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mansmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4644,
+  "A_m": 3589,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bodebestedertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4644,
+  "A_m": 3573,
+  "ub": 4806,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zandrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4644,
+  "A_m": 3568,
+  "ub": 4800,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bouwmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4644,
+  "A_m": 3600,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "heilbrengendste",
+   "polymelkzuurtje"
+  ],
+  "schat": 4644,
+  "A_m": 3547,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zelfdoenstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4643,
+  "A_m": 3622,
+  "ub": 4830,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 28.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overlandreisjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4643,
+  "A_m": 3575,
+  "ub": 4802,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kroplijderesjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4643,
+  "A_m": 3588,
+  "ub": 4815,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "avalgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4643,
+  "A_m": 3629,
+  "ub": 4830,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wensdenkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4642,
+  "A_m": 3593,
+  "ub": 4807,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bladparasietjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4642,
+  "A_m": 3582,
+  "ub": 4808,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "filmdocumentjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4642,
+  "A_m": 3580,
+  "ub": 4794,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kerkmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4642,
+  "A_m": 3565,
+  "ub": 4802,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "geldmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4642,
+  "A_m": 3617,
+  "ub": 4833,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kleiwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4642,
+  "A_m": 3601,
+  "ub": 4809,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 52.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "reinmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4641,
+  "A_m": 3562,
+  "ub": 4798,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boormeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4641,
+  "A_m": 3560,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "maaglijderessen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4641,
+  "A_m": 3590,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "uitvliegstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4641,
+  "A_m": 3612,
+  "ub": 4830,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 11.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zielzorgstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4641,
+  "A_m": 3605,
+  "ub": 4823,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kustvaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4641,
+  "A_m": 3595,
+  "ub": 4817,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 15.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "landbouwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4640,
+  "A_m": 3604,
+  "ub": 4812,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 13.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "gastgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4640,
+  "A_m": 3616,
+  "ub": 4830,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "veertienvlakjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4640,
+  "A_m": 3609,
+  "ub": 4813,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "longlijderessen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4640,
+  "A_m": 3563,
+  "ub": 4803,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 25.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kustgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4639,
+  "A_m": 3594,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 17.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "haarmengstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4639,
+  "A_m": 3562,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "handmelkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4639,
+  "A_m": 3584,
+  "ub": 4811,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "juteweefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4638,
+  "A_m": 3590,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 6.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "tentmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4638,
+  "A_m": 3580,
+  "ub": 4813,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hasjdealstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4638,
+  "A_m": 3562,
+  "ub": 4806,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 6.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doorbijtstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4638,
+  "A_m": 3564,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "automaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4638,
+  "A_m": 3558,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 24.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "landzoogdiertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4637,
+  "A_m": 3591,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 25.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zaadteelstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4637,
+  "A_m": 3584,
+  "ub": 4808,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kieskauwstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4637,
+  "A_m": 3577,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 7.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "voorministertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4637,
+  "A_m": 3572,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pestlijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4636,
+  "A_m": 3587,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 15.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "lastgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4635,
+  "A_m": 3616,
+  "ub": 4830,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zelfhaatstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4635,
+  "A_m": 3607,
+  "ub": 4816,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bergjaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4635,
+  "A_m": 3599,
+  "ub": 4826,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "medeweetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4635,
+  "A_m": 3600,
+  "ub": 4814,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wandkalendertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4635,
+  "A_m": 3593,
+  "ub": 4803,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "overtuigstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4635,
+  "A_m": 3571,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "reimporterenden",
+   "polymelkzuurtje"
+  ],
+  "schat": 4634,
+  "A_m": 3542,
+  "ub": 4797,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pretmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4634,
+  "A_m": 3598,
+  "ub": 4821,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "uitblinkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4634,
+  "A_m": 3594,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 16.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "postmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4634,
+  "A_m": 3574,
+  "ub": 4807,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 39.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "godslasterenden",
+   "polymelkzuurtje"
+  ],
+  "schat": 4633,
+  "A_m": 3547,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 27.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "stalmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4633,
+  "A_m": 3578,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wondparasietjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4633,
+  "A_m": 3582,
+  "ub": 4799,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "aidspandemietje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4633,
+  "A_m": 3557,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 12.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "naziministertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4633,
+  "A_m": 3569,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kernmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4633,
+  "A_m": 3558,
+  "ub": 4795,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zangmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4632,
+  "A_m": 3587,
+  "ub": 4807,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "ruitbelettering",
+   "polymelkzuurtje"
+  ],
+  "schat": 4632,
+  "A_m": 3548,
+  "ub": 4794,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "cafegangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4632,
+  "A_m": 3586,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "heilbrengenders",
+   "polymelkzuurtje"
+  ],
+  "schat": 4632,
+  "A_m": 3546,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "walsmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4632,
+  "A_m": 3606,
+  "ub": 4813,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 46.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "verftechniekjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4632,
+  "A_m": 3581,
+  "ub": 4796,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "stukrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4631,
+  "A_m": 3563,
+  "ub": 4801,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "snijbietstengel",
+   "polymelkzuurtje"
+  ],
+  "schat": 4631,
+  "A_m": 3587,
+  "ub": 4816,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "nazijaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4631,
+  "A_m": 3573,
+  "ub": 4804,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "koormeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4631,
+  "A_m": 3560,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pestlijderessen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4631,
+  "A_m": 3586,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 26.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hulpgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4630,
+  "A_m": 3612,
+  "ub": 4823,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "maaglijderesjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4630,
+  "A_m": 3579,
+  "ub": 4809,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "maaglijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4629,
+  "A_m": 3591,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "paarrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4629,
+  "A_m": 3559,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "grasmaaistertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4629,
+  "A_m": 3572,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wijkmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4629,
+  "A_m": 3602,
+  "ub": 4813,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "taalpariteitjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4629,
+  "A_m": 3573,
+  "ub": 4809,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "thaiboksstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4629,
+  "A_m": 3562,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pompnaaistertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4628,
+  "A_m": 3554,
+  "ub": 4794,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wegedoornbesjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4628,
+  "A_m": 3594,
+  "ub": 4804,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "sterreportertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4627,
+  "A_m": 3571,
+  "ub": 4808,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pedojaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4627,
+  "A_m": 3563,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 36.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "toetreedstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4627,
+  "A_m": 3553,
+  "ub": 4799,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "sodabereidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4627,
+  "A_m": 3551,
+  "ub": 4794,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "klepgeleidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4627,
+  "A_m": 3584,
+  "ub": 4807,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "giftkalendertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4626,
+  "A_m": 3617,
+  "ub": 4827,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hermafrodietjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4626,
+  "A_m": 3580,
+  "ub": 4808,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "darmparasietjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4625,
+  "A_m": 3587,
+  "ub": 4820,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "ringmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4625,
+  "A_m": 3569,
+  "ub": 4805,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 44.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mestraapstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4624,
+  "A_m": 3589,
+  "ub": 4819,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 33.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "eeuwkalendertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4624,
+  "A_m": 3597,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bedevaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4623,
+  "A_m": 3586,
+  "ub": 4810,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 36.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pijnboombastjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4623,
+  "A_m": 3586,
+  "ub": 4809,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "inktgeleidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4623,
+  "A_m": 3585,
+  "ub": 4814,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "glasmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4623,
+  "A_m": 3607,
+  "ub": 4823,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "godslasterendst",
+   "polymelkzuurtje"
+  ],
+  "schat": 4623,
+  "A_m": 3565,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 24.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zoutweegstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4621,
+  "A_m": 3612,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "longlijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4621,
+  "A_m": 3564,
+  "ub": 4801,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hartlijderessen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4621,
+  "A_m": 3559,
+  "ub": 4803,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 22.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "leermeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4620,
+  "A_m": 3560,
+  "ub": 4796,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "armezondaressen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4620,
+  "A_m": 3554,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "doodrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4619,
+  "A_m": 3550,
+  "ub": 4797,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 2.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pestlijderesjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4619,
+  "A_m": 3575,
+  "ub": 4809,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "strobindstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4618,
+  "A_m": 3572,
+  "ub": 4809,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "boorhelpstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4618,
+  "A_m": 3569,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "stalmesterijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4618,
+  "A_m": 3593,
+  "ub": 4827,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mededeelstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4618,
+  "A_m": 3571,
+  "ub": 4804,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "elleboogstukjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4618,
+  "A_m": 3578,
+  "ub": 4801,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "taxibelettering",
+   "polymelkzuurtje"
+  ],
+  "schat": 4617,
+  "A_m": 3637,
+  "ub": 4823,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "muitmaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4617,
+  "A_m": 3580,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "paalmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4617,
+  "A_m": 3578,
+  "ub": 4807,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "landgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4616,
+  "A_m": 3589,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "homobruiloftjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4616,
+  "A_m": 3587,
+  "ub": 4801,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zuidpoolreisjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4616,
+  "A_m": 3579,
+  "ub": 4800,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "lakslijpstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4616,
+  "A_m": 3587,
+  "ub": 4814,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "fustmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4616,
+  "A_m": 3574,
+  "ub": 4799,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 44.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mengmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4615,
+  "A_m": 3578,
+  "ub": 4807,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 46.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "fotoreportertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4614,
+  "A_m": 3576,
+  "ub": 4800,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "geldgeefstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4614,
+  "A_m": 3630,
+  "ub": 4837,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vastbijtstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4614,
+  "A_m": 3596,
+  "ub": 4818,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 17.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "patemaakstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4614,
+  "A_m": 3585,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 20.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "landmeetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4613,
+  "A_m": 3576,
+  "ub": 4809,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "maanvaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4613,
+  "A_m": 3572,
+  "ub": 4799,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "chipteststertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4613,
+  "A_m": 3555,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "loondorsstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4612,
+  "A_m": 3555,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wijnmeetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4611,
+  "A_m": 3582,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "nierlijderessen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4611,
+  "A_m": 3554,
+  "ub": 4800,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wildpoepstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4610,
+  "A_m": 3596,
+  "ub": 4804,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 11.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kapslijpstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4610,
+  "A_m": 3575,
+  "ub": 4802,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "eindgeneriekjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4610,
+  "A_m": 3552,
+  "ub": 4794,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rosemesterijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4608,
+  "A_m": 3562,
+  "ub": 4806,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vlasteelstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4608,
+  "A_m": 3575,
+  "ub": 4800,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "toerkalendertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4608,
+  "A_m": 3566,
+  "ub": 4802,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "nestparasietjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4608,
+  "A_m": 3560,
+  "ub": 4803,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "leerbereidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4607,
+  "A_m": 3564,
+  "ub": 4800,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "luxetelegrammen",
+   "polymelkzuurtje"
+  ],
+  "schat": 4607,
+  "A_m": 3625,
+  "ub": 4808,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "kanovaarstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4606,
+  "A_m": 3572,
+  "ub": 4799,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 48.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "starreportertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4606,
+  "A_m": 3571,
+  "ub": 4808,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "keermeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4603,
+  "A_m": 3560,
+  "ub": 4796,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "gildmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4602,
+  "A_m": 3588,
+  "ub": 4814,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hardzeilerijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4601,
+  "A_m": 3578,
+  "ub": 4809,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "gietmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4601,
+  "A_m": 3560,
+  "ub": 4796,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 47.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "koudwalserijtje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4600,
+  "A_m": 3600,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 2.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mestrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4600,
+  "A_m": 3573,
+  "ub": 4811,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.9
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "taalmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4600,
+  "A_m": 3569,
+  "ub": 4805,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 5.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "bestrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4600,
+  "A_m": 3573,
+  "ub": 4811,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wijnbergslakken",
+   "polymelkzuurtje"
+  ],
+  "schat": 4598,
+  "A_m": 3624,
+  "ub": 4821,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wijnbergslakjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4597,
+  "A_m": 3633,
+  "ub": 4827,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "hardzeilstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4597,
+  "A_m": 3590,
+  "ub": 4815,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 51.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "baksmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4597,
+  "A_m": 3588,
+  "ub": 4814,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pijpboorstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4597,
+  "A_m": 3573,
+  "ub": 4810,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "cokedealstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4594,
+  "A_m": 3558,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "rentmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4594,
+  "A_m": 3551,
+  "ub": 4794,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 43.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "vijftienvlakkig",
+   "polymelkzuurtje"
+  ],
+  "schat": 4593,
+  "A_m": 3656,
+  "ub": 4838,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "gouddelfstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4593,
+  "A_m": 3596,
+  "ub": 4811,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "lijkgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4591,
+  "A_m": 3613,
+  "ub": 4833,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "skivliegstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4591,
+  "A_m": 3634,
+  "ub": 4841,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "nietgeleidertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4590,
+  "A_m": 3557,
+  "ub": 4796,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 50.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "mijnmeetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4590,
+  "A_m": 3564,
+  "ub": 4801,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 3.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "medereedstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4590,
+  "A_m": 3558,
+  "ub": 4798,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.1
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "pelsjaagstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4590,
+  "A_m": 3595,
+  "ub": 4822,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 29.8
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "armezondaresjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4590,
+  "A_m": 3583,
+  "ub": 4810,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 2.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "telezoomlensjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4589,
+  "A_m": 3574,
+  "ub": 4798,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.6
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zoutmeetstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4573,
+  "A_m": 3571,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.4
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "dansmeesteresje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4573,
+  "A_m": 3551,
+  "ub": 4794,
+  "status": "UNKNOWN",
+  "score": 0,
+  "sec": 49.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wijkraadslidjes",
+   "polymelkzuurtje"
+  ],
+  "schat": 4566,
+  "A_m": 3614,
+  "ub": 4822,
+  "status": "run ((12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 5), (12, 6), (12, 7))",
+  "score": 0,
+  "sec": 3.3
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "clubgangstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4563,
+  "A_m": 3584,
+  "ub": 4804,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "testrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4553,
+  "A_m": 3564,
+  "ub": 4808,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 12.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "uittreedstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4540,
+  "A_m": 3549,
+  "ub": 4796,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 20.5
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "tijdrijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4539,
+  "A_m": 3548,
+  "ub": 4795,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 4.0
+ }
+]

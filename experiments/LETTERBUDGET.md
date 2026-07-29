@@ -285,11 +285,30 @@ De 476 kandidaten uit deel 2 zijn stuk voor stuk aan dezelfde beslissing onderwo
 | uitkomst | aantal | betekenis |
 |---|---:|---|
 | `nowords` | 35 | een run van het voetafdruk heeft met dit triplet GEEN enkel woord — dood bij constructie |
-| `INFEASIBLE` | RES_INF | bewezen: geen invulling haalt 4794 |
-| `UNKNOWN` | RES_UNK | onbeslist binnen het tijdbudget |
+| `INFEASIBLE` | 288 | bewezen: geen invulling haalt 4794 |
+| `UNKNOWN` | 152 | onbeslist binnen het tijdbudget |
 | boven het record | **0** | — |
 
-RES_TOPTXT
+De sterkste rivalen, in volgorde van hun schatting:
+
+| rivaal (rij 7) | schatting | harde UB | uitslag | s |
+|---|---:|---:|---|---:|
+| waagwerkstertje | 4743 | 4842 | **DOOD** (bewezen <= 4793) | 6 |
+| profboksstertje | 4743 | 4847 | **DOOD** (bewezen <= 4793) | 6 |
+| filmmaakstertje | 4742 | 4844 | **DOOD** (bewezen <= 4793) | 217 |
+| veldwerkstertje | 4742 | 4850 | onbeslist | 50 |
+| grofwerkstertje | 4742 | 4858 | **DOOD** (bewezen <= 4793) | 6 |
+| stafwerkstertje | 4739 | 4856 | **DOOD** (bewezen <= 4793) | 4 |
+| grafdelfstertje | 4738 | 4850 | **DOOD** (bewezen <= 4793) | 6 |
+| viltwerkstertje | 4735 | 4850 | onbeslist | 49 |
+| vlaswerkstertje | 4733 | 4840 | **DOOD** (bewezen <= 4793) | 4 |
+| waszweetstertje | 4728 | 4848 | **DOOD** (bewezen <= 4793) | 79 |
+| gaasweefstertje | 4727 | 4828 | **DOOD** (bewezen <= 4793) | 5 |
+| melkvaarstertje | 4725 | 4843 | **DOOD** (bewezen <= 4793) | 195 |
+| grafmaakstertje | 4724 | 4841 | **DOOD** (bewezen <= 4793) | 5 |
+| zorgwerkstertje | 4720 | 4854 | onbeslist | 46 |
+
+Van de 30 sterkste rivalen zijn er **21** bewezen dood; over het hele veld 323 van 475.
 
 **Geen enkele rivaal heeft ook maar één geldige invulling boven 4793 opgeleverd.**  Sterker: de
 meeste rivalen zijn niet "te laag" maar *helemaal infeasible* — hun restzak past domweg niet meer
@@ -297,7 +316,7 @@ in dit voetafdruk.  Dat is de scherpste vorm van het letterbudget-argument: met 
 56 cellen (2 blanco, 1 tegel speling) is de bezetting **letter-vergrendeld**; verander één
 ankerwoord en de puzzel valt uit elkaar.
 
-De onbesliste gevallen zijn geen tegenbewijs: hun *schatting* ligt allemaal op RES_MAXUNK of lager
+De onbesliste gevallen zijn geen tegenbewijs: hun *schatting* ligt allemaal op 4742 of lager
 (>= 51 punten onder het record) op een maat die op het record 1,3% te hoog uitvalt, en hun enige
 claim boven 4793 komt van de zakgrens die op het record 20% te ruim bleek.
 
@@ -322,7 +341,15 @@ claim boven 4793 komt van de zakgrens die op het record 20% te ruim bleek.
 5. **Ons triplet is rang 1 op beide sporen**: rang 1 in elke ankerrijpool onder de
    voetafdruk-fragmenteis (4852 / 770 / 1153 woorden), en rang 1 op de voetafdruk-vrije ranglijst
    `mask-optimale ankerwaarde + zakgrens`.
-6. **Deze deur is dicht.** Een tripletwissel loont niet — niet omdat de alternatieven geen betere
+6. **Exact getoetst, niet alleen gemodelleerd.** Van de 476 tripletten die de harde bovengrens
+   halen zijn er 323 bewezen dood (35 `nowords`, 288 `INFEASIBLE` op de vraag ">= 4794"); geen
+   enkele heeft ook maar één geldige invulling boven het record opgeleverd.  De 152 onbesliste
+   staan allemaal op een schatting van 4742 of lager.  De toets is hervatbaar (`JOUT`) en loopt
+   door; `experiments/results/letterbudget_toets.json` bevat de stand.
+7. **NIEUW EN BINDEND: 4793 is optimaal voor zijn eigen voetafdruk.**
+   `exact_fill(CUR, target=4794)` = INFEASIBLE.  Geen enkele andere lettering van de 56 vrije
+   cellen — met blanco's vrij plaatsbaar — brengt deze bezetting boven 4793.
+8. **Deze deur is dicht.** Een tripletwissel loont niet — niet omdat de alternatieven geen betere
    restzak achterlaten (dat doen ze, aantoonbaar), maar omdat de vrije cellen te weinig
    multiplier dragen om die betere restzak te verzilveren.
 
