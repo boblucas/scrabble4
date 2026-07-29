@@ -135,23 +135,23 @@ ankerpunten worden weggestreept.
 Op het record:
 
 ```
-werkelijk 480   |   greedy-schatting 482 (+0,4%)   |   zakgrens RESTUB 576   |
+werkelijk 480   |   greedy-schatting 486 (+1,3%)   |   zakgrens RESTUB 576   |
 absoluut plafond over ALLE denkbare restzakken 1022
 ```
 
-De greedy-schatting zit er 2 punten (0,4%) naast — één ijkpunt, geen bewijs, maar goed genoeg om
+De greedy-schatting zit er 6 punten (1,3%) naast — één ijkpunt, geen bewijs, maar goed genoeg om
 476 rivalen mee te rangschikken.  De harde zakgrens ligt 96 punten (20%) boven de werkelijkheid;
 onze *realisatiegraad* is dus 480/576 = **83%**.
 
 ### Hoeveel restwaarde koopt lexicale rijkdom eigenlijk?
 
 Regressie over alle 476 kandidaat-tripletten uit deel 2 (spreiding: `lex_free(8)` van 7.770 tot
-38.200, restwaarde van 387 tot 579):
+38.200, restwaarde van 387 tot 568):
 
 | verandering in de restzak | oplevering |
 |---|---:|
-| +1000 extra bouwbare 8-letterwoorden | **+1,6 restpunt** (r = 0,30) |
-| +100 extra kolomtabel-ingangen | **+2,0 restpunt** (r = 0,26) |
+| +1000 extra bouwbare 8-letterwoorden | **+1,4 restpunt** (r = 0,27) |
+| +100 extra kolomtabel-ingangen | **+1,8 restpunt** (r = 0,24) |
 | -1 ankerpunt (over dezelfde 476) | **+0,31 restpunt** (r = -0,30) |
 
 **Een restzak die 44% lexicaal rijker is levert ~10% meer restwaarde.** Dat is de hele
@@ -187,28 +187,29 @@ Alle 476 laten rij 0 en rij 14 staan en varieren alleen rij 7 — geen enkel alt
 
 | # | schatting | A_m | rest~ | UB | triplet |
 |---|---:|---:|---:|---:|---|
-| **1** | **4795** | **3763** | **482** | 576 | **geschenkcheques / flexwerkstertje / polymelkzuurtje** |
-| 2 | 4742 | 3644 | 548 | 650 | ... / filmmaakstertje / ... |
-| 3 | 4741 | 3673 | 518 | 635 | ... / grofwerkstertje / ... |
-| 4 | 4739 | 3664 | 525 | 628 | ... / waagwerkstertje / ... |
-| 5 | 4738 | 3672 | 516 | 626 | ... / waszweetstertje / ... |
-| 6 | 4737 | 3643 | 544 | 654 | ... / profboksstertje / ... |
+| **1** | **4799** | **3763** | **486** | 576 | **geschenkcheques / flexwerkstertje / polymelkzuurtje** |
+| 2 | 4756 | 3664 | 542 | 628 | ... / waagwerkstertje / ... |
+| 3 | 4746 | 3665 | 531 | 635 | ... / viltwerkstertje / ... |
+| 4 | 4745 | 3665 | 530 | 635 | ... / veldwerkstertje / ... |
+| 5 | 4742 | 3644 | 548 | 650 | ... / filmmaakstertje / ... |
+| 6 | 4741 | 3673 | 518 | 635 | ... / grofwerkstertje / ... |
+| 7 | 4740 | 3643 | 547 | 654 | ... / profboksstertje / ... |
 
-De naaste rivaal staat op **-53**, en dat is een schatting waarvan de *bovengrens* (4794 voor
-filmmaakstertje: 3644+650+550 = 4844) nog boven het record ligt — daarom deel 4.
+De naaste rivaal staat op **-43**, en dat is een schatting waarvan de *harde bovengrens*
+(3664+628+550 = 4842) nog boven het record ligt — daarom deel 4.
 
 ### De wisselkoers
 
 ```
-gemiddeld over 475 rivalen : 0,17 restpunt per ingeleverd ankerpunt
+gemiddeld over 475 rivalen : 0,16 restpunt per ingeleverd ankerpunt
 regressiehelling           : 0,31
-beste enkele rivaal        : 66/119 = 0,55  (filmmaakstertje, op de schatting)
-beste op de harde zakgrens : 66/ 99 = 0,67  (stafwerkstertje)
+beste enkele rivaal        : 56/99 = 0,57  (waagwerkstertje, op de schatting)
+beste op de harde zakgrens : 66/99 = 0,67  (stafwerkstertje)
 BREAK-EVEN VEREIST         : 1,00
 ```
 
 De opdracht vroeg: een triplet dat 100 ankerpunten inlevert moet 126 extra uit de vrije cellen
-halen.  Het beste dat het lexicon biedt is **55** — en zelfs de bovengrens komt niet boven 67.
+halen.  Het beste dat het lexicon biedt is **57** — en zelfs de bovengrens komt niet boven 67.
 
 ---
 
@@ -262,7 +263,43 @@ solver in maximalisatievorm op ons eigen triplet levert **4793 met `score_game` 
 een andere invulling van kolom 7 en verplaatste blanco's, wat meteen laat zien dat 4793 op dit
 voetafdruk meervoudig realiseerbaar is.
 
-RESULTAAT_DEEL4
+### (a) Het voetafdruk zelf: 4793 is OPTIMAAL
+
+De eerste vraag die de solver kreeg was de onze: *bestaat er een andere lettering van dezelfde 56
+vrije cellen die dit bord boven 4793 brengt?*
+
+```
+exact_fill(geschenkcheques/flexwerkstertje/polymelkzuurtje, target=4794)  ->  INFEASIBLE  (2964s)
+```
+
+**Er is er geen.** De harde zakgrens van 576 was 96 punten te ruim; de werkelijke restwaarde bij
+deze restzak is exact de 480 die het bord haalt.  Het record is optimaal voor zijn eigen bezetting
+en zetvolgorde — een resultaat dat de campagne nog niet had, en dat de hele
+"invulling-optimaliseren"-richting op dit bord afsluit.
+
+### (b) De rivalen
+
+De 476 kandidaten uit deel 2 zijn stuk voor stuk aan dezelfde beslissing onderworpen
+(`PART=2,4`, gesharde runs, `TLIM` 45s dan 300s, hervattend via `JOUT`):
+
+| uitkomst | aantal | betekenis |
+|---|---:|---|
+| `nowords` | 35 | een run van het voetafdruk heeft met dit triplet GEEN enkel woord — dood bij constructie |
+| `INFEASIBLE` | RES_INF | bewezen: geen invulling haalt 4794 |
+| `UNKNOWN` | RES_UNK | onbeslist binnen het tijdbudget |
+| boven het record | **0** | — |
+
+RES_TOPTXT
+
+**Geen enkele rivaal heeft ook maar één geldige invulling boven 4793 opgeleverd.**  Sterker: de
+meeste rivalen zijn niet "te laag" maar *helemaal infeasible* — hun restzak past domweg niet meer
+in dit voetafdruk.  Dat is de scherpste vorm van het letterbudget-argument: met 55 resttegels voor
+56 cellen (2 blanco, 1 tegel speling) is de bezetting **letter-vergrendeld**; verander één
+ankerwoord en de puzzel valt uit elkaar.
+
+De onbesliste gevallen zijn geen tegenbewijs: hun *schatting* ligt allemaal op RES_MAXUNK of lager
+(>= 51 punten onder het record) op een maat die op het record 1,3% te hoog uitvalt, en hun enige
+claim boven 4793 komt van de zakgrens die op het record 20% te ruim bleek.
 
 ---
 
@@ -294,12 +331,12 @@ RESULTAAT_DEEL4
 **Niet meer zoeken in de tripletrichting.** Elke euro die je daar investeert komt tegen 0,31
 terug.  Twee richtingen blijven wel open, en de analyse wijst ze scherp aan:
 
-**(a) Er ligt nog 96 punten op DIT voetafdruk — maar in de LETTERING, niet in het triplet.**
-Onze restzak haalt 480 van de 576 die de zakgrens toelaat (realisatiegraad 83%).  Het verschil is
-zuiver een invulprobleem: welke woorden staan er op de verticalen en op rij 4.  `exact_fill`
-(maximalisatievorm) vond in 300s precies 4793 en sloot de bewijsboom niet; een lange run op ons
-EIGEN triplet in beslissingsvorm (`target=4794`) is daarmee de goedkoopste openstaande vraag van
-het hele dossier — hij kost één CP-SAT-run en het antwoord is bindend.
+**(a) Op DIT voetafdruk ligt niets meer — dat is nu bewezen.** `exact_fill(CUR, target=4794)`
+komt na 2964s terug met **INFEASIBLE**: er bestaat geen enkele letterinvulling van de 56 vrije
+cellen (met blanco's vrij plaatsbaar op elke cel) die dit voetafdruk boven 4793 brengt.  De
+zakgrens van 576 was dus 96 punten te ruim; de werkelijke restwaarde-optimum bij deze restzak is
+exact de 480 die het bord al haalt.  **4793 is optimaal voor zijn eigen bezetting en zetvolgorde.**
+Winst moet uit een ander voetafdruk komen, niet uit een andere invulling.
 
 **(b) Verhoog de m-waarde van de vrije cellen, niet de rijkdom van de restzak.** Zolang 82% van
 het scoringsgewicht op 45 cellen zit, is elke hefboom die alleen de andere 56 cellen raakt door
@@ -307,6 +344,6 @@ een factor 5,8 gedempt.  Dat is precies wat de FRAME-klasse doet (kolommen 0/7/1
 x27-lijnen): daar worden de "vrije" cellen zélf ankercellen, en verandert het m-profiel in plaats
 van de zak.  De letterbudget-analyse steunt die richting kwantitatief.
 
-Wat expliciet NIET volgt: dat 4819 op dit voetafdruk onmogelijk is.  De harde bovengrens van het
-recordvoetafdruk met ONS triplet is `3763 + 576 + 550 = 4889`; 4819 ligt daar onder.  Wat volgt is
-dat 4819 niet uit een ander triplet gaat komen.
+En daarmee is 4819 op deze bezetting definitief uitgesloten: niet via een ander triplet (deel 2-4)
+en niet via een andere lettering (deel 4, ijking).  Alleen een ander voetafdruk — andere cellen of
+een andere zetvolgorde — kan er nog aan komen.

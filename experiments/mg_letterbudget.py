@@ -55,6 +55,8 @@ RESULT = {}
 BYLEN = defaultdict(list)
 for w in r.words_str:
     BYLEN[len(w)].append(w)
+for L in BYLEN:                     # r.words_str is een SET -> volgorde is hash-afhankelijk;
+    BYLEN[L].sort()                 # sorteren maakt alle gelijkspel-keuzes reproduceerbaar
 SETS = {L: set(ws) for L, ws in BYLEN.items()}
 def isw(s):
     return s in SETS.get(len(s), ())

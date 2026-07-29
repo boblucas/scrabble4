@@ -1,0 +1,793 @@
+{
+ "ijking": {
+  "record": 4793,
+  "anker": 3763,
+  "rest": 480,
+  "bingo": 550
+ },
+ "restzak": {
+  "profiel": {
+   "n": 55,
+   "klinkers": 23,
+   "medeklinkers": 32,
+   "bind": {
+    "e": 8,
+    "n": 9,
+    "a": 6,
+    "o": 5,
+    "d": 5,
+    "r": 2,
+    "s": 2,
+    "t": 2,
+    "i": 4
+   },
+   "bindsom": 43,
+   "alfabet": "abdefgimnoprstvwz",
+   "weg": "chjklquxy"
+  },
+  "lex": {
+   "4": 1736,
+   "6": 7051,
+   "8": 15801,
+   "10": 19458,
+   "12": 13410,
+   "15": 3889
+  },
+  "top": {
+   "1": 17,
+   "2": 206,
+   "3": 0,
+   "4": 0,
+   "5": 72,
+   "6": 36,
+   "8": 92,
+   "9": 105,
+   "10": 72,
+   "11": 0,
+   "12": 143,
+   "13": 0
+  },
+  "bot": {
+   "1": 3,
+   "2": 17,
+   "3": 0,
+   "4": 26,
+   "5": 72,
+   "6": 40,
+   "8": 1,
+   "9": 1,
+   "10": 1,
+   "11": 112,
+   "12": 132,
+   "13": 0
+  },
+  "rest_echt": 480,
+  "rest_greedy": 486,
+  "restub": 576
+ },
+ "sweep": {
+  "n": 476,
+  "top": [
+   {
+    "schat": 4799,
+    "A_m": 3763,
+    "rest": 486,
+    "ub": 576,
+    "triplet": [
+     "geschenkcheques",
+     "flexwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4756,
+    "A_m": 3664,
+    "rest": 542,
+    "ub": 628,
+    "triplet": [
+     "geschenkcheques",
+     "waagwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4746,
+    "A_m": 3665,
+    "rest": 531,
+    "ub": 635,
+    "triplet": [
+     "geschenkcheques",
+     "viltwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4745,
+    "A_m": 3665,
+    "rest": 530,
+    "ub": 635,
+    "triplet": [
+     "geschenkcheques",
+     "veldwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4742,
+    "A_m": 3644,
+    "rest": 548,
+    "ub": 650,
+    "triplet": [
+     "geschenkcheques",
+     "filmmaakstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4741,
+    "A_m": 3673,
+    "rest": 518,
+    "ub": 635,
+    "triplet": [
+     "geschenkcheques",
+     "grofwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4740,
+    "A_m": 3643,
+    "rest": 547,
+    "ub": 654,
+    "triplet": [
+     "geschenkcheques",
+     "profboksstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4734,
+    "A_m": 3655,
+    "rest": 529,
+    "ub": 645,
+    "triplet": [
+     "geschenkcheques",
+     "grafdelfstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4733,
+    "A_m": 3655,
+    "rest": 528,
+    "ub": 635,
+    "triplet": [
+     "geschenkcheques",
+     "vlaswerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4728,
+    "A_m": 3672,
+    "rest": 506,
+    "ub": 626,
+    "triplet": [
+     "geschenkcheques",
+     "waszweetstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4728,
+    "A_m": 3669,
+    "rest": 509,
+    "ub": 635,
+    "triplet": [
+     "geschenkcheques",
+     "geldwerfstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4727,
+    "A_m": 3630,
+    "rest": 547,
+    "ub": 648,
+    "triplet": [
+     "geschenkcheques",
+     "gaasweefstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4726,
+    "A_m": 3662,
+    "rest": 514,
+    "ub": 642,
+    "triplet": [
+     "geschenkcheques",
+     "vijfkampstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4724,
+    "A_m": 3634,
+    "rest": 540,
+    "ub": 657,
+    "triplet": [
+     "geschenkcheques",
+     "grafmaakstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4720,
+    "A_m": 3664,
+    "rest": 506,
+    "ub": 642,
+    "triplet": [
+     "geschenkcheques",
+     "stafwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4717,
+    "A_m": 3637,
+    "rest": 530,
+    "ub": 645,
+    "triplet": [
+     "geschenkcheques",
+     "voorwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4714,
+    "A_m": 3638,
+    "rest": 526,
+    "ub": 642,
+    "triplet": [
+     "geschenkcheques",
+     "vijftienvlakken",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4714,
+    "A_m": 3625,
+    "rest": 539,
+    "ub": 658,
+    "triplet": [
+     "geschenkcheques",
+     "pijpwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 2
+   },
+   {
+    "schat": 4713,
+    "A_m": 3636,
+    "rest": 527,
+    "ub": 657,
+    "triplet": [
+     "geschenkcheques",
+     "melkvaarstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4713,
+    "A_m": 3619,
+    "rest": 544,
+    "ub": 661,
+    "triplet": [
+     "geschenkcheques",
+     "teerwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4712,
+    "A_m": 3614,
+    "rest": 548,
+    "ub": 665,
+    "triplet": [
+     "geschenkcheques",
+     "bankbeveiligers",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4712,
+    "A_m": 3601,
+    "rest": 561,
+    "ub": 667,
+    "triplet": [
+     "geschenkcheques",
+     "viltbereidertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4711,
+    "A_m": 3625,
+    "rest": 536,
+    "ub": 652,
+    "triplet": [
+     "geschenkcheques",
+     "fuifgangstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4709,
+    "A_m": 3643,
+    "rest": 516,
+    "ub": 648,
+    "triplet": [
+     "geschenkcheques",
+     "vormgeefstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4709,
+    "A_m": 3630,
+    "rest": 529,
+    "ub": 648,
+    "triplet": [
+     "geschenkcheques",
+     "bandweefstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4709,
+    "A_m": 3614,
+    "rest": 545,
+    "ub": 665,
+    "triplet": [
+     "geschenkcheques",
+     "zorgmijdstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4709,
+    "A_m": 3599,
+    "rest": 560,
+    "ub": 679,
+    "triplet": [
+     "geschenkcheques",
+     "normbevestigend",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4708,
+    "A_m": 3667,
+    "rest": 491,
+    "ub": 637,
+    "triplet": [
+     "geschenkcheques",
+     "zelfbevestiging",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4708,
+    "A_m": 3607,
+    "rest": 551,
+    "ub": 669,
+    "triplet": [
+     "geschenkcheques",
+     "gangmaakstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4706,
+    "A_m": 3637,
+    "rest": 519,
+    "ub": 645,
+    "triplet": [
+     "geschenkcheques",
+     "overwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4706,
+    "A_m": 3614,
+    "rest": 542,
+    "ub": 655,
+    "triplet": [
+     "geschenkcheques",
+     "goudwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4705,
+    "A_m": 3669,
+    "rest": 486,
+    "ub": 635,
+    "triplet": [
+     "geschenkcheques",
+     "zorgwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4705,
+    "A_m": 3629,
+    "rest": 526,
+    "ub": 654,
+    "triplet": [
+     "geschenkcheques",
+     "telewerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4705,
+    "A_m": 3628,
+    "rest": 527,
+    "ub": 654,
+    "triplet": [
+     "geschenkcheques",
+     "bootwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4705,
+    "A_m": 3622,
+    "rest": 533,
+    "ub": 654,
+    "triplet": [
+     "geschenkcheques",
+     "wildbreistertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4705,
+    "A_m": 3619,
+    "rest": 536,
+    "ub": 661,
+    "triplet": [
+     "geschenkcheques",
+     "doorwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4705,
+    "A_m": 3587,
+    "rest": 568,
+    "ub": 668,
+    "triplet": [
+     "geschenkcheques",
+     "bronbeveiliging",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4703,
+    "A_m": 3648,
+    "rest": 505,
+    "ub": 652,
+    "triplet": [
+     "geschenkcheques",
+     "palmboombastjes",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4703,
+    "A_m": 3641,
+    "rest": 512,
+    "ub": 648,
+    "triplet": [
+     "geschenkcheques",
+     "rompbouwstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4703,
+    "A_m": 3605,
+    "rest": 548,
+    "ub": 674,
+    "triplet": [
+     "geschenkcheques",
+     "melkrijdstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4702,
+    "A_m": 3621,
+    "rest": 531,
+    "ub": 657,
+    "triplet": [
+     "geschenkcheques",
+     "vlakbreistertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4702,
+    "A_m": 3619,
+    "rest": 533,
+    "ub": 661,
+    "triplet": [
+     "geschenkcheques",
+     "rietwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4702,
+    "A_m": 3607,
+    "rest": 545,
+    "ub": 669,
+    "triplet": [
+     "geschenkcheques",
+     "boommaakstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4702,
+    "A_m": 3605,
+    "rest": 547,
+    "ub": 668,
+    "triplet": [
+     "geschenkcheques",
+     "rookbeveiliging",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4701,
+    "A_m": 3652,
+    "rest": 499,
+    "ub": 638,
+    "triplet": [
+     "geschenkcheques",
+     "werkgeefstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4701,
+    "A_m": 3630,
+    "rest": 521,
+    "ub": 657,
+    "triplet": [
+     "geschenkcheques",
+     "vormmaakstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4701,
+    "A_m": 3624,
+    "rest": 527,
+    "ub": 661,
+    "triplet": [
+     "geschenkcheques",
+     "aardwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4701,
+    "A_m": 3621,
+    "rest": 530,
+    "ub": 665,
+    "triplet": [
+     "geschenkcheques",
+     "turfmaakstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4701,
+    "A_m": 3597,
+    "rest": 554,
+    "ub": 664,
+    "triplet": [
+     "geschenkcheques",
+     "filmkalendertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4700,
+    "A_m": 3628,
+    "rest": 522,
+    "ub": 658,
+    "triplet": [
+     "geschenkcheques",
+     "bermbeveiliging",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4700,
+    "A_m": 3619,
+    "rest": 531,
+    "ub": 648,
+    "triplet": [
+     "geschenkcheques",
+     "veenwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4700,
+    "A_m": 3603,
+    "rest": 547,
+    "ub": 671,
+    "triplet": [
+     "geschenkcheques",
+     "verbreedstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4700,
+    "A_m": 3596,
+    "rest": 554,
+    "ub": 672,
+    "triplet": [
+     "geschenkcheques",
+     "veldrijdstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4699,
+    "A_m": 3638,
+    "rest": 511,
+    "ub": 654,
+    "triplet": [
+     "geschenkcheques",
+     "inktwerpstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4699,
+    "A_m": 3612,
+    "rest": 537,
+    "ub": 665,
+    "triplet": [
+     "geschenkcheques",
+     "koopbevestiging",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4698,
+    "A_m": 3653,
+    "rest": 495,
+    "ub": 638,
+    "triplet": [
+     "geschenkcheques",
+     "zinkwalsstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4698,
+    "A_m": 3616,
+    "rest": 532,
+    "ub": 649,
+    "triplet": [
+     "geschenkcheques",
+     "zinkwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 1
+   },
+   {
+    "schat": 4698,
+    "A_m": 3610,
+    "rest": 538,
+    "ub": 657,
+    "triplet": [
+     "geschenkcheques",
+     "baanwerkstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   },
+   {
+    "schat": 4698,
+    "A_m": 3600,
+    "rest": 548,
+    "ub": 671,
+    "triplet": [
+     "geschenkcheques",
+     "pijpzeikstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 2
+   },
+   {
+    "schat": 4697,
+    "A_m": 3654,
+    "rest": 493,
+    "ub": 632,
+    "triplet": [
+     "geschenkcheques",
+     "pezeweefstertje",
+     "polymelkzuurtje"
+    ],
+    "blanco": 0
+   }
+  ]
+ }
+}
