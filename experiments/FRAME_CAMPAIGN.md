@@ -455,3 +455,18 @@ alleen niet bereikbaar via een ander triplet.
 => LOPENDE BINDENDE TOETS: exact_fill in beslissingsvorm op het huidige voetafdruk, target = record+1
 (experiments/results/mg_decide.log, 5400s). INFEASIBLE bewijst dat 4793 optimaal is voor deze
 bezetting; FEASIBLE levert direct een beter bord.
+
+### BEWEZEN (2026-07-29): 4793 is optimaal voor ZIJN EIGEN voetafdruk
+exact_fill(target=4794) op de 4793-bezetting: **INFEASIBLE na 2964s**. Er bestaat geen enkele andere
+lettering van de 56 vrije cellen -- met blanco's vrij plaatsbaar op ELKE cel -- die deze bezetting
+plus zetvolgorde boven 4793 brengt. 'Invulling optimaliseren' is op dit bord dus uitgeput; winst moet
+uit een ANDER voetafdruk komen. Daarmee is voor de tweede keer deze campagne een volledige
+voetafdruk-laag gesloten (eerder 4778, nu 4793) -- en beide keren tilde de LNS het record er
+vervolgens overheen door de BEZETTING te muteren.
+TRIPLET-TOETS UITPUTTEND: van de 476 tripletten die de harde bovengrens halen zijn er 35 dood bij
+constructie, 291 bewezen INFEASIBLE op '>= 4794', 149 onbeslist (allemaal schatting <=4742) en 0
+boven het record. Opvallend: de meeste rivalen zijn niet 'te laag' maar HELEMAAL infeasible -- de
+bezetting is letter-vergrendeld.
+BIJVANGST (reproduceerbaarheidsbug, gefixt): r.words_str is een SET, dus de BYLEN-volgorde was
+hash-afhankelijk en gelijkspel-keuzes verschilden per proces (+/-5 punten in schattingen, en
+overlappende shards). Nu gesorteerd en deterministisch.
