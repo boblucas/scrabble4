@@ -2059,57 +2059,95 @@ fn build_sharp_v(d: &Arc<Data>, tabs: &Arc<HashMap<(Key, u8), Tab>>, suprows: u1
     g.iter().cloned().collect()
 }
 
-/// R(lambda, own) met het stratum-steunmasker; None = deze run is lexicaal onmogelijk
-fn r_sharp(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>, lam: &[i64; 26],
-           k: Key, own: u16) -> Option<i64> {
+/// de woordtabel die bij het stratum-steunmasker van deze lijn hoort:
+/// (tabel, eventueel herrekende U per entry).  None = deze run is lexicaal onmogelijk.
+fn sharp_ent<'a>(tabs: &'a HashMap<(Key, u8), Tab>, sharp: &'a HashMap<Key, SupSrc>, k: Key)
+                 -> Option<(&'a Tab, Option<&'a Vec<i32>>)> {
     match sharp.get(&k) {
         None | Some(SupSrc::Dead) => None,
         Some(SupSrc::Var0) => match tabs.get(&(k, 0u8)) {
-            Some(t) if t.umax > NEG as i32 / 2 => Some(r_lambda_own(t, lam, own)),
+            Some(t) if t.umax > NEG as i32 / 2 => Some((t, None)),
             _ => None,
         },
         Some(SupSrc::Var1) => match tabs.get(&(k, 1u8)) {
-            Some(t) if t.umax > NEG as i32 / 2 => Some(r_lambda_own(t, lam, own)),
+            Some(t) if t.umax > NEG as i32 / 2 => Some((t, None)),
             _ => None,
         },
-        Some(SupSrc::Cust(us)) => {
-            let t = &tabs[&(k, 0u8)];
-            let mut best = i64::MIN;
-            if t.tail > NEG as i32 / 2 {
-                best = t.tail as i64 * SCALE;
-            }
-            for (i, (_u, w)) in t.ent.iter().enumerate() {
-                if us[i] <= UDEAD {
-                    continue;
-                }
-                let mut c = 0i64;
-                let mut m = own;
-                while m != 0 {
-                    let j = m.trailing_zeros() as usize;
-                    m &= m - 1;
-                    c += lam[(w[j] - 1) as usize];
-                }
-                let v = us[i] as i64 * SCALE - c;
-                if v > best {
-                    best = v;
-                }
-            }
-            if best == i64::MIN { None } else { Some(best) }
-        }
+        Some(SupSrc::Cust(us)) => Some((&tabs[&(k, 0u8)], Some(us))),
     }
 }
 
-/// kolomwaarden met de scherpe steunmaskers (verscherping 1)
+/// R(lambda, own) met het stratum-steunmasker; None = deze run is lexicaal onmogelijk
+fn r_sharp(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>, lam: &[i64; 26],
+           k: Key, own: u16) -> Option<i64> {
+    let (t, us) = sharp_ent(tabs, sharp, k)?;
+    let mut best = i64::MIN;
+    if t.tail > NEG as i32 / 2 {
+        best = t.tail as i64 * SCALE;
+    }
+    for (i, (u0, w)) in t.ent.iter().enumerate() {
+        let u = match us {
+            None => *u0,
+            Some(v) => v[i],
+        };
+        if u <= UDEAD {
+            continue;
+        }
+        let mut c = 0i64;
+        let mut m = own;
+        while m != 0 {
+            let j = m.trailing_zeros() as usize;
+            m &= m - 1;
+            c += lam[(w[j] - 1) as usize];
+        }
+        let v = u as i64 * SCALE - c;
+        if v > best {
+            best = v;
+        }
+    }
+    if best == i64::MIN { None } else { Some(best) }
+}
+
+// ---------------------------------------------------------------- VERSCHERPING 4: FRAME-klasse
+// De maskers maken van kolom 0, 7 en 14 volledige TWS-kolommen: hun cellen in rij 0, 7 EN 14
+// zitten alle drie in het slotmasker.  Een verticaal 15-letterwoord daar wordt door alle drie
+// de slotzetten opnieuw gescoord.  Zo'n VOLLE kolom is een verticale run [0,14] van lengte 15
+// en valt dus alleen in het stratum MAXVLEN = 15 -- waar de grens (5415) nietszeggend is.
+//
+// De FRAME-parameter F = de verzameling kolommen die VOL zijn (masker = alle 12 vrije rijen).
+// Elke bezetting heeft precies een F, dus stratificeren op (F, A, MAXVLEN) is uitputtend, met
+// dien verstande dat MAXVLEN dan alleen op de kolommen BUITEN F slaat: een kolom in F heeft
+// per definitie een run van 15.  Zo krijgt de FRAME-klasse haar eigen, scherpe grens en houdt
+// de rest van de stratificatie een bruikbare MAXVLEN.
+fn full_cols_env() -> Option<u16> {
+    let s = env::var("FULL").ok()?;
+    let s = s.trim().to_string();
+    if s.is_empty() {
+        return Some(0);
+    }
+    let mut m = 0u16;
+    for t in s.split(',') {
+        m |= 1 << t.trim().parse::<usize>().unwrap();
+    }
+    Some(m)
+}
+
+/// kolomwaarden met de scherpe steunmaskers (verscherping 1) + FRAME-parameter (verscherping 4)
 fn col_values_sharp(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>,
                     lam: &[i64; 26]) -> Vec<Vec<Option<(u8, i64)>>> {
     let maxv: usize = env::var("MAXVLEN").ok().and_then(|s| s.parse().ok()).unwrap_or(15);
+    let fullm = full_cols_env();
     let mut out = Vec::with_capacity(15);
     for x in 0..15 {
+        // een kolom in F is VERPLICHT vol, een kolom buiten F is verboden vol te zijn
+        let must_full = fullm.map_or(false, |f| f >> x & 1 != 0);
+        let no_full = fullm.map_or(false, |f| f >> x & 1 == 0);
         // eerst de 70 mogelijke runs van deze kolom een keer beprijzen
         let mut rv = [[None::<i64>; 15]; 15];
         for a in 0..15 {
             for b in (a + 1)..15 {
-                if b - a + 1 > maxv {
+                // MAXVLEN geldt alleen voor de kolommen BUITEN F
+                if !must_full && b - a + 1 > maxv {
                     continue;
                 }
                 rv[a][b] = r_sharp(tabs, sharp, lam, Key::V(x, a, b), own_v(a, b));
@@ -2117,11 +2155,15 @@ fn col_values_sharp(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>
         }
         let mut v = Vec::with_capacity(1 << 12);
         for m in 0..(1u32 << 12) {
+            if (must_full && m != 0xfff) || (no_full && m == 0xfff) {
+                v.push(None);
+                continue;
+            }
             let cm = mask12_to_col(m);
             let mut val = 0i64;
             let mut ok = true;
             for (a, b) in vruns(cm) {
-                if b - a + 1 > maxv {
+                if !must_full && b - a + 1 > maxv {
                     ok = false;
                     break;
                 }
@@ -2134,6 +2176,40 @@ fn col_values_sharp(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>
                 }
             }
             v.push(if ok { Some((m.count_ones() as u8, val)) } else { None });
+        }
+        out.push(v);
+    }
+    out
+}
+
+// ---------------------------------------------------------------- VERSCHERPING 3: bingoplafond
+// U_L telt +50 voor elke groep van 7 nieuwe tegels op L, zonder globaal maximum.  Er liggen
+// hoogstens 101 tegels op het bord (zak 100 + 2 blanco, tegenstander houdt >= 1 tegel vast) en
+// elke bingo legt er precies 7, op onderling DISJUNCTE cellen (zetten zijn disjunct).  Dus
+//      SOM over ALLE lijnen L van b_L  <=  floor(101/7) = 14.
+// Een lijn van lengte n kan er hoogstens floor(n/7) herbergen (elke bingo legt 7 NIEUWE cellen
+// op die lijn).  De vraag is of de relaxatie dat plafond uberhaupt overschrijdt.  Daarom eerst
+// een RIGOUREUZE meting: maximaliseer met dezelfde kolom-DP de SLOTTELLING
+//      SOM_L floor(len(L)/7)
+// over het stratum (zelfde tegelbudget, zelfde eilandvlaggen, zelfde steunmaskers).  Komt daar
+// een getal <= 14 uit, dan kan het bingoplafond in dit stratum NOOIT bijten en is verscherping
+// 3 daar bewijsbaar nul waard.
+fn col_bingoslots(colv: &Vec<Vec<Option<(u8, i64)>>>) -> Vec<Vec<Option<(u8, i64)>>> {
+    let mut out = Vec::with_capacity(15);
+    for x in 0..15 {
+        let mut v = Vec::with_capacity(1 << 12);
+        for m in 0..(1u32 << 12) {
+            match colv[x][m as usize] {
+                None => v.push(None),
+                Some((tiles, _)) => {
+                    let cm = mask12_to_col(m);
+                    let mut s = 0i64;
+                    for (a, b) in vruns(cm) {
+                        s += ((b - a + 1) / 7) as i64;
+                    }
+                    v.push(Some((tiles, s * SCALE)));
+                }
+            }
         }
         out.push(v);
     }
@@ -2316,6 +2392,645 @@ fn calib_assert_sharp(dir: &str, tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap
     }
 }
 
+// ---------------------------------------------------------- VERSCHERPING 2 IN DE KOLOM-DP
+// De kruispunt-Lagrange (zie boven) in de kolom-DP.  De horizontale lijnen zitten daar als
+// PAARGEWICHTEN in, dus zonder letters; de theta-term moet daarom in het paargewicht worden
+// meegebakken, en de verticale kant moet weten OF de cel wel echt een kruispunt is.
+//
+// NORMALISATIE-LEMMA.  Voor een echt kruispunt c verandert het optellen van een constante bij
+// theta(c,.) de grens niet: de V-kant trekt -delta af en de H-kant telt +delta op.  We mogen
+// dus WLOG normaliseren op min_k theta(c,k) = 0, en daarmee is theta >= 0.
+//
+// Daaruit volgt de soundness van de asymmetrie die de DP nodig heeft:
+//  * de V-kant trekt theta(c, letter) af PRECIES als de cel een bezette linkerbuur heeft
+//    (dat is in de DP bekend: het is de bit pm_y & m_y) EN op een verticale run (>=2) ligt
+//    (dat is bekend uit het kolommasker m: alleen dan bevat een run die cel);
+//  * de H-kant telt theta(c, letter) op voor ALLE cellen van de run behalve de meest linkse
+//    (dat is dezelfde 'linkerbuur bezet'-voorwaarde).
+// Ligt de cel wel op een horizontale maar niet op een verticale run, dan telt de H-kant +theta
+// op zonder compensatie -- en omdat theta >= 0 is dat een VERRUIMING, dus sound.
+//
+// De DP-toestand krijgt er niets bij: per kolomovergang wordt over de deelverzamelingen
+// S van de actieve rijen gelopen waarvoor pm_y & m_y = 1, en elke S krijgt zijn eigen
+// kolomwaarde (met theta) en zijn eigen paargewichten.  Dat zijn 2^|A| maxplus-passes.
+
+/// lettertabel van een run: de beste waarde per lettercombinatie op de gemarkeerde posities
+struct LetTab {
+    npos: usize,
+    v: Vec<i64>, // 26^npos
+}
+
+impl LetTab {
+    fn idx(&self, ls: &[usize]) -> usize {
+        let mut i = 0usize;
+        for j in 0..self.npos {
+            i = i * 26 + ls[j];
+        }
+        i
+    }
+}
+
+/// R per lettercombinatie op de posities `pos` (indices binnen de run)
+fn run_lettab(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>, lam: &[i64; 26],
+              k: Key, own: u16, pos: &[usize]) -> Option<LetTab> {
+    let (t, us) = sharp_ent(tabs, sharp, k)?;
+    let npos = pos.len();
+    let sz = 26usize.pow(npos as u32);
+    let base = if t.tail > NEG as i32 / 2 { t.tail as i64 * SCALE } else { i64::MIN };
+    let mut lt = LetTab { npos, v: vec![base; sz] };
+    let mut any = base > i64::MIN;
+    for (i, (u0, w)) in t.ent.iter().enumerate() {
+        let u = match us {
+            None => *u0,
+            Some(vv) => vv[i],
+        };
+        if u <= UDEAD {
+            continue;
+        }
+        let mut c = 0i64;
+        let mut m = own;
+        while m != 0 {
+            let j = m.trailing_zeros() as usize;
+            m &= m - 1;
+            c += lam[(w[j] - 1) as usize];
+        }
+        let val = u as i64 * SCALE - c;
+        let mut ix = 0usize;
+        for &p in pos.iter() {
+            ix = ix * 26 + (w[p] - 1) as usize;
+        }
+        if val > lt.v[ix] {
+            lt.v[ix] = val;
+        }
+        any = true;
+    }
+    if !any { None } else { Some(lt) }
+}
+
+/// R_S = max over lettercombinaties van [ R(combi) - SOM_{j in S} theta_j(letter_j) ]
+fn lettab_reduce(lt: &LetTab, th: &Vec<&[i64; 26]>, sset: u32) -> i64 {
+    let n = lt.npos;
+    let mut best = i64::MIN;
+    let mut ls = vec![0usize; n];
+    let total = lt.v.len();
+    for ix in 0..total {
+        if lt.v[ix] == i64::MIN {
+            continue;
+        }
+        let mut r = ix;
+        for j in (0..n).rev() {
+            ls[j] = r % 26;
+            r /= 26;
+        }
+        let mut v = lt.v[ix];
+        for j in 0..n {
+            if sset >> j & 1 != 0 {
+                v -= th[j][ls[j]];
+            }
+        }
+        if v > best {
+            best = v;
+        }
+    }
+    let _ = ls;
+    best
+}
+
+/// kolomwaarden per deelverzameling S van de actieve rijen (verscherping 1 + 2 + 4)
+/// out[x][S][m] = (tegels, waarde) ; None = onmogelijk
+fn col_values_x(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>, lam: &[i64; 26],
+                arows: &[usize], theta: &Vec<Vec<[i64; 26]>>)
+                -> Vec<Vec<Vec<Option<(u8, i64)>>>> {
+    let maxv: usize = env::var("MAXVLEN").ok().and_then(|s| s.parse().ok()).unwrap_or(15);
+    let fullm = full_cols_env();
+    let ka = arows.len();
+    let nsub = 1usize << ka;
+    let mut out = Vec::with_capacity(15);
+    for x in 0..15 {
+        let must_full = fullm.map_or(false, |f| f >> x & 1 != 0);
+        let no_full = fullm.map_or(false, |f| f >> x & 1 == 0);
+        // per run: de waarde onder elke deelverzameling van de erin liggende actieve rijen
+        let mut rv: Vec<Vec<Option<i64>>> = vec![vec![None; 15 * 15]; nsub];
+        for a in 0..15 {
+            for b in (a + 1)..15 {
+                if !must_full && b - a + 1 > maxv {
+                    continue;
+                }
+                // welke actieve rijen liggen in deze run?
+                let js: Vec<usize> = (0..ka).filter(|&j| arows[j] >= a && arows[j] <= b).collect();
+                let pos: Vec<usize> = js.iter().map(|&j| arows[j] - a).collect();
+                let lt = match run_lettab(tabs, sharp, lam, Key::V(x, a, b), own_v(a, b), &pos) {
+                    Some(l) => l,
+                    None => continue,
+                };
+                let th: Vec<&[i64; 26]> = js.iter().map(|&j| &theta[j][x]).collect();
+                for s in 0..nsub {
+                    // alleen de actieve rijen die IN deze run liggen doen mee
+                    let mut sub = 0u32;
+                    for (q, &j) in js.iter().enumerate() {
+                        if s >> j & 1 != 0 {
+                            sub |= 1 << q;
+                        }
+                    }
+                    let v = lettab_reduce(&lt, &th, sub);
+                    if v > i64::MIN {
+                        rv[s][a * 15 + b] = Some(v);
+                    }
+                }
+            }
+        }
+        let mut per_s = Vec::with_capacity(nsub);
+        for s in 0..nsub {
+            let mut v = Vec::with_capacity(1 << 12);
+            for m in 0..(1u32 << 12) {
+                if (must_full && m != 0xfff) || (no_full && m == 0xfff) {
+                    v.push(None);
+                    continue;
+                }
+                let cm = mask12_to_col(m);
+                // S mag alleen rijen bevatten die in deze kolom BEZET zijn
+                let mut ok = true;
+                for j in 0..ka {
+                    if s >> j & 1 != 0 && cm >> arows[j] & 1 == 0 {
+                        ok = false;
+                    }
+                }
+                if !ok {
+                    v.push(None);
+                    continue;
+                }
+                let mut val = 0i64;
+                for (a, b) in vruns(cm) {
+                    if !must_full && b - a + 1 > maxv {
+                        ok = false;
+                        break;
+                    }
+                    match rv[s][a * 15 + b] {
+                        Some(r) => val += r,
+                        None => {
+                            ok = false;
+                            break;
+                        }
+                    }
+                }
+                v.push(if ok { Some((m.count_ones() as u8, val)) } else { None });
+            }
+            per_s.push(v);
+        }
+        out.push(per_s);
+    }
+    out
+}
+
+/// paargewichten met theta erin gebakken (H-kant): voor run r geldt nog steeds
+/// SOM over de |r|-1 paren van p >= U(r) + SOM_{cellen met linkerbuur} theta
+fn pair_weights_x(tabs: &HashMap<(Key, u8), Tab>, arows: &[usize],
+                  theta: &Vec<Vec<[i64; 26]>>) -> Vec<[[i64; 14]; 15]> {
+    let ka = arows.len();
+    let mut out = vec![[[0i64; 14]; 15]; ka];
+    for j in 0..ka {
+        let y = arows[j];
+        for x0 in 0..15 {
+            for x1 in (x0 + 1)..15 {
+                let t = match tabs.get(&(Key::H(y, x0, x1), 0u8)) {
+                    Some(t) if t.umax > 0 => t,
+                    _ => continue,
+                };
+                let n = x1 - x0 + 1;
+                let mut u = i64::MIN;
+                if t.tail > NEG as i32 / 2 {
+                    let mut v = t.tail as i64 * SCALE;
+                    for i in 1..n {
+                        v += theta[j][x0 + i].iter().cloned().max().unwrap();
+                    }
+                    u = v;
+                }
+                for (uu, w) in t.ent.iter() {
+                    let mut v = *uu as i64 * SCALE;
+                    for i in 1..n {
+                        v += theta[j][x0 + i][(w[i] - 1) as usize];
+                    }
+                    if v > u {
+                        u = v;
+                    }
+                }
+                if u <= 0 {
+                    continue;
+                }
+                let per = ((u as f64) / (x1 - x0) as f64).ceil() as i64;
+                for x in x0..x1 {
+                    if per > out[j][y][x] {
+                        out[j][y][x] = per;
+                    }
+                }
+            }
+        }
+    }
+    out
+}
+
+/// kolom-DP met de kruispunt-Lagrange: per overgang 2^|A| deelverzamelingen
+struct Gdp3 {
+    suf: Vec<Vec<i32>>,
+    nt: usize,
+    pw: Vec<Vec<[i64; 12]>>, // pw[S][x]
+}
+
+fn gdp3_build(colv: &Vec<Vec<Vec<Option<(u8, i64)>>>>, pwr0: &[[i64; 14]; 15],
+              pwx: &Vec<[[i64; 14]; 15]>, arows: &[usize], active: u16, nmax: usize) -> Gdp3 {
+    let ka = arows.len();
+    let nsub = 1usize << ka;
+    // index in FREEROWS van elke actieve rij
+    let ai: Vec<usize> = arows.iter()
+        .map(|y| FREEROWS.iter().position(|z| z == y).unwrap()).collect();
+    // paargewichten per deelverzameling S: rijen in S krijgen het theta-gewicht, rijen in
+    // A\S en alle niet-actieve rijen krijgen HARD (aangrenzing daar is in deze tak verboden)
+    let mut pw: Vec<Vec<[i64; 12]>> = Vec::with_capacity(nsub);
+    for s in 0..nsub {
+        let mut per_x = Vec::with_capacity(15);
+        for x in 0..15 {
+            let mut a = [HARD; 12];
+            for (q, &j) in ai.iter().enumerate() {
+                if s >> q & 1 != 0 {
+                    a[j] = if x > 0 { pwx[q][arows[q]][x - 1] } else { HARD };
+                }
+            }
+            per_x.push(a);
+        }
+        pw.push(per_x);
+    }
+    let _ = (pwr0, active);
+    let nt = nmax + 1;
+    let sz = 4096 * nt * 4;
+    let mut suf: Vec<Vec<i32>> = vec![Vec::new(); 16];
+    suf[15] = vec![0i32; sz];
+    for x in (0..15).rev() {
+        let mut cur = vec![MINF; sz];
+        for t in 0..nt {
+            for f in 0..4usize {
+                let mut acc = [MINF; 4096];
+                for s in 0..nsub {
+                    let mut a = [MINF; 4096];
+                    for m in 0..4096usize {
+                        let nf = match flag_step(x, m as u32, f) {
+                            Some(v) => v,
+                            None => continue,
+                        };
+                        if let Some((tiles, val)) = colv[x][s][m] {
+                            let tiles = tiles as usize;
+                            if tiles <= t {
+                                let nv = suf[x + 1][((m * nt) + (t - tiles)) * 4 + nf];
+                                if nv > MINF {
+                                    a[m] = nv + val as i32;
+                                }
+                            }
+                        }
+                    }
+                    maxplus_and(&mut a, &pw[s][x]);
+                    // deze tak is alleen geldig voor pm die ALLE rijen van S bezet heeft
+                    let need: u32 = ai.iter().enumerate()
+                        .filter(|(q, _)| s >> q & 1 != 0).map(|(_, &j)| 1u32 << j).sum();
+                    for pm in 0..4096usize {
+                        if (pm as u32 & need) != need {
+                            continue;
+                        }
+                        if a[pm] > acc[pm] {
+                            acc[pm] = a[pm];
+                        }
+                    }
+                }
+                for pm in 0..4096usize {
+                    cur[((pm * nt) + t) * 4 + f] = acc[pm];
+                }
+            }
+        }
+        suf[x] = cur;
+    }
+    Gdp3 { suf, nt, pw }
+}
+
+/// het argmax-woord van een verticale run onder (lambda, theta)
+fn arg_run(tabs: &HashMap<(Key, u8), Tab>, sharp: &HashMap<Key, SupSrc>, lam: &[i64; 26],
+           k: Key, own: u16, pens: &[(usize, [i64; 26])]) -> Option<[u8; 15]> {
+    let (t, us) = sharp_ent(tabs, sharp, k)?;
+    let mut best = i64::MIN;
+    let mut arg = None;
+    for (i, (u0, w)) in t.ent.iter().enumerate() {
+        let u = match us {
+            None => *u0,
+            Some(v) => v[i],
+        };
+        if u <= UDEAD {
+            continue;
+        }
+        let mut v = u as i64 * SCALE;
+        let mut m = own;
+        while m != 0 {
+            let j = m.trailing_zeros() as usize;
+            m &= m - 1;
+            v -= lam[(w[j] - 1) as usize];
+        }
+        for (p, th) in pens.iter() {
+            v -= th[(w[*p] - 1) as usize];
+        }
+        if v > best {
+            best = v;
+            arg = Some(*w);
+        }
+    }
+    arg
+}
+
+/// het argmax-woord van een horizontale run onder theta (H-kant: theta wordt OPGETELD)
+fn arg_hrun(tabs: &HashMap<(Key, u8), Tab>, y: usize, x0: usize, x1: usize,
+            th: &Vec<[i64; 26]>) -> Option<[u8; 15]> {
+    let t = tabs.get(&(Key::H(y, x0, x1), 0u8))?;
+    let n = x1 - x0 + 1;
+    let mut best = i64::MIN;
+    let mut arg = None;
+    for (u, w) in t.ent.iter() {
+        let mut v = *u as i64 * SCALE;
+        for i in 1..n {
+            v += th[x0 + i][(w[i] - 1) as usize];
+        }
+        if v > best {
+            best = v;
+            arg = Some(*w);
+        }
+    }
+    arg
+}
+
+/// de maximaliserende bezetting uit een Gdp3 terugrekenen
+fn recon3(g: &Gdp3, colv: &Vec<Vec<Vec<Option<(u8, i64)>>>>, arows: &[usize], nmax: usize)
+          -> Option<[u16; 15]> {
+    let ka = arows.len();
+    let nsub = 1usize << ka;
+    let ai: Vec<usize> = arows.iter()
+        .map(|y| FREEROWS.iter().position(|z| z == y).unwrap()).collect();
+    let nt = g.nt;
+    let mut cols = [0u16; 15];
+    let (mut pm, mut t, mut f) = (0u32, nmax, 0usize);
+    for x in 0..15 {
+        let tgt = g.suf[x][((pm as usize * nt) + t) * 4 + f];
+        let mut hit = false;
+        'outer: for s in 0..nsub {
+            let need: u32 = ai.iter().enumerate()
+                .filter(|(q, _)| s >> q & 1 != 0).map(|(_, &j)| 1u32 << j).sum();
+            if (pm & need) != need {
+                continue;
+            }
+            for m in 0..4096usize {
+                let (tiles, val) = match colv[x][s][m] {
+                    Some(v) => v,
+                    None => continue,
+                };
+                let tiles = tiles as usize;
+                if tiles > t {
+                    continue;
+                }
+                let nf = match flag_step(x, m as u32, f) {
+                    Some(v) => v,
+                    None => continue,
+                };
+                let nv = g.suf[x + 1][((m * nt) + (t - tiles)) * 4 + nf];
+                if nv <= MINF {
+                    continue;
+                }
+                let ps = pairsum(&g.pw[s][x], pm, m as u32);
+                if nv as i64 + val + ps == tgt as i64 {
+                    cols[x] = mask12_to_col(m as u32);
+                    pm = m as u32;
+                    t -= tiles;
+                    f = nf;
+                    hit = true;
+                    break 'outer;
+                }
+            }
+        }
+        if !hit {
+            return None;
+        }
+    }
+    Some(cols)
+}
+
+fn cmd_stratx(dir: &str) {
+    let d = Arc::new(load(dir));
+    let tabs = Arc::new(read_tabs(&format!("{}/tables.bin", dir)));
+    let at = read_anchtab(dir);
+    let mut lam = read_lam();
+    let nmax: usize = env::var("NFREE").ok().and_then(|s| s.parse().ok()).unwrap_or(56);
+    let active: u16 = env::var("ACT").ok().and_then(|s| u16::from_str_radix(&s, 2).ok())
+        .unwrap_or(0);
+    let iters: usize = env::var("ITERS").ok().and_then(|s| s.parse().ok()).unwrap_or(120);
+    let step: f64 = env::var("STEP").ok().and_then(|s| s.parse().ok()).unwrap_or(40.0);
+    let xstep: f64 = env::var("XSTEP").ok().and_then(|s| s.parse().ok()).unwrap_or(64.0);
+    let target: i64 = env::var("TARGET").ok().and_then(|s| s.parse().ok()).unwrap_or(4819);
+    let arows: Vec<usize> = FREEROWS.iter().enumerate()
+        .filter(|(i, _)| active >> i & 1 != 0).map(|(_, &y)| y).collect();
+    assert!(arows.len() <= 3, "kruispunt-DP is voor |A| <= 3 gebouwd");
+    calib_assert(dir, &tabs, &at, &d, &lam);
+    let t0 = std::time::Instant::now();
+    let sharp = build_sharp_v(&d, &tabs, suprows_of(active));
+    calib_assert_sharp(dir, &tabs, &sharp, &at, &d, &lam, active);
+    let anch = at.maxcap();
+    let pwr0 = pair_weights(&tabs);
+    let ka = arows.len();
+    let mut theta: Vec<Vec<[i64; 26]>> = vec![vec![[0i64; 26]; 15]; ka];
+    let mut best = i64::MAX;
+    let mut base = i64::MAX;
+    for it in 0..iters {
+        let colv = col_values_x(&tabs, &sharp, &lam, &arows, &theta);
+        let pwx = pair_weights_x(&tabs, &arows, &theta);
+        let konst = lam_const(&d, &lam);
+        let g = gdp3_build(&colv, &pwr0, &pwx, &arows, active, nmax);
+        let bv = g.suf[0][(0 * g.nt + nmax) * 4 + 0] as i64;
+        let ub = anch + (bv + konst).div_euclid(SCALE);
+        if it == 0 {
+            base = ub;
+        }
+        if ub < best {
+            best = ub;
+        }
+        let cols = match recon3(&g, &colv, &arows, nmax) {
+            Some(c) => c,
+            None => {
+                eprintln!("  it {} ub {} (reconstructie mislukt)", it, ub);
+                break;
+            }
+        };
+        // ---- subgradienten
+        let mut use_ = [0i64; 26];
+        let (vs, hs) = occ_lines(&cols);
+        // welke cellen zijn 'afgedwongen': bezet, in een actieve rij, met bezette linkerbuur
+        let enforced = |x: usize, y: usize| -> bool {
+            x > 0 && full_col(cols[x]) >> y & 1 != 0 && full_col(cols[x - 1]) >> y & 1 != 0
+        };
+        let mut vlet: HashMap<(usize, usize), usize> = HashMap::new();
+        for (k, _v) in vs.iter() {
+            if let Key::V(x, a, b) = k {
+                let pens: Vec<(usize, [i64; 26])> = (0..ka)
+                    .filter(|&j| arows[j] >= *a && arows[j] <= *b && enforced(*x, arows[j]))
+                    .map(|j| (arows[j] - *a, theta[j][*x])).collect();
+                if let Some(w) = arg_run(&tabs, &sharp, &lam, *k, own_v(*a, *b), &pens) {
+                    let mut m = own_v(*a, *b);
+                    while m != 0 {
+                        let i = m.trailing_zeros() as usize;
+                        m &= m - 1;
+                        use_[(w[i] - 1) as usize] += 1;
+                    }
+                    for j in 0..ka {
+                        if arows[j] >= *a && arows[j] <= *b {
+                            vlet.insert((*x, arows[j]), (w[arows[j] - *a] - 1) as usize);
+                        }
+                    }
+                }
+            }
+        }
+        for (k, _v) in hs.iter() {
+            if let Key::H(y, x0, x1) = k {
+                let j = match arows.iter().position(|z| z == y) {
+                    Some(j) => j,
+                    None => continue,
+                };
+                if let Some(w) = arg_hrun(&tabs, *y, *x0, *x1, &theta[j]) {
+                    let s = (xstep / ((it as f64 / 25.0) + 1.0).sqrt()) as i64;
+                    for i in 1..=(*x1 - *x0) {
+                        let x = *x0 + i;
+                        if !enforced(x, *y) {
+                            continue;
+                        }
+                        let ch = (w[i] - 1) as usize;
+                        let cv = match vlet.get(&(x, *y)) {
+                            Some(v) => *v,
+                            None => continue,
+                        };
+                        if cv == ch {
+                            continue;
+                        }
+                        theta[j][x][cv] += s;
+                        theta[j][x][ch] -= s;
+                        // NORMALISATIE: min_k theta = 0 (vrij voor echte kruispunten, en
+                        // noodzakelijk voor de soundness bij niet-kruispunten)
+                        let mn = *theta[j][x].iter().min().unwrap();
+                        for kk in 0..26 {
+                            theta[j][x][kk] -= mn;
+                        }
+                    }
+                }
+            }
+        }
+        let mut mxi = 0usize;
+        for i in 0..26 {
+            if lam[i] > lam[mxi] {
+                mxi = i;
+            }
+        }
+        let sstep = step / ((it as f64 / 10.0) + 1.0).sqrt();
+        for i in 0..26 {
+            let mut gr = d.rest[i + 1] - use_[i];
+            if i == mxi {
+                gr += d.nblank;
+            }
+            let nv = lam[i] as f64 - sstep * gr as f64;
+            lam[i] = if nv < 0.0 { 0 } else { nv.round() as i64 };
+        }
+        if it % 10 == 0 {
+            eprintln!("  it {:3}  ub {}  best {}  ({:.0}s)", it, ub, best,
+                      t0.elapsed().as_secs_f64());
+        }
+    }
+    println!("STRATUM(v3, +kruispunt-Lagrange) ACT={:012b} MAXVLEN={} FULL={} -> \
+              BOVENGRENS {}  (zonder theta {}, winst {})  ({})",
+             active, env::var("MAXVLEN").unwrap_or_else(|_| "15".into()),
+             env::var("FULL").unwrap_or_else(|_| "-".into()), best, base, base - best,
+             if best < target { "WEERLEGD" } else { "open" });
+    println!("  ({:.0}s)", t0.elapsed().as_secs_f64());
+}
+
+/// paargewichten voor de SLOTTELLING: SOM over de |r|-1 paren van r >= floor(|r|/7)
+fn pair_slots() -> [[i64; 14]; 15] {
+    let mut p = [[0i64; 14]; 15];
+    for y in 0..15 {
+        if ANCHOR_ROWS.contains(&y) {
+            continue;
+        }
+        for x0 in 0..15 {
+            for x1 in (x0 + 1)..15 {
+                let n = x1 - x0 + 1;
+                let per = ((((n / 7) as i64 * SCALE) as f64) / (x1 - x0) as f64).ceil() as i64;
+                for x in x0..x1 {
+                    if per > p[y][x] {
+                        p[y][x] = per;
+                    }
+                }
+            }
+        }
+    }
+    p
+}
+
+/// hoeveel BINGO-SLOTS kan dit stratum maximaal hebben?  (verscherping 3, meting)
+fn cmd_slots(dir: &str) {
+    let d = Arc::new(load(dir));
+    let tabs = Arc::new(read_tabs(&format!("{}/tables.bin", dir)));
+    let lam = read_lam();
+    let nmax: usize = env::var("NFREE").ok().and_then(|s| s.parse().ok()).unwrap_or(56);
+    let active: u16 = env::var("ACT").ok().and_then(|s| u16::from_str_radix(&s, 2).ok())
+        .unwrap_or(0);
+    let sharp = build_sharp_v(&d, &tabs, suprows_of(active));
+    let colv = col_values_sharp(&tabs, &sharp, &lam);
+    let slots = col_bingoslots(&colv);
+    let pwr = pair_slots();
+    let g = gdp2_build(&slots, &pwr, active, nmax);
+    let bv = g.suf[0][(0 * g.nt + nmax) * 4 + 0] as i64;
+    let free = bv.div_euclid(SCALE);
+    // LEMMA 4 (bingobudget van de vrije lijnen).
+    //  (a) Er liggen hoogstens 101 tegels op het bord (zak 100 + 2 blanco, de tegenstander
+    //      houdt >= 1 tegel vast).  Elke bingo legt precies 7 tegels en zetten zijn onderling
+    //      disjunct, dus SOM over ALLE lijnen L van b_L <= floor(101/7) = 14.
+    //  (b) De maskerregel zegt dat de 7 maskercellen van elke ankerrij samen de LAATSTE groep
+    //      van die rij vormen: een zet die precies die 7 cellen legt.  Een zet legt al zijn
+    //      tegels op een lijn, dus die zet legt precies 7 tegels -- een bingo.  De drie
+    //      slotzetten zijn dus DRIE bingo's, en die horen bij de ankerrijen.
+    //  => SOM over de VRIJE lijnen van b_L <= 14 - 3 = 11.
+    // b_L <= floor(len(L)/7) per lijn, en het maximum daarvan over het stratum is `free`.
+    println!("BINGOSLOTS ACT={:012b} MAXVLEN={} FULL={}: vrije lijnen <= {} bingo's   \
+              (budget vrije lijnen = 14 - 3 = 11 -> {})",
+             active, env::var("MAXVLEN").unwrap_or_else(|_| "15".into()),
+             env::var("FULL").unwrap_or_else(|_| "-".into()), free,
+             if free <= 11 { "BIJT NOOIT, verscherping 3 is hier bewijsbaar 0 waard" }
+             else { "kan bijten" });
+}
+
+/// welke kolommen KUNNEN vol zijn (verscherping 4)?  Voor elke kolom de volle-run-tabel.
+fn cmd_framediag(dir: &str) {
+    let d = load(dir);
+    let tabs = read_tabs(&format!("{}/tables.bin", dir));
+    println!("VOLLE KOLOMMEN (verticale run [0,14], lengte 15):");
+    let mut cands = Vec::new();
+    for x in 0..15 {
+        let pat: String = (0..3).map(|k| (b'a' + d.trip[k][x] - 1) as char).collect();
+        let t0 = tabs.get(&(Key::V(x, 0, 14), 0u8));
+        let t1 = tabs.get(&(Key::V(x, 0, 14), 1u8));
+        let (nw, u0) = match t0 {
+            Some(t) => (t.nw, t.umax),
+            None => (0, NEG as i32),
+        };
+        let u1 = t1.map(|t| t.umax).unwrap_or(NEG as i32);
+        let f = |v: i32| if v > NEG as i32 / 2 { v.to_string() } else { "-".into() };
+        println!("  kolom {:2}  patroon {}..{}..{}  zak-bouwbare woorden {:5}  \
+                  Umax(vol) {:>6}  Umax(ankersteun) {:>6}",
+                 x, &pat[0..1], &pat[1..2], &pat[2..3], nw, f(u0), f(u1));
+        if nw > 0 && u1 > NEG as i32 / 2 {
+            cands.push(x);
+        }
+    }
+    println!("  -> kolommen die vol KUNNEN zijn: {:?}", cands);
+    println!("  -> FRAME-deelstrata: alle 2^{} deelverzamelingen daarvan", cands.len());
+}
+
 // ------------------------------------------------------------------ strat: stratumgrens v2
 fn cmd_strat(dir: &str) {
     let d = Arc::new(load(dir));
@@ -2455,16 +3170,293 @@ fn cmd_strat(dir: &str) {
                       anch + (sv + sh + konst).div_euclid(SCALE));
         }
     }
+    let mut ncnt = String::from("-");
+    if env::var("COUNT").is_ok() {
+        let colv = col_values_sharp(&tabs, &sharp, &bestlam);
+        ncnt = format!("{:.4e}", count_family(&colv, active, nmax));
+    }
     println!("LAM={}", bestlam.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","));
-    println!("STRATUM(v2) ACT={:012b} MAXVLEN={} -> BOVENGRENS {}  ({})", active,
-             env::var("MAXVLEN").unwrap_or_else(|_| "15".into()), best,
-             if best < target { "WEERLEGD" } else { "open" });
+    println!("STRATUM(v2) ACT={:012b} MAXVLEN={} FULL={} -> BOVENGRENS {}  ({})  bezettingen {}",
+             active, env::var("MAXVLEN").unwrap_or_else(|_| "15".into()),
+             env::var("FULL").unwrap_or_else(|_| "-".into()), best,
+             if best < target { "WEERLEGD" } else { "open" }, ncnt);
     println!("  ({:.0}s)", t0.elapsed().as_secs_f64());
 }
 
 #[inline]
 fn nt_of(g: &Gdp2) -> usize {
     g.nt
+}
+
+// ==================================================================================
+// VERSCHERPING 2 -- KRUISPUNTCONSISTENTIE ALS LAGRANGE-TERM
+// ==================================================================================
+//
+// De per-lijn-ontbinding laat elke lijn onafhankelijk haar beste woord kiezen.  In een echt
+// bord draagt een cel die op EEN verticale en EEN horizontale run ligt in beide woorden
+// DEZELFDE letter.  Dat is de enige koppeling die de CP-SAT-narekening extra heeft, en ze is
+// duur: op de recordbezetting 4993 -> 4867 (126 punten), en op de argmax-bezetting van de
+// stratum-DP zelfs van 5104 naar INFEASIBLE.
+//
+// LAGRANGE.  Zij X de verzameling KRUISPUNTEN: cellen die op een verticale run (>=2) EN op een
+// horizontale run (>=2) liggen.  Voor c in X noteren we V(c) resp. H(c) voor die twee lijnen.
+// De consistentie-eis is  letter_{V(c)}(c) = letter_{H(c)}(c).  Voor WILLEKEURIGE reele
+// getallen theta(c, k) (k = letter) geldt daarom voor elk LEGAAL bord
+//
+//     0  =  SOM_{c in X} [ theta(c, letter_H(c)) - theta(c, letter_V(c)) ] ,
+//
+// en dus
+//
+//     SOM_L U_L  =  SOM_L U_L + 0
+//                <= SOM_{V-lijnen} max_W [ U_V(W) - lam.cnt - SOM_{c in V n X} theta(c,W_c) ]
+//                 + SOM_{H-lijnen} max_W [ U_H(W) - lam.cnt + SOM_{c in H n X} theta(c,W_c) ].
+//
+// Elke theta geeft dus een geldige bovengrens; we minimaliseren met subgradient-afdaling.
+// De subgradient in theta(c,k) is  -1{k = letter_V gekozen} + 1{k = letter_H gekozen}, dus de
+// afdalingsstap verhoogt theta(c, letter_V) en verlaagt theta(c, letter_H): precies zolang de
+// twee lijnen het oneens zijn blijft de prijs oplopen.
+//
+// STAARTGRENS.  Voor de bij het afkappen weggelaten woorden geldt nog steeds U <= tail, maar de
+// theta-term is voor hen onbekend; daarom wordt de staartgrens verhoogd met
+// SOM_{c in L n X} max_k (-/+ theta(c,k)) -- de gunstigste letter per kruispunt.  Dat is een
+// verruiming en dus sound.  (In de praktijk is de staart bij de meeste lijnen dood: dan zijn
+// ALLE woorden bewaard en speelt de correctie niet.)
+//
+// SOUNDNESS: de identiteit hierboven geldt voor elk legaal bord en elke theta; de DP-waarden
+// U_L blijven per-lijn-bovengrenzen.  De ijking (calib_assert_x) eist dat de recordbezetting
+// ook met theta nog >= 4793 uitkomt.
+
+struct XLine {
+    key: Key,
+    ent: Arc<Vec<(i32, [u8; 15])>>, // (U met het EXACTE steunmasker, woord)
+    tail: i32,                 // staartgrens uit de variant-0-tabel (NEG = dood)
+    n: usize,
+    own: u16,                  // posities waarvan deze lijn de zaktegel claimt
+    xp: Vec<i32>,              // per positie de kruispuntindex, -1 = geen kruispunt
+    isv: bool,                 // verticaal (theta aftrekken) of horizontaal (optellen)
+}
+
+impl XLine {
+    /// waarde van deze lijn onder (lambda, theta) + het gekozen woord
+    fn value(&self, lam: &[i64; 26], th: &Vec<[i64; 26]>) -> (i64, Option<[u8; 15]>) {
+        let sgn: i64 = if self.isv { -1 } else { 1 };
+        let mut best = i64::MIN;
+        let mut arg = None;
+        if self.tail > NEG as i32 / 2 {
+            let mut t = self.tail as i64 * SCALE;
+            for i in 0..self.n {
+                if self.xp[i] >= 0 {
+                    let c = &th[self.xp[i] as usize];
+                    let mut mx = i64::MIN;
+                    for k in 0..26 {
+                        let v = sgn * c[k];
+                        if v > mx {
+                            mx = v;
+                        }
+                    }
+                    t += mx;
+                }
+            }
+            best = t;
+        }
+        for (u, w) in self.ent.iter() {
+            if *u <= UDEAD {
+                continue;
+            }
+            let mut v = *u as i64 * SCALE;
+            let mut m = self.own;
+            while m != 0 {
+                let i = m.trailing_zeros() as usize;
+                m &= m - 1;
+                v -= lam[(w[i] - 1) as usize];
+            }
+            for i in 0..self.n {
+                if self.xp[i] >= 0 {
+                    v += sgn * th[self.xp[i] as usize][(w[i] - 1) as usize];
+                }
+            }
+            if v > best {
+                best = v;
+                arg = Some(*w);
+            }
+        }
+        (best, arg)
+    }
+}
+
+/// alle lijnen van een bezetting klaarzetten met hun EXACTE steunmasker en kruispuntindices
+fn xlines_of(d: &Data, dp: &mut Dp, tabs: &HashMap<(Key, u8), Tab>, cols: &[u16; 15],
+             cache: &mut HashMap<(Key, u16), Option<Arc<Vec<(i32, [u8; 15])>>>>)
+             -> Option<(Vec<XLine>, usize)> {
+    let (vs, hs) = occ_lines(cols);
+    // kruispunten nummeren: cellen die op een V-run EN een H-run liggen
+    let mut xidx: HashMap<(usize, usize), usize> = HashMap::new();
+    let mut vcells: std::collections::HashSet<(usize, usize)> = Default::default();
+    for (k, _v) in vs.iter() {
+        if let Key::V(x, a, b) = k {
+            for y in *a..=*b {
+                vcells.insert((*x, y));
+            }
+        }
+    }
+    for (k, _v) in hs.iter() {
+        if let Key::H(y, x0, x1) = k {
+            for x in *x0..=*x1 {
+                if vcells.contains(&(x, *y)) && !ANCHOR_ROWS.contains(y) {
+                    let n = xidx.len();
+                    xidx.entry((x, *y)).or_insert(n);
+                }
+            }
+        }
+    }
+    let nx = xidx.len();
+    let mut out = Vec::new();
+    for (k, _v) in vs.into_iter().chain(hs.into_iter()) {
+        let (sup, own, cells): (u16, u16, Vec<(usize, usize)>) = match k {
+            Key::V(x, a, b) => (sup_mask_v(cols, x, a, b), own_v(a, b),
+                                (a..=b).map(|y| (x, y)).collect()),
+            Key::H(y, x0, x1) => (sup_mask_h(cols, y, x0, x1), own_h(cols, y, x0, x1),
+                                  (x0..=x1).map(|x| (x, y)).collect()),
+        };
+        let t = match tabs.get(&(k, 0u8)) {
+            Some(t) if t.umax > NEG as i32 / 2 => t,
+            _ => return None,
+        };
+        let n = cells.len();
+        let ent = match cache.get(&(k, sup)) {
+            Some(v) => v.clone()?,
+            None => {
+                let mut prof = prof_of(d, k, 0);
+                prof.sup = sup;
+                let mut ent: Vec<(i32, [u8; 15])> = Vec::with_capacity(t.ent.len());
+                let mut valv = vec![0i64; n];
+                for (_u, w) in t.ent.iter() {
+                    for i in 0..n {
+                        valv[i] = d.val[w[i] as usize];
+                    }
+                    let isw = build_isw(d, &w[..n]);
+                    let u = maxg(dp, &prof, &valv, &isw);
+                    if u <= NEG {
+                        continue;
+                    }
+                    ent.push((u as i32, *w));
+                }
+                let r = if ent.is_empty() && t.tail <= NEG as i32 / 2 {
+                    None
+                } else {
+                    Some(Arc::new(ent))
+                };
+                cache.insert((k, sup), r.clone());
+                r?
+            }
+        };
+        let xp: Vec<i32> = cells.iter()
+            .map(|c| xidx.get(c).map(|v| *v as i32).unwrap_or(-1)).collect();
+        let isv = matches!(k, Key::V(..));
+        out.push(XLine { key: k, ent, tail: t.tail, n, own, xp, isv });
+    }
+    Some((out, nx))
+}
+
+/// bovengrens van een bezetting met kruispunt-Lagrange (verscherping 2)
+fn xbound(lines: &Vec<XLine>, nx: usize, d: &Data, at: &AnchTab, cols: &[u16; 15],
+          lam0: &[i64; 26], iters: usize, step: f64) -> (i64, i64) {
+    let anch = at.cap(cols);
+    let mut lam = *lam0;
+    let mut th: Vec<[i64; 26]> = vec![[0i64; 26]; nx];
+    let mut best = i64::MAX;
+    let mut base = i64::MAX;
+    for it in 0..iters {
+        let mut tot = 0i64;
+        let mut use_ = [0i64; 26];
+        let mut pick: Vec<[i32; 2]> = vec![[-1, -1]; nx]; // [V-letter, H-letter] per kruispunt
+        for l in lines.iter() {
+            let (v, arg) = l.value(&lam, &th);
+            tot += v;
+            if let Some(w) = arg {
+                let mut m = l.own;
+                while m != 0 {
+                    let i = m.trailing_zeros() as usize;
+                    m &= m - 1;
+                    use_[(w[i] - 1) as usize] += 1;
+                }
+                for i in 0..l.n {
+                    if l.xp[i] >= 0 {
+                        pick[l.xp[i] as usize][if l.isv { 0 } else { 1 }] = (w[i] - 1) as i32;
+                    }
+                }
+            }
+        }
+        let ub = anch + (tot + lam_const(d, &lam)).div_euclid(SCALE);
+        if it == 0 {
+            base = ub;
+        }
+        if ub < best {
+            best = ub;
+        }
+        // subgradient: theta omhoog bij de V-letter, omlaag bij de H-letter
+        let s = (step / ((it as f64 / 20.0) + 1.0).sqrt()) as i64;
+        for c in 0..nx {
+            let (cv, ch) = (pick[c][0], pick[c][1]);
+            if cv < 0 || ch < 0 || cv == ch {
+                continue;
+            }
+            th[c][cv as usize] += s;
+            th[c][ch as usize] -= s;
+            // normaliseren (een constante verschuiving per kruispunt valt weg tegen elkaar,
+            // maar houdt de staartcorrectie klein)
+            let mn = *th[c].iter().min().unwrap();
+            let mx = *th[c].iter().max().unwrap();
+            let mid = (mn + mx) / 2;
+            for k in 0..26 {
+                th[c][k] -= mid;
+            }
+        }
+        // lambda-subgradient (zak) blijft meelopen
+        let mut mxi = 0usize;
+        for i in 0..26 {
+            if lam[i] > lam[mxi] {
+                mxi = i;
+            }
+        }
+        let ls = 8.0 / ((it as f64 / 40.0) + 1.0).sqrt();
+        for i in 0..26 {
+            let mut g = d.rest[i + 1] - use_[i];
+            if i == mxi {
+                g += d.nblank;
+            }
+            let nv = lam[i] as f64 - ls * g as f64;
+            lam[i] = if nv < 0.0 { 0 } else { nv.round() as i64 };
+        }
+    }
+    (base, best)
+}
+
+fn cmd_xsharp(dir: &str, occfile: &str) {
+    let d = load(dir);
+    let tabs = read_tabs(&format!("{}/tables.bin", dir));
+    let at = read_anchtab(dir);
+    let lam = read_lam();
+    let target: i64 = env::var("TARGET").ok().and_then(|s| s.parse().ok()).unwrap_or(4819);
+    let iters: usize = env::var("XITERS").ok().and_then(|s| s.parse().ok()).unwrap_or(400);
+    let step: f64 = env::var("XSTEP").ok().and_then(|s| s.parse().ok()).unwrap_or(96.0);
+    calib_assert(dir, &tabs, &at, &d, &lam);
+    let mut dp = Dp::new();
+    let mut cache: HashMap<(Key, u16), Option<Arc<Vec<(i32, [u8; 15])>>>> = HashMap::new();
+    let t0 = std::time::Instant::now();
+    for (name, cols) in read_occs(occfile) {
+        match xlines_of(&d, &mut dp, &tabs, &cols, &mut cache) {
+            None => println!("{}  lexicaal lege lijn -> WEERLEGD", name),
+            Some((lines, nx)) => {
+                let (base, best) = xbound(&lines, nx, &d, &at, &cols, &lam, iters, step);
+                println!("{}  kruispunten {:3}  scherp(zonder theta) {}  MET KRUISPUNT-LAGRANGE \
+                          {}   winst {}   ({})",
+                         name, nx, base, best, base - best,
+                         if best < target { "WEERLEGD" } else { "overleeft" });
+            }
+        }
+    }
+    eprintln!("({:.0}s)", t0.elapsed().as_secs_f64());
 }
 
 // ------------------------------------------------------------------ dumptab
@@ -2557,6 +3549,10 @@ fn main() {
         "sweep" => cmd_sweep(&dir),
         "lamdp" => cmd_lamdp(&dir),
         "strat" => cmd_strat(&dir),
+        "slots" => cmd_slots(&dir),
+        "stratx" => cmd_stratx(&dir),
+        "xsharp" => cmd_xsharp(&dir, &args[2]),
+        "framediag" => cmd_framediag(&dir),
         "coldiag" => cmd_coldiag(&dir),
         "dumptab" => cmd_dumptab(&dir, &args[2]),
         "sharp" => cmd_sharp(&dir, &args[2]),
