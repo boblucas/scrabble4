@@ -221,15 +221,15 @@ de mask-optimale ankermaat uit `ANCHORCHAIN.md` + de zakgrens):
 
 | triplet (rij 7 varieert) | anker | zakgrens | greedy rest | kolomtab | lex(8) |
 |---|---:|---:|---:|---:|---:|
-| **flexwerkstertje** | **3690** | 576 | **482** | 743/405 | 15.801 |
-| zeefdrukstertje | 3610 (-80) | 656 | 528 (+46) | **1184/596** (+59%) | **22.759** (+44%) |
-| roofdrukstertje | 3592 (-98) | 672 | 542 (+60) | 751/686 | 23.142 |
-| kermisvrijsters | 3604 (-86) | 661 | 513 (+31) | 574/484 | 13.321 |
-| torxsleuteltjes | 3634 (-56) | 632 | 476 (-6) | 650/377 | 17.645 |
+| **flexwerkstertje** | **3690** | 576 | **486** | 743/405 | 15.801 |
+| zeefdrukstertje | 3610 (-80) | 656 | 527 (+41) | **1184/596** (+59%) | **22.759** (+44%) |
+| roofdrukstertje | 3592 (-98) | 672 | 541 (+55) | 751/686 | 23.142 |
+| kermisvrijsters | 3604 (-86) | 661 | 513 (+27) | 574/484 | 13.321 |
+| torxsleuteltjes | 3634 (-56) | 632 | 476 (-10) | 650/377 | 17.645 |
 
 `zeefdrukstertje` is het scherpste testgeval: het laat een restzak achter met **44% meer bouwbare
 8-letterwoorden en 59% rijkere kolomtabellen** — precies wat de opdracht zocht — en betaalt daar
-80 ankerpunten voor.  De opbrengst is **+46**.  Netto **-34**.
+80 ankerpunten voor.  De opbrengst is **+41**.  Netto **-39**.
 
 Op de mask-optimale (voetafdruk-vrije) ranglijst `anker + zakgrens`, blanco-verlies verrekend,
 staat ons triplet bovenaan:
@@ -243,8 +243,8 @@ staat ons triplet bovenaan:
 | 5 | 4264 | 3592 | 672 | 1 (-36) | ... / roofdrukstertje / ... |
 
 De nummers 2 en 3 staan *gelijk* — maar alleen op de **bovengrens**.  Hun 632 resp. 656 zouden
-voor 100% gerealiseerd moeten worden, terwijl ons bord 83% realiseert; op de greedy-schatting
-staan ze op -6 resp. -34.
+voor 100% gerealiseerd moeten worden, terwijl 83% het bewezen maximum is voor onze restzak
+(deel 4a: 480 van 576).  Op de greedy-schatting staan ze op -10 resp. -39.
 
 ---
 

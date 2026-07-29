@@ -652,19 +652,6 @@
  {
   "triplet": [
    "geschenkcheques",
-   "zinkwerkstertje",
-   "polymelkzuurtje"
-  ],
-  "schat": 4700,
-  "A_m": 3616,
-  "ub": 4815,
-  "status": "UNKNOWN",
-  "score": 0,
-  "sec": 42.1
- },
- {
-  "triplet": [
-   "geschenkcheques",
    "verbreedstertje",
    "polymelkzuurtje"
   ],
@@ -886,19 +873,6 @@
  {
   "triplet": [
    "geschenkcheques",
-   "filemijdstertje",
-   "polymelkzuurtje"
-  ],
-  "schat": 4696,
-  "A_m": 3592,
-  "ub": 4810,
-  "status": "UNKNOWN",
-  "score": 0,
-  "sec": 50.6
- },
- {
-  "triplet": [
-   "geschenkcheques",
    "boekbindstertje",
    "polymelkzuurtje"
   ],
@@ -1081,6 +1055,19 @@
  {
   "triplet": [
    "geschenkcheques",
+   "filemijdstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4692,
+  "A_m": 3592,
+  "ub": 4810,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 60.2
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
    "korfmaakstertje",
    "polymelkzuurtje"
   ],
@@ -1181,6 +1168,19 @@
   "status": "INFEASIBLE",
   "score": 0,
   "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "wildkamperenden",
+   "polymelkzuurtje"
+  ],
+  "schat": 4690,
+  "A_m": 3603,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 81.8
  },
  {
   "triplet": [
@@ -1298,6 +1298,19 @@
   "status": "INFEASIBLE",
   "score": 0,
   "sec": 4.7
+ },
+ {
+  "triplet": [
+   "geschenkcheques",
+   "zinkwerkstertje",
+   "polymelkzuurtje"
+  ],
+  "schat": 4686,
+  "A_m": 3616,
+  "ub": 4815,
+  "status": "INFEASIBLE",
+  "score": 0,
+  "sec": 69.2
  },
  {
   "triplet": [
@@ -1662,19 +1675,6 @@
   "status": "INFEASIBLE",
   "score": 0,
   "sec": 3.8
- },
- {
-  "triplet": [
-   "geschenkcheques",
-   "wildkamperenden",
-   "polymelkzuurtje"
-  ],
-  "schat": 4681,
-  "A_m": 3603,
-  "ub": 4815,
-  "status": "UNKNOWN",
-  "score": 0,
-  "sec": 50.4
  },
  {
   "triplet": [
