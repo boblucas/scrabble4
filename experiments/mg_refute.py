@@ -553,14 +553,19 @@ def refine_decide(cols, tabs, target, tlim=120, nw=2):
     sol.parameters.max_time_in_seconds = tlim
     sol.parameters.num_workers = nw
     st = sol.Solve(m)
+    def grid_of():
+        g = [[0] * 15 for _ in range(15)]
+        for c in sorted(occ):
+            g[c[1]][c[0]] = sol.Value(cell[c])
+        return g
     if os.environ.get('MAXIMIZE'):
         if st in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             return ('OPT' if st == cp_model.OPTIMAL else 'BOVENGRENS',
-                    anch + int(sol.BestObjectiveBound()))
-        return ('NEE' if st == cp_model.INFEASIBLE else 'ONBEKEND'), 0
+                    anch + int(sol.BestObjectiveBound()), grid_of())
+        return ('NEE' if st == cp_model.INFEASIBLE else 'ONBEKEND'), 0, None
     if st in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-        return 'JA', anch + int(sum(sol.Value(o) for o in obj))
-    return ('NEE' if st == cp_model.INFEASIBLE else 'ONBEKEND'), 0
+        return 'JA', anch + int(sum(sol.Value(o) for o in obj)), grid_of()
+    return ('NEE' if st == cp_model.INFEASIBLE else 'ONBEKEND'), 0, None
 
 
 _ATC = [None]
@@ -618,9 +623,15 @@ def mode_refine():
     cnt = Counter()
     t0 = time.time()
     for i, (name, cols) in enumerate(rows):
-        st, sc = refine_decide(cols, tabs, target, tlim, nw)
+        st, sc, grid = refine_decide(cols, tabs, target, tlim, nw)
         cnt[st] += 1
         out.write(f'{name} {st} {sc}\n'); out.flush()
+        if grid is not None and os.environ.get('GRIDOUT'):
+            with open(os.environ['GRIDOUT'], 'a') as gf:
+                gf.write(f'--- {name} {st} {sc}\n')
+                for y in range(15):
+                    gf.write(''.join(ABC[grid[y][x]] if grid[y][x] else '.'
+                                     for x in range(15)) + '\n')
         if i % 20 == 0 or st == 'JA':
             print(f'[{i+1}/{len(rows)}] {name} {st} {sc}   {dict(cnt)}  {time.time()-t0:.0f}s',
                   flush=True)

@@ -340,6 +340,39 @@ voor 13 tegels; kolom 14 haalt 416 voor 12 tegels — **34,7 punt/tegel tegen 20
 > een rij-0-**pre**-eiland dragen, en kolom 14 is een **masker**cel. De volle TWS-kolom komt in
 > de parameterisering niet voor.
 
+#### FRAME-borden bestaan ook echt — hier is er een
+
+De CP-SAT-narekening levert bij een oplossing niet alleen een grens maar een **volledige
+lettering**. Onafhankelijk nagerekend (elke maximale run is een `dutch2026`-woord, de zak klopt):
+
+```
+F1  (54 vrije cellen, 99 tegels, 2 blanco)      plafond 4950
+geschenkcheques        kolom 14 = spreeuwennestje  (s..e..e door drie TWS)
+..o..v....i.n.p
+..g..i....n.f.r
+..g..d....d.a.e
+..e..e.b..e.i.e
+..n..n.a..n.r.u
+..d..t.n..d.s.w
+flexwerkstertje
+....a..m...e..n
+....a..a...d..n
+....i..n...z..e
+....b......a..s
+....o......m..t
+....o......e..j
+polymelkzuurtje
+
+F2  (56 vrije cellen, 101 tegels, 2 blanco)     plafond (scherp) 5067
+    kolom 14 = steviabedrijfje, kolom 13 draagt (13,4) en (13,5)
+```
+
+Dat is precies wat de campagne tot nu toe niet had: `CONFIGGEN.md` §4 concludeerde dat "de
+bindende beperking de LEXICALE INVULBAARHEID van de hele bezetting is" en dat elke geteste
+configuratie CP-SAT-infeasible was. Deze FRAME-bezettingen zijn wél volledig te letteren, met
+101 tegels en precies 2 blanco's. Wat er nog ontbreekt is een zetvolgorde die de per-lijn-maxima
+ook werkelijk haalt.
+
 De aanraakregel doet er precies het goede mee: kolom 14 is horizontaal geïsoleerd, dus zijn
 cellen kunnen alleen groeien vanaf (14,0), (14,7) en (14,14) — en die drie komen uit de
 slotzetten. Dat is de reden dat 1132 naar 477 zakt, en het is ook meteen het **bouwrecept**:
@@ -423,7 +456,8 @@ Wat er wél ligt:
    ≤ 4777, dat is 3,57·10³⁶ bezettingen.
 3. **Stelling A**: de recordvoetafdruk kan niet boven 4867 — met 74 punten headroom boven het
    gerealiseerde 4793 een concrete opdracht voor de LNS-vloot.
-4. De **FRAME-lead** met getallen, woorden en bouwvolgorde.
+4. De **FRAME-lead** met getallen, woorden, een volledig geldige lettering en een bouwvolgorde:
+   `experiments/results/refute/frame_grids.txt`.
 
 Om de weerlegging alsnog rond te krijgen zou nodig zijn (in volgorde van hefboom):
 
