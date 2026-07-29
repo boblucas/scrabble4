@@ -383,12 +383,16 @@ laag op `acc + staartgrens`) levert het schema; een hebzuchtige uitrol faalt str
 die de drie slotzetten meteen legt terwijl ze juist laatst moeten.
 
 ```
-bord            plafond bij deze letters   ARBITER (ok=True)   realisatiegraad
-F1  (99 tegels)            4862                 4548               93,5 %
-F3  (99 tegels)            4863                 4560               93,8 %
-F2  (101 tegels)           4909                 4514               91,9 %
-record (controle)          4839                 4796               99,1 %
+bord            plafond bij deze letters   ARBITER (ok=True)   graad   exacte B&B
+F1  (99 tegels)            4862                 4548             93,5 %  KLAAR, 1,43 M toestanden
+F3  (99 tegels)            4863                 4560             93,8 %  KLAAR, 5,91 M toestanden
+F2  (101 tegels)           4909                 4514             91,9 %  KLAAR, 6,33 M toestanden
+record (controle)          4839                 4796             99,1 %  KLAAR,   359 toestanden
 ```
+
+De kolom "exacte B&B" is het zwaarste deel van dit resultaat: voor alle vier de borden is de
+uitputtende branch-and-bound over ÁLLE legale zetvolgordes AFGELOPEN en vond niets boven de
+gevonden score. Die vier getallen zijn dus geen heuristische uitslagen maar **exacte optima**.
 
 Alle drie zijn **volledige, arbiter-geverifieerde spellen** (23-28 zetten, 11-12 bingo's) — de
 eerste die ooit in deze klasse gespeeld zijn. En ze blijven allemaal onder ons record.
@@ -425,8 +429,10 @@ onbereikbaar.
 En dat is geen beam-uitslag maar een stelling — de exacte branch-and-bound sluit het bord:
 
 > ### STELLING C (bewezen, uitputtend)
-> Bij de bezetting én de letters van FRAME-bord F1 haalt **geen enkele** legale zetvolgorde meer
-> dan **4548**. (`B&B klaar=True`, 1.434.279 bezochte toestanden, 241 s, ondergrens 4548.)
+> Bij de bezetting én de letters van de FRAME-borden haalt **geen enkele** legale zetvolgorde
+> meer dan **4548** (F1), **4560** (F3), **4514** (F2). Alle drie de branch-and-bounds zijn
+> afgelopen (1,43 M / 5,91 M / 6,33 M bezochte toestanden; 241 s / 1141 s / 1170 s).
+> Alle drie liggen onder ons record.
 
 #### Bijvangst: +3 op de recordvoetafdruk
 
