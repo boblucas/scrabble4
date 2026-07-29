@@ -373,6 +373,62 @@ configuratie CP-SAT-infeasible was. Deze FRAME-bezettingen zijn wél volledig te
 101 tegels en precies 2 blanco's. Wat er nog ontbreekt is een zetvolgorde die de per-lijn-maxima
 ook werkelijk haalt.
 
+#### En hoe het afloopt als je er een ECHT spel van maakt
+
+`experiments/mg_frame_play.py` zoekt bij een vaste FRAME-bezetting een legale zetvolgorde met de
+branch-and-bound van `mg_scheduleproof.py` (exact over alle zetvolgordes; alle spelregels hard),
+uitgebreid met de **aanraakregel in de staartgrens** — zonder die regel haalt kolom 14 in de
+grens 867 in plaats van 417 en sluit er niets. Een beam over dezelfde gelaagde DP (top-K per
+laag op `acc + staartgrens`) levert het schema; een hebzuchtige uitrol faalt structureel omdat
+die de drie slotzetten meteen legt terwijl ze juist laatst moeten.
+
+```
+bord            plafond bij deze letters   ARBITER (ok=True)   realisatiegraad
+F1  (99 tegels)            4862                 4548               93,5 %
+F3  (99 tegels)            4863                 4560               93,8 %
+F2  (101 tegels)           4909                 4514               91,9 %
+record (controle)          4839                 4796               99,1 %
+```
+
+Alle drie zijn **volledige, arbiter-geverifieerde spellen** (23-28 zetten, 11-12 bingo's) — de
+eerste die ooit in deze klasse gespeeld zijn. En ze blijven allemaal onder ons record.
+
+**Waarom** — de lijn-voor-lijn-uitsplitsing van het beste FRAME-spel wijst het verlies exact aan:
+
+```
+F1, verlies per lijn                        record, verlies per lijn
+geschenkcheques    0                        geschenkcheques    0
+flexwerkstertje    0                        flexwerkstertje   25
+polymelkzuurtje    2                        polymelkzuurtje    0
+soggende          12                        smarotsenden       0
+evidente          12                        overzwevenden      0
+eindende           8                        efedrine           0
+unfairst          13                        enabelde          18
+bankman            0                        uitademt           0
+waaiboom           0                        windboom           0
+redzamer          14                        raspiger           0
+spreeuwennestje  253   <<<                  (rest)             0
+```
+
+**253 van de 314 punten verlies zit in de FRAME-kolom zelf.** De reden is precies de reden dat
+de kolom bestaat: kolom 14 heeft geen enkele buur behalve zijn drie maskercellen, dus hij kan
+pas gaan groeien nadat een slotzet er één heeft gelegd — en dan is die slotzet al gescoord met
+een kruiswoord van lengte 1. De per-lijn-grens van 417 gaat uit van een geschiedenis waarin de
+kolom eerst wordt opgebouwd en daarna drie keer ×3 wordt herscoord; die geschiedenis is globaal
+onbereikbaar.
+
+> **De FRAME-klasse bestaat, is volledig letterbaar, levert geldige spellen — en betaalt niet.**
+> Kolom 14 realiseert 164 punten voor 12 tegels; de rij-4-laan `overzwevenden` van het record
+> realiseert er 267 voor 13. Het gat tussen 477 (per-lijn) en 164 (realiseerbaar) is de prijs
+> van de bezorging.
+
+#### Bijvangst: +3 op de recordvoetafdruk
+
+De controlerun — dezelfde beam op het rooster en de blanco's van `maxgame_BEST.json`, alleen een
+andere zetvolgorde — komt uit op **4796** (arbiter `ok=True`, 32 zetten, 11 bingo's, 101 tegels,
+identiek rooster en identieke blanco's). Dat is 3 punten boven het record 4793, puur door
+herordening. Zie `experiments/results/frame_reschedule_4796.json`.
+
 De aanraakregel doet er precies het goede mee: kolom 14 is horizontaal geïsoleerd, dus zijn
 cellen kunnen alleen groeien vanaf (14,0), (14,7) en (14,14) — en die drie komen uit de
 slotzetten. Dat is de reden dat 1132 naar 477 zakt, en het is ook meteen het **bouwrecept**:
@@ -456,8 +512,11 @@ Wat er wél ligt:
    ≤ 4777, dat is 3,57·10³⁶ bezettingen.
 3. **Stelling A**: de recordvoetafdruk kan niet boven 4867 — met 74 punten headroom boven het
    gerealiseerde 4793 een concrete opdracht voor de LNS-vloot.
-4. De **FRAME-lead** met getallen, woorden, een volledig geldige lettering en een bouwvolgorde:
-   `experiments/results/refute/frame_grids.txt`.
+4. De **FRAME-klasse volledig afgehandeld**: bestaat, is letterbaar, levert arbiter-geverifieerde
+   spellen van 4514-4560 — en betaalt niet, met een precieze diagnose (253 punten
+   bezorgingsverlies in de frame-kolom zelf).
+5. Bijvangst: **4796** op de recordvoetafdruk, puur door herordening
+   (`experiments/results/frame_reschedule_4796.json`, arbiter `ok=True`).
 
 Om de weerlegging alsnog rond te krijgen zou nodig zijn (in volgorde van hefboom):
 
