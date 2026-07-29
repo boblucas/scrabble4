@@ -422,12 +422,27 @@ onbereikbaar.
 > realiseert er 267 voor 13. Het gat tussen 477 (per-lijn) en 164 (realiseerbaar) is de prijs
 > van de bezorging.
 
+En dat is geen beam-uitslag maar een stelling — de exacte branch-and-bound sluit het bord:
+
+> ### STELLING C (bewezen, uitputtend)
+> Bij de bezetting én de letters van FRAME-bord F1 haalt **geen enkele** legale zetvolgorde meer
+> dan **4548**. (`B&B klaar=True`, 1.434.279 bezochte toestanden, 241 s, ondergrens 4548.)
+
 #### Bijvangst: +3 op de recordvoetafdruk
 
 De controlerun — dezelfde beam op het rooster en de blanco's van `maxgame_BEST.json`, alleen een
 andere zetvolgorde — komt uit op **4796** (arbiter `ok=True`, 32 zetten, 11 bingo's, 101 tegels,
 identiek rooster en identieke blanco's). Dat is 3 punten boven het record 4793, puur door
 herordening. Zie `experiments/results/frame_reschedule_4796.json`.
+
+> ### STELLING B (bewezen, uitputtend)
+> Bij de bezetting én de letters van `maxgame_BEST.json` haalt **geen enkele** legale zetvolgorde
+> meer dan **4796**, en ons herordende schema haalt dat exact.
+> (`B&B klaar=True`, 359 bezochte toestanden, ondergrens 4796 — niets erboven bestaat.)
+>
+> De voetafdruk van het record is daarmee dicht: het gat van 74 punten dat §7.3 nog liet zien
+> (4867 zetvolgorde- én letter-vrij) is bij DEZE letters volledig weg; er resteert 4839 − 4796 =
+> 43 punten die alleen met een ANDERE lettering te halen zouden zijn.
 
 De aanraakregel doet er precies het goede mee: kolom 14 is horizontaal geïsoleerd, dus zijn
 cellen kunnen alleen groeien vanaf (14,0), (14,7) en (14,14) — en die drie komen uit de
